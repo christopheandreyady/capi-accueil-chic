@@ -1,11 +1,12 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
-import { Plus, ArrowLeft, Play, Crown, Check, Copy, QrCode, Share2, UserPlus } from "lucide-react";
+import { Plus, ArrowLeft, Crown, Check, Copy, QrCode, Share2, UserPlus } from "lucide-react";
 import bistrotTable from "@/assets/capi-bistrot-table.jpg";
 import capiEmblem from "@/assets/capi-emblem.png";
 import { InviteModal } from "@/components/InviteModal";
 import { PremiumModal } from "@/components/PremiumModal";
 import { buildInviteLink, defaultTableConfig, loadTableConfig, type TableConfig } from "@/lib/table-config";
+import { getWaitingRoomState, markSeatReady } from "@/lib/waiting-room-state";
 
 export const Route = createFileRoute("/salle-attente")({
   head: () => ({
@@ -96,6 +97,7 @@ const initialSeats: Seat[] = [
       photo: "https://i.pravatar.cc/200?img=68",
       online: true,
       ready: true,
+      isBot: true,
     },
   },
   {
@@ -106,7 +108,8 @@ const initialSeats: Seat[] = [
       level: 14,
       photo: "https://i.pravatar.cc/200?img=47",
       online: true,
-      ready: false,
+      ready: true,
+      isBot: true,
     },
   },
   { position: "right", team: "B", player: null },
@@ -119,6 +122,7 @@ function WaitingRoom() {
   const [inviteOpen, setInviteOpen] = useState(false);
   const [qrOpen, setQrOpen] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [isStarting, setIsStarting] = useState(false);
 
   useEffect(() => {
     const stored = loadTableConfig();
@@ -128,39 +132,51 @@ function WaitingRoom() {
     // (that's always the human using the app).
     setSeats((prev) =>
       prev.map((seat) => {
-        if (seat.player || seat.position === "bottom") return seat;
+        if (seat.position === "bottom") return seat;
+        if (seat.player) {
+          return seat.player.isBot && !seat.player.ready
+            ? { ...seat, player: { ...seat.player, ready: true } }
+            : seat;
+        }
         const bot = DEV_BOTS[seat.position];
-        return bot ? { ...seat, player: bot } : seat;
+        return bot ? { ...seat, player: { ...bot, ready: true } } : seat;
       }),
     );
   }, []);
 
   const inviteLink = useMemo(() => buildInviteLink(cfg.code), [cfg.code]);
-  const playersCount = seats.filter((s) => s.player).length;
   const total = 4;
-  const readyCount = seats.filter((s) => s.player?.ready).length;
-  const allReady = playersCount === total && readyCount === total;
-  const roomFull = playersCount === total;
+  const { playersCount, readyCount, allReady, roomFull } = getWaitingRoomState(seats, total);
   const localReady = seats.find((s) => s.position === "bottom")?.player?.ready ?? false;
 
-  // Auto-start once all four players are ready
+  // Enter the starting state only when the room is complete and every
+  // connected player is represented by the same ready flag used by the UI.
   useEffect(() => {
-    if (!allReady) return;
-    const t = setTimeout(() => navigate({ to: "/partie" }), 800);
+    setIsStarting(allReady);
+    if (allReady) {
+      setInviteOpen(false);
+      setQrOpen(false);
+      setCopied(false);
+    }
+  }, [allReady]);
+
+  // Re-check both invariants after the short transition. If a player leaves
+  // or becomes unavailable, the cleanup cancels navigation immediately.
+  useEffect(() => {
+    if (!isStarting || !allReady) return;
+    const t = window.setTimeout(() => {
+      if (playersCount === total && readyCount === total) {
+        navigate({ to: "/partie" });
+      }
+    }, 800);
     return () => clearTimeout(t);
-  }, [allReady, navigate]);
+  }, [allReady, isStarting, navigate, playersCount, readyCount]);
 
 
 
 
-  function toggleReady(pos: Position) {
-    setSeats((s) =>
-      s.map((seat) =>
-        seat.position === pos && seat.player
-          ? { ...seat, player: { ...seat.player, ready: !seat.player.ready } }
-          : seat,
-      ),
-    );
+  function markReady(pos: Position) {
+    setSeats((current) => markSeatReady(current, pos));
   }
 
   async function copyCode() {
@@ -281,7 +297,7 @@ function WaitingRoom() {
         </header>
 
         {/* Invite code bar */}
-        <div
+        {!isStarting && <div
           className="mt-4 flex items-center gap-2 rounded-2xl border px-3 py-2"
           style={{
             background: "oklch(0.16 0.03 40 / 70%)",
@@ -316,7 +332,7 @@ function WaitingRoom() {
               <Share2 className="h-4 w-4" />
             </IconAction>
           </div>
-        </div>
+        </div>}
 
         {/* Table area */}
         <section className="relative mt-6 flex-1">
@@ -444,21 +460,18 @@ function WaitingRoom() {
               seat={seats.find((s) => s.position === "top")!}
               className="absolute left-1/2 top-0 -translate-x-1/2 -translate-y-1/2"
               delay={80}
-              onToggleReady={toggleReady}
               onInvite={() => setInviteOpen(true)}
             />
             <SeatSlot
               seat={seats.find((s) => s.position === "left")!}
               className="absolute left-0 top-1/2 -translate-x-1/2 -translate-y-1/2"
               delay={180}
-              onToggleReady={toggleReady}
               onInvite={() => setInviteOpen(true)}
             />
             <SeatSlot
               seat={seats.find((s) => s.position === "right")!}
               className="absolute right-0 top-1/2 translate-x-1/2 -translate-y-1/2"
               delay={260}
-              onToggleReady={toggleReady}
               onInvite={() => setInviteOpen(true)}
             />
             <SeatSlot
@@ -466,7 +479,6 @@ function WaitingRoom() {
               className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2"
               isLocal
               delay={0}
-              onToggleReady={toggleReady}
               onInvite={() => setInviteOpen(true)}
             />
           </div>
@@ -474,7 +486,7 @@ function WaitingRoom() {
 
         {/* Bottom actions — a single "Je suis prêt" button; everything disappears when the table is fully ready */}
         <div className="relative z-30 mt-10 flex flex-col gap-3">
-          {playersCount < total && (
+          {!isStarting && playersCount < total && (
             <button
               type="button"
               onClick={() => setInviteOpen(true)}
@@ -492,11 +504,10 @@ function WaitingRoom() {
             </button>
           )}
 
-          {!allReady && !localReady && (
+          {!isStarting && roomFull && !localReady && (
             <button
               type="button"
-              disabled={!roomFull}
-              onClick={() => roomFull && toggleReady("bottom")}
+              onClick={() => markReady("bottom")}
               className="group relative flex w-full items-center justify-center gap-3 overflow-hidden px-6 py-4 transition-all duration-200 ease-out active:scale-[0.985] disabled:cursor-not-allowed disabled:active:scale-100 animate-fade-in"
               style={{
                 borderRadius: "1.15rem",
@@ -507,7 +518,7 @@ function WaitingRoom() {
                 boxShadow: roomFull
                   ? "0 18px 32px -14px oklch(0 0 0 / 80%), 0 8px 16px -6px oklch(0.32 0.10 152 / 55%), inset 0 1px 0 oklch(1 0 0 / 18%), inset 0 -10px 18px oklch(0 0 0 / 45%), inset 0 0 0 1px oklch(0.82 0.14 82 / 22%)"
                   : "0 12px 24px -12px oklch(0 0 0 / 72%), inset 0 1px 0 oklch(1 0 0 / 12%), inset 0 -8px 14px oklch(0 0 0 / 40%)",
-                opacity: roomFull ? 1 : 0.75,
+                opacity: 1,
               }}
             >
               <span
@@ -549,7 +560,7 @@ function WaitingRoom() {
                   textShadow: "0 1px 0 oklch(0 0 0 / 45%)",
                 }}
               >
-                {roomFull ? "Je suis prêt" : "Salle incomplète"}
+                Je suis prêt
               </span>
             </button>
           )}
@@ -563,7 +574,7 @@ function WaitingRoom() {
             </p>
           )}
 
-          {playersCount < total && (
+          {!isStarting && playersCount < total && (
             <p
               className="text-center text-[11px] uppercase tracking-[0.22em] animate-fade-in"
               style={{ color: "oklch(0.75 0.05 82 / 65%)" }}
@@ -814,14 +825,12 @@ function SeatSlot({
   className,
   isLocal,
   delay = 0,
-  onToggleReady,
   onInvite,
 }: {
   seat: Seat;
   className?: string;
   isLocal?: boolean;
   delay?: number;
-  onToggleReady: (pos: Position) => void;
   onInvite: () => void;
 }) {
   const p = seat.player;
@@ -944,24 +953,6 @@ function SeatSlot({
             </p>
           </div>
 
-          {/* Ready toggle — only the local player controls their own readiness */}
-          {isLocal && (
-            <button
-              type="button"
-              onClick={() => onToggleReady(pos)}
-              className="rounded-full px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-[0.14em] transition active:scale-95"
-              style={{
-                background: p.ready
-                  ? "oklch(0.2 0.02 40 / 70%)"
-                  : "linear-gradient(160deg, oklch(0.5 0.15 155), oklch(0.32 0.10 155))",
-                border: `1px solid ${p.ready ? "oklch(0.82 0.14 82 / 25%)" : "oklch(0.62 0.15 155 / 60%)"}`,
-                color: p.ready ? "oklch(0.85 0.05 82 / 85%)" : "oklch(0.95 0.1 88)",
-                boxShadow: "0 2px 6px oklch(0 0 0 / 45%), inset 0 1px 0 oklch(1 0 0 / 10%)",
-              }}
-            >
-              {p.ready ? "Annuler" : "Je suis prêt"}
-            </button>
-          )}
         </>
       ) : (
         <button
