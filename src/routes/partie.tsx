@@ -425,11 +425,7 @@ function GameTable() {
     if (phase !== "playing" || !contract || !currentTrick) return;
     if (currentTurn !== "bottom") return;
     const legal = legalMoves(hands.bottom, currentTrick, contract.suit, "bottom");
-    if (!legal.some((c) => c.id === card.id)) {
-      // Not legal → just flash select
-      setSelectedCardId(card.id);
-      return;
-    }
+    if (!legal.some((c) => c.id === card.id)) return;
     playCardBy("bottom", card);
   };
 
