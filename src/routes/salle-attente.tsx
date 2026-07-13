@@ -361,9 +361,9 @@ function WaitingRoom() {
               style={{
                 width: "26%",
                 height: "auto",
-                opacity: 0.44,
+                opacity: 0.52,
                 mixBlendMode: "overlay",
-                filter: "drop-shadow(0 1px 0 oklch(0 0 0 / 70%)) drop-shadow(0 -1px 0 oklch(1 0 0 / 18%)) contrast(1.15)",
+                filter: "drop-shadow(0 1px 0 oklch(0 0 0 / 75%)) drop-shadow(0 -1px 0 oklch(1 0 0 / 22%)) contrast(1.32)",
               }}
             />
 
