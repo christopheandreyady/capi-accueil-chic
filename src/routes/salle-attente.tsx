@@ -35,6 +35,36 @@ type Player = {
   online: boolean;
   ready: boolean;
   host?: boolean;
+  isBot?: boolean;
+};
+
+// Dev-only bots used to fill empty seats so a table can be tested solo.
+// Ordered by seat position; index matches an empty seat's slot when filling.
+const DEV_BOTS: Record<Exclude<Position, "bottom">, Player> = {
+  top: {
+    name: "Bot Jean-Luc",
+    level: 18,
+    photo: "https://i.pravatar.cc/200?img=68",
+    online: true,
+    ready: true,
+    isBot: true,
+  },
+  left: {
+    name: "Bot Margaux",
+    level: 15,
+    photo: "https://i.pravatar.cc/200?img=47",
+    online: true,
+    ready: true,
+    isBot: true,
+  },
+  right: {
+    name: "Bot Alex",
+    level: 12,
+    photo: "https://i.pravatar.cc/200?img=15",
+    online: true,
+    ready: true,
+    isBot: true,
+  },
 };
 
 type Seat = {
@@ -93,6 +123,16 @@ function WaitingRoom() {
   useEffect(() => {
     const stored = loadTableConfig();
     if (stored) setCfg(stored);
+    // Dev helper: auto-fill any empty seat with a ready AI bot so we can
+    // start a game without waiting for real players. Skip the bottom seat
+    // (that's always the human using the app).
+    setSeats((prev) =>
+      prev.map((seat) => {
+        if (seat.player || seat.position === "bottom") return seat;
+        const bot = DEV_BOTS[seat.position];
+        return bot ? { ...seat, player: bot } : seat;
+      }),
+    );
   }, []);
 
   const inviteLink = useMemo(() => buildInviteLink(cfg.code), [cfg.code]);
