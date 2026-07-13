@@ -1231,7 +1231,9 @@ function CardFace({ card }: { card: Card }) {
   const red = isRedSuit(card.suit);
   const color = red ? "oklch(0.5 0.19 25)" : "oklch(0.2 0.03 260)";
   return (
-    <div className="relative h-full w-full overflow-hidden" style={{ borderRadius:9, background:"linear-gradient(180deg, oklch(0.99 0.01 90) 0%, oklch(0.93 0.015 82) 100%)", border:"1px solid oklch(0.72 0.03 82)", boxShadow:"0 10px 18px -6px oklch(0 0 0 / 75%), 0 3px 6px -1px oklch(0 0 0 / 55%), inset 0 1px 0 oklch(1 0 0 / 70%), inset 0 -1px 0 oklch(0 0 0 / 15%)" }}>
+    <div className="relative h-full w-full overflow-hidden" style={{ borderRadius:9, background:"linear-gradient(180deg, oklch(0.985 0.012 88) 0%, oklch(0.94 0.018 82) 100%)", border:"1px solid oklch(0.7 0.03 82)", boxShadow:"0 10px 18px -6px oklch(0 0 0 / 75%), 0 3px 6px -1px oklch(0 0 0 / 55%), inset 0 1px 0 oklch(1 0 0 / 75%), inset 0 -1px 0 oklch(0 0 0 / 18%), inset 0 0 12px oklch(0.5 0.06 60 / 12%)" }}>
+      {/* subtle paper wear — soft warm vignette on the edges */}
+      <div className="pointer-events-none absolute inset-0" style={{ boxShadow:"inset 0 0 10px oklch(0.35 0.05 60 / 22%)" }} />
       <div className="absolute left-1.5 top-1 flex flex-col items-center leading-none" style={{ color }}>
         <span className="font-serif text-[20px] font-bold">{card.rank}</span>
         <span className="text-[18px]">{card.suit}</span>
