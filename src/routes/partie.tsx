@@ -618,7 +618,7 @@ function GameTable() {
 
 
 
-      <div className="relative z-10 mx-auto flex min-h-screen w-full max-w-3xl flex-col px-2 pt-4 pb-4">
+      <div className="relative z-10 mx-auto flex min-h-screen w-full max-w-none flex-col px-2 pt-4 pb-4">
         <header className="flex items-center justify-between gap-2">
           <div className="flex items-center gap-2">
             <Link to="/salle-attente" className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border transition active:scale-95" style={{ background:"oklch(0.2 0.03 40 / 60%)", borderColor:"oklch(0.82 0.14 82 / 30%)", backdropFilter:"blur(8px)", color:"oklch(0.9 0.1 85)" }} aria-label="Retour"><ArrowLeft className="h-4 w-4" /></Link>
@@ -649,12 +649,13 @@ function GameTable() {
               alt="CAPI"
               width={1024}
               height={1024}
-              className="h-12 w-12"
+              className="h-16 w-16"
               style={{
                 filter:
-                  "drop-shadow(0 6px 10px oklch(0 0 0 / 70%)) drop-shadow(0 0 12px oklch(0.85 0.15 82 / 40%)) contrast(1.1) saturate(1.1) brightness(1.08)",
+                  "drop-shadow(0 8px 14px oklch(0 0 0 / 75%)) drop-shadow(0 0 16px oklch(0.85 0.15 82 / 55%)) contrast(1.18) saturate(1.18) brightness(1.14)",
               }}
             />
+
             <button type="button" onClick={nextRound} className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border transition active:scale-95" style={{ background:"oklch(0.2 0.03 40 / 60%)", borderColor:"oklch(0.82 0.14 82 / 30%)", backdropFilter:"blur(8px)", color:"oklch(0.9 0.1 85)" }} aria-label="Manche suivante"><RotateCcw className="h-4 w-4" /></button>
           </div>
         </header>
@@ -664,7 +665,7 @@ function GameTable() {
           <div
             ref={boxRef}
             className="relative"
-            style={{ width: "min(98vw, calc((100dvh - 180px) * 1.5), 760px)", aspectRatio: "3 / 2" }}
+            style={{ width: "min(100vw, calc((100dvh - 130px) * 1.55), 1020px)", aspectRatio: "3 / 2" }}
           >
             {/* Round wooden bistro table — a physical object floating in the
                 room. Transparent PNG so the environment stays visible around
@@ -681,8 +682,8 @@ function GameTable() {
             <div className="pointer-events-none absolute inset-[8%] rounded-full" style={{ background:"radial-gradient(45% 38% at 50% 45%, oklch(0.92 0.15 78 / 22%) 0%, oklch(0.85 0.12 72 / 8%) 50%, transparent 78%)" }} />
             <div className="pointer-events-none absolute inset-[8%] rounded-full" style={{ background:"radial-gradient(60% 55% at 50% 55%, transparent 0%, transparent 55%, oklch(0 0 0 / 32%) 100%)" }} />
 
-            {/* CAPI emblem engraved into the felt — subtle watermark that
-                reads clearly without breaking the embossed felt feel. */}
+            {/* CAPI emblem engraved into the felt — stronger contrast so
+                the mark reads clearly while keeping the embossed feel. */}
             <img
               src={capiEmblem}
               alt=""
@@ -691,13 +692,14 @@ function GameTable() {
               height={512}
               className="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-[5]"
               style={{
-                width: "22%",
+                width: "26%",
                 height: "auto",
-                opacity: 0.28,
+                opacity: 0.44,
                 mixBlendMode: "overlay",
-                filter: "drop-shadow(0 1px 0 oklch(0 0 0 / 55%)) drop-shadow(0 -1px 0 oklch(1 0 0 / 12%))",
+                filter: "drop-shadow(0 1px 0 oklch(0 0 0 / 70%)) drop-shadow(0 -1px 0 oklch(1 0 0 / 18%)) contrast(1.15)",
               }}
             />
+
 
 
 
@@ -1320,62 +1322,78 @@ function CardFace({ card }: { card: Card }) {
 
 function CardBack() {
   return (
-    <div className="relative h-full w-full overflow-hidden" style={{ borderRadius:7, background:"linear-gradient(160deg, oklch(0.32 0.11 25) 0%, oklch(0.18 0.06 25) 100%)", border:"1px solid oklch(0.55 0.14 78 / 60%)", boxShadow:"0 8px 14px -5px oklch(0 0 0 / 75%), 0 2px 4px oklch(0 0 0 / 55%), inset 0 1px 0 oklch(1 0 0 / 18%), inset 0 0 22px oklch(0 0 0 / 55%)" }}>
+    <div
+      className="relative h-full w-full overflow-hidden"
+      style={{
+        borderRadius: 7,
+        background: "linear-gradient(160deg, oklch(0.34 0.11 25) 0%, oklch(0.17 0.06 25) 100%)",
+        border: "1px solid oklch(0.55 0.14 78 / 65%)",
+        boxShadow:
+          "0 8px 14px -5px oklch(0 0 0 / 75%), 0 2px 4px oklch(0 0 0 / 55%), inset 0 1px 0 oklch(1 0 0 / 18%), inset 0 0 22px oklch(0 0 0 / 55%)",
+      }}
+    >
       {/* diamond guilloché weave */}
-      <div className="absolute inset-1 rounded-[4px]" style={{ border:"1px solid oklch(0.72 0.14 82 / 55%)", backgroundImage:"repeating-linear-gradient(45deg, oklch(0.72 0.14 82 / 20%) 0 2px, transparent 2px 7px), repeating-linear-gradient(-45deg, oklch(0.72 0.14 82 / 14%) 0 2px, transparent 2px 7px)" }} />
+      <div
+        className="absolute inset-1 rounded-[4px]"
+        style={{
+          border: "1px solid oklch(0.72 0.14 82 / 55%)",
+          backgroundImage:
+            "repeating-linear-gradient(45deg, oklch(0.72 0.14 82 / 18%) 0 2px, transparent 2px 7px), repeating-linear-gradient(-45deg, oklch(0.72 0.14 82 / 12%) 0 2px, transparent 2px 7px)",
+        }}
+      />
       {/* inner gold hairline frame */}
-      <div className="pointer-events-none absolute inset-[6px] rounded-[3px]" style={{ border:"1px solid oklch(0.82 0.14 82 / 45%)", boxShadow:"inset 0 0 0 1px oklch(0 0 0 / 35%)" }} />
-      {/* subtle vintage wear: soft light noise + edge darkening, never dirty */}
-      <div className="pointer-events-none absolute inset-0 opacity-25 mix-blend-overlay" style={{ backgroundImage:"radial-gradient(oklch(1 0 0 / 22%) 0.5px, transparent 0.6px), radial-gradient(oklch(0 0 0 / 30%) 0.5px, transparent 0.6px)", backgroundSize:"3px 3px, 5px 5px", backgroundPosition:"0 0, 1px 2px" }} />
-      <div className="pointer-events-none absolute inset-0" style={{ boxShadow:"inset 0 0 14px oklch(0 0 0 / 55%)" }} />
-      {/* CAPI emblem — centered medallion printed into the back design */}
+      <div
+        className="pointer-events-none absolute inset-[5px] rounded-[3px]"
+        style={{
+          border: "1px solid oklch(0.82 0.14 82 / 55%)",
+          boxShadow: "inset 0 0 0 1px oklch(0 0 0 / 35%)",
+        }}
+      />
+      {/* subtle vintage wear */}
+      <div
+        className="pointer-events-none absolute inset-0 opacity-25 mix-blend-overlay"
+        style={{
+          backgroundImage:
+            "radial-gradient(oklch(1 0 0 / 22%) 0.5px, transparent 0.6px), radial-gradient(oklch(0 0 0 / 30%) 0.5px, transparent 0.6px)",
+          backgroundSize: "3px 3px, 5px 5px",
+          backgroundPosition: "0 0, 1px 2px",
+        }}
+      />
+      <div
+        className="pointer-events-none absolute inset-0"
+        style={{ boxShadow: "inset 0 0 14px oklch(0 0 0 / 55%)" }}
+      />
+      {/* CAPI coin — centered medallion, perfectly balanced, no wordmark */}
       <div className="absolute inset-0 flex items-center justify-center">
-        <img
-          src={capiEmblem}
-          alt=""
-          width={512}
-          height={512}
-          className="pointer-events-none"
+        <div
+          className="relative flex items-center justify-center rounded-full"
           style={{
-            width: "58%",
-            height: "58%",
-            objectFit: "contain",
-            filter:
-              "drop-shadow(0 1px 0 oklch(0 0 0 / 70%)) drop-shadow(0 0 5px oklch(0.82 0.14 82 / 55%))",
-            mixBlendMode: "screen",
-            opacity: 0.95,
+            width: "66%",
+            height: "66%",
+            background:
+              "radial-gradient(circle at 35% 30%, oklch(0.95 0.11 88 / 22%) 0%, transparent 55%)",
+            boxShadow:
+              "inset 0 0 0 1px oklch(0.82 0.14 82 / 45%), inset 0 0 10px oklch(0 0 0 / 45%), 0 0 8px oklch(0.82 0.14 82 / 25%)",
           }}
-        />
+        >
+          <img
+            src={capiEmblem}
+            alt=""
+            width={512}
+            height={512}
+            className="pointer-events-none h-full w-full"
+            style={{
+              objectFit: "contain",
+              filter:
+                "drop-shadow(0 1px 0 oklch(0 0 0 / 70%)) drop-shadow(0 0 6px oklch(0.82 0.14 82 / 65%)) contrast(1.15) brightness(1.1)",
+            }}
+          />
+        </div>
       </div>
-      {/* Wordmark integrated into the design — top and bottom, mirrored so
-          the back reads the same rotated 180°. */}
-      <span
-        className="pointer-events-none absolute left-1/2 -translate-x-1/2 font-serif font-semibold select-none"
-        style={{
-          top: 3,
-          fontSize: 6,
-          letterSpacing: "0.32em",
-          color: "oklch(0.85 0.14 82 / 78%)",
-          textShadow: "0 1px 0 oklch(0 0 0 / 65%)",
-        }}
-      >
-        CAPI
-      </span>
-      <span
-        className="pointer-events-none absolute left-1/2 -translate-x-1/2 rotate-180 font-serif font-semibold select-none"
-        style={{
-          bottom: 3,
-          fontSize: 6,
-          letterSpacing: "0.32em",
-          color: "oklch(0.85 0.14 82 / 78%)",
-          textShadow: "0 1px 0 oklch(0 0 0 / 65%)",
-        }}
-      >
-        CAPI
-      </span>
     </div>
   );
 }
+
 
 // --- Contract chips visualization ------------------------------------------
 type ChipBreakdown = { largeBar: number; smallBar: number; rounds: number; capot: boolean };
