@@ -235,7 +235,7 @@ function GameTable() {
     setRecentBid({ seat: b.seat, bid: b });
     const id = window.setTimeout(() => {
       setRecentBid((cur) => (cur && cur.bid === b ? null : cur));
-    }, 2800);
+    }, 2000);
     return () => window.clearTimeout(id);
   }, [bids]);
 
