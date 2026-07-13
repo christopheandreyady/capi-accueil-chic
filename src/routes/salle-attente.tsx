@@ -485,9 +485,9 @@ function WaitingRoom() {
 
       <style>{`
         @keyframes capi-seat-in {
-          0% { opacity: 0; transform: var(--seat-transform) scale(0.6); filter: blur(6px); }
+          0% { opacity: 0; scale: 0.6; filter: blur(6px); }
           60% { opacity: 1; filter: blur(0); }
-          100% { opacity: 1; transform: var(--seat-transform) scale(1); filter: blur(0); }
+          100% { opacity: 1; scale: 1; filter: blur(0); }
         }
         @keyframes capi-photo-fade {
           0% { opacity: 0; transform: scale(0.9); }
