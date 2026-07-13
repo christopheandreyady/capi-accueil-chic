@@ -149,10 +149,13 @@ function Home() {
 
         {/* Buttons */}
         <nav className="mt-auto grid grid-cols-2 gap-3.5 pt-12" aria-label="Menu principal">
-          {buttons.map(({ label, icon: Icon, base, edge, glow }) => (
-            <button
+          {buttons.map(({ label, icon: Icon, base, edge, glow, to }) => {
+            const Comp: React.ElementType = to ? Link : "button";
+            const compProps = to ? { to } : { type: "button" as const };
+            return (
+            <Comp
               key={label}
-              type="button"
+              {...compProps}
               className="group relative flex flex-col items-center justify-center gap-2.5 overflow-hidden px-3 py-5 transition-all duration-200 ease-out active:scale-[0.97] active:brightness-95"
               style={{
                 borderRadius: "1.1rem",
