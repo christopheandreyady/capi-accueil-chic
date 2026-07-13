@@ -237,6 +237,7 @@ function GameTable() {
   useEffect(() => {
     setPhase("shuffle");
     setCutStep(0);
+    setDeckHolder(null);
     setDealtCount(0);
     setDealMode(null);
     setSelectedCardId(null);
