@@ -271,23 +271,25 @@ function GameTable() {
     const w = size.w || 1;
     const h = size.h || 1;
     return {
-      bottom: { x: w * 0.5, y: h - 28, angle: 0 },
+      bottom: { x: w * 0.5, y: h + 30, angle: 0 },
       top: { x: w * 0.5, y: 28, angle: 180 },
       left: { x: 22, y: h * 0.5, angle: 90 },
       right: { x: w - 22, y: h * 0.5, angle: -90 },
     } as const;
   }, [size]);
 
+  // The deck sits in front of whoever currently holds it (dealer, except during cut).
   const deckBase = useMemo(() => {
-    const a = anchors[dealer];
+    const holder = deckHolder ?? dealer;
+    const a = anchors[holder];
     const cx = (size.w || 0) / 2;
     const cy = (size.h || 0) / 2;
     const dx = cx - a.x;
     const dy = cy - a.y;
     const len = Math.hypot(dx, dy) || 1;
-    const inset = dealer === "bottom" || dealer === "top" ? 128 : 112;
+    const inset = holder === "bottom" || holder === "top" ? 128 : 112;
     return { x: a.x + (dx / len) * inset, y: a.y + (dy / len) * inset, angle: a.angle };
-  }, [anchors, dealer, size]);
+  }, [anchors, dealer, deckHolder, size]);
 
   const deckPos = useMemo(() => {
     if (phase !== "dealing" || dealtCount === 0 || dealtCount > dealOrder.length) return deckBase;
@@ -306,12 +308,13 @@ function GameTable() {
     const cardH = isBottom ? CARD_H_BIG : CARD_H_SMALL;
     const a = anchors[d.seat];
     const n = 8;
-    // Wider, more readable fan for the local player
-    const spread = isBottom ? 62 : 26;
+    // Much wider fan for the local player (+40%); tight packet for opponents.
+    const spread = isBottom ? 88 : 14;
     const step = spread / (n - 1);
     const localAngle = -spread / 2 + step * d.indexInHand;
-    // Fan sits close to each seated player.
-    const radius = isBottom ? 100 : 46;
+    // Bottom fan sits low, right in front of the player.
+    // Opponent packets are pulled inward so they sit CENTERED in front of each seat.
+    const radius = isBottom ? 82 : 70;
     const rad = (localAngle * Math.PI) / 180;
     const lx = Math.sin(rad) * radius;
     const ly = -Math.cos(rad) * radius;
@@ -321,7 +324,7 @@ function GameTable() {
     return {
       x: a.x + rx,
       y: a.y + ry,
-      rotate: localAngle + a.angle + (Math.random() < 0.5 ? -1 : 1) * (isBottom ? 0.5 : 2),
+      rotate: localAngle + a.angle + (Math.random() < 0.5 ? -1 : 1) * (isBottom ? 0.5 : 1.5),
       w: cardW,
       h: cardH,
       localAngle,
