@@ -652,8 +652,15 @@ function GameTable() {
               const isThinking = isActive && p !== "bottom";
               const lastBid = [...bids].reverse().find((b) => b.seat === p);
               const isRecent = recentBid?.seat === p;
-              const badgeAnnounce: Bid | null =
+              let badgeAnnounce: Bid | null =
                 phase === "bidding" && lastBid && isRecent ? lastBid : null;
+              let badgeIsTaker = false;
+              if ((phase === "playing" || phase === "scoring") && contract && contract.bidder === p) {
+                badgeAnnounce = contract.isCapot
+                  ? { kind: "capot", seat: p, suit: contract.suit }
+                  : { kind: "bid", seat: p, points: contract.points, suit: contract.suit };
+                badgeIsTaker = true;
+              }
               return (
                 <PlayerBadge
                   key={p}
@@ -664,6 +671,7 @@ function GameTable() {
                   isActive={isActive}
                   isThinking={isThinking}
                   announcement={badgeAnnounce}
+                  announcementIsTaker={badgeIsTaker}
                 />
               );
             })}
