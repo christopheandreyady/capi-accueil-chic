@@ -641,14 +641,9 @@ function GameTable() {
               const isActive = (phase === "bidding" || phase === "playing") && currentTurn === p;
               const isThinking = isActive && p !== "bottom";
               const lastBid = [...bids].reverse().find((b) => b.seat === p);
-              const badgeAnnounce =
-                phase === "bidding" && lastBid
-                  ? lastBid.kind === "pass"
-                    ? "Passe"
-                    : lastBid.kind === "capot"
-                      ? `Capot ${lastBid.suit}`
-                      : `${lastBid.points} ${lastBid.suit}`
-                  : null;
+              const isRecent = recentBid?.seat === p;
+              const badgeAnnounce: Bid | null =
+                phase === "bidding" && lastBid && isRecent ? lastBid : null;
               return (
                 <PlayerBadge
                   key={p}
