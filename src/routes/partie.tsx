@@ -626,7 +626,7 @@ function GameTable() {
         </header>
 
 
-        <div ref={boxRef} className="relative mx-auto my-auto w-full max-w-[400px]">
+        <div ref={boxRef} className="relative mx-auto my-auto w-full max-w-[380px] px-2 py-3">
           <div className="relative mx-auto aspect-square w-full">
             {/* The wooden bistro table is the central UI object. The existing
                 artwork fills this bounded square exactly — no fullscreen
