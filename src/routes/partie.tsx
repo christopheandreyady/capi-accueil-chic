@@ -626,8 +626,12 @@ function GameTable() {
         </header>
 
 
-        <div ref={boxRef} className="relative mx-auto my-auto w-full max-w-[380px] px-2 py-3">
-          <div className="relative mx-auto aspect-square w-full">
+        <div className="relative mx-auto my-auto flex w-full flex-1 items-center justify-center px-2 py-3">
+          <div
+            ref={boxRef}
+            className="relative aspect-square"
+            style={{ width: "min(90vw, calc(100dvh - 260px), 520px)" }}
+          >
             {/* The wooden bistro table is the central UI object. The existing
                 artwork fills this bounded square exactly — no fullscreen
                 wallpaper. Everything else (avatars, decor) sits around it. */}
