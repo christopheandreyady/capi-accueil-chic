@@ -81,9 +81,10 @@ export function BistrotShell({ title, subtitle, backTo, children }: BistrotShell
             alt="CAPI"
             width={1024}
             height={1024}
-            className="h-12 w-12"
-            style={{ filter: "drop-shadow(0 6px 10px oklch(0 0 0 / 70%)) drop-shadow(0 0 12px oklch(0.85 0.15 82 / 40%)) contrast(1.1) saturate(1.1) brightness(1.08)" }}
+            className="h-16 w-16"
+            style={{ filter: "drop-shadow(0 8px 14px oklch(0 0 0 / 75%)) drop-shadow(0 0 16px oklch(0.85 0.15 82 / 55%)) contrast(1.18) saturate(1.18) brightness(1.14)" }}
           />
+
         </header>
 
         {/* Table stage — the wooden bistro table is a bounded, centered UI

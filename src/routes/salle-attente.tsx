@@ -240,7 +240,7 @@ function WaitingRoom() {
 
 
 
-      <div className="relative z-10 mx-auto flex min-h-screen w-full max-w-md flex-col px-5 pt-6 pb-8">
+      <div className="relative z-10 mx-auto flex min-h-screen w-full max-w-3xl flex-col px-2 pt-4 pb-4">
         {/* Header */}
         <header className="flex items-center justify-between">
           <Link
@@ -283,12 +283,13 @@ function WaitingRoom() {
             alt="CAPI"
             width={1024}
             height={1024}
-            className="h-12 w-12"
+            className="h-16 w-16"
             style={{
               filter:
-                "drop-shadow(0 6px 10px oklch(0 0 0 / 70%)) drop-shadow(0 0 12px oklch(0.85 0.15 82 / 40%)) contrast(1.1) saturate(1.1) brightness(1.08)",
+                "drop-shadow(0 8px 14px oklch(0 0 0 / 75%)) drop-shadow(0 0 16px oklch(0.85 0.15 82 / 55%)) contrast(1.18) saturate(1.18) brightness(1.14)",
             }}
           />
+
         </header>
 
         {/* Invite code bar */}
@@ -334,7 +335,7 @@ function WaitingRoom() {
         <section className="relative mx-auto my-auto flex w-full flex-1 items-center justify-center px-1 py-2">
           <div
             className="relative"
-            style={{ width: "min(98vw, calc((100dvh - 180px) * 1.5), 760px)", aspectRatio: "3 / 2" }}
+            style={{ width: "min(100vw, calc((100dvh - 130px) * 1.55), 1020px)", aspectRatio: "3 / 2" }}
           >
             <img
               src={bistrotTable}
@@ -348,7 +349,8 @@ function WaitingRoom() {
             <div className="pointer-events-none absolute inset-[8%] rounded-full" style={{ background:"radial-gradient(45% 38% at 50% 45%, oklch(0.92 0.15 78 / 22%) 0%, oklch(0.85 0.12 72 / 8%) 50%, transparent 78%)" }} />
             <div className="pointer-events-none absolute inset-[8%] rounded-full" style={{ background:"radial-gradient(60% 55% at 50% 55%, transparent 0%, transparent 55%, oklch(0 0 0 / 32%) 100%)" }} />
 
-            {/* CAPI emblem engraved into the felt */}
+            {/* CAPI emblem engraved into the felt — stronger contrast so
+                the mark reads clearly while keeping the embossed feel. */}
             <img
               src={capiEmblem}
               alt=""
@@ -357,13 +359,14 @@ function WaitingRoom() {
               height={512}
               className="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-[5]"
               style={{
-                width: "22%",
+                width: "26%",
                 height: "auto",
-                opacity: 0.28,
+                opacity: 0.44,
                 mixBlendMode: "overlay",
-                filter: "drop-shadow(0 1px 0 oklch(0 0 0 / 55%)) drop-shadow(0 -1px 0 oklch(1 0 0 / 12%))",
+                filter: "drop-shadow(0 1px 0 oklch(0 0 0 / 70%)) drop-shadow(0 -1px 0 oklch(1 0 0 / 18%)) contrast(1.15)",
               }}
             />
+
 
             {/* Ambient decorations resting on the wood — corners only, never
                 obstruct the seats or the empty center of the table. */}

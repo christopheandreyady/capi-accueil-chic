@@ -11,6 +11,8 @@ import { useEffect, type ReactNode } from "react";
 
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
+import { SplashScreen } from "../components/SplashScreen";
+
 
 function NotFoundComponent() {
   return (
@@ -77,15 +79,14 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Lovable App" },
-      { name: "description", content: "Lovable Generated Project" },
-      { name: "author", content: "Lovable" },
-      { property: "og:title", content: "Lovable App" },
-      { property: "og:description", content: "Lovable Generated Project" },
+      { title: "CAPI — La Contrée entre amis" },
+      { name: "description", content: "CAPI, l'application premium de Contrée : jouez entre amis autour d'une véritable table de bistrot." },
+      { property: "og:title", content: "CAPI — La Contrée entre amis" },
+      { property: "og:description", content: "L'application premium de Contrée. Jouez entre amis dans une ambiance bistrot française." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
-      { name: "twitter:site", content: "@Lovable" },
     ],
+
     links: [
       {
         rel: "stylesheet",
@@ -121,6 +122,9 @@ function RootComponent() {
     <QueryClientProvider client={queryClient}>
       {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
       <Outlet />
+      {/* App splash — structural skeleton, mounted once on cold start. */}
+      <SplashScreen />
     </QueryClientProvider>
+
   );
 }
