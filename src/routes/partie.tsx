@@ -1148,12 +1148,12 @@ function ContractChips({ contract, slideTo }: { contract: Contract; slideTo?: Te
       <div className="flex flex-col items-center gap-1.5">
         {b.largeBar > 0 && (
           <div className="animate-scale-in" style={{ animationDelay: "40ms" }}>
-            <ChipBar width={64} height={16} tone="large" />
+            <ChipBar width={72} height={22} tone="large" value={100} />
           </div>
         )}
         {b.smallBar > 0 && (
           <div className="animate-scale-in" style={{ animationDelay: "120ms" }}>
-            <ChipBar width={44} height={12} tone="small" />
+            <ChipBar width={52} height={18} tone="small" value={50} />
           </div>
         )}
         {b.rounds > 0 && (
@@ -1163,19 +1163,6 @@ function ContractChips({ contract, slideTo }: { contract: Contract; slideTo?: Te
                 <RoundChip index={i} />
               </div>
             ))}
-          </div>
-        )}
-        {!slideTo && (
-          <div
-            className="mt-1 rounded-full px-2 py-0.5 text-[10px] font-semibold tracking-wider animate-fade-in"
-            style={{
-              background: "oklch(0.16 0.03 40 / 78%)",
-              color: "oklch(0.94 0.1 85)",
-              border: "1px solid oklch(0.72 0.14 82 / 45%)",
-              backdropFilter: "blur(6px)",
-            }}
-          >
-            {contract.points} <span style={{ color: suitColor }}>{contract.suit}</span>
           </div>
         )}
       </div>
