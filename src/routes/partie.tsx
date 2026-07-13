@@ -476,12 +476,14 @@ function GameTable() {
     const w = size.w || 1;
     const h = size.h || 1;
     // The wooden rim is ~7-8% of the smaller dim. Cards must sit on the
-    // felt (well inside the wood), avatars sit on the rim.
-    const insetV = h * 0.19;
+    // felt (well inside the wood), avatars sit on the rim. Bottom hand
+    // sits lower on the felt so the center emblem stays visible.
+    const insetTop = h * 0.19;
+    const insetBottom = h * 0.11;
     const insetH = w * 0.14;
     return {
-      bottom: { x: w * 0.5, y: h - insetV, angle: 0 },
-      top: { x: w * 0.5, y: insetV, angle: 180 },
+      bottom: { x: w * 0.5, y: h - insetBottom, angle: 0 },
+      top: { x: w * 0.5, y: insetTop, angle: 180 },
       left: { x: insetH, y: h * 0.5, angle: 90 },
       right: { x: w - insetH, y: h * 0.5, angle: -90 },
     } as const;
