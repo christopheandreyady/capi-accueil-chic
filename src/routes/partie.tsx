@@ -362,6 +362,55 @@ function GameTable() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [phase, contract, currentTrick, currentTurn, hands, tricks]);
 
+  // --- Scoring animation: slide chips → winning team, then count up ------
+  useEffect(() => {
+    if (phase !== "scoring" || !roundScore) return;
+    setChipsVisible(true);
+    setChipsSlideTo(null);
+    const winner: Team =
+      roundScore.A > roundScore.B
+        ? "A"
+        : roundScore.B > roundScore.A
+          ? "B"
+          : roundScore.bidTeam;
+    const from = { A: cumulative.A, B: cumulative.B };
+    const to = { A: cumulative.A + roundScore.A, B: cumulative.B + roundScore.B };
+    setDisplayScores(from);
+
+    const t1 = window.setTimeout(() => setChipsSlideTo(winner), 700);
+    let raf = 0;
+    const t2 = window.setTimeout(() => {
+      const start = performance.now();
+      const dur = 1500;
+      const tick = () => {
+        const p = Math.min(1, (performance.now() - start) / dur);
+        const e = 1 - Math.pow(1 - p, 3);
+        setDisplayScores({
+          A: Math.round(from.A + (to.A - from.A) * e),
+          B: Math.round(from.B + (to.B - from.B) * e),
+        });
+        if (p < 1) raf = requestAnimationFrame(tick);
+        else setCumulative(to);
+      };
+      raf = requestAnimationFrame(tick);
+    }, 1900);
+    const t3 = window.setTimeout(() => setChipsVisible(false), 3900);
+    return () => {
+      clearTimeout(t1);
+      clearTimeout(t2);
+      clearTimeout(t3);
+      if (raf) cancelAnimationFrame(raf);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [phase, roundScore]);
+
+  // Keep displayScores synced outside scoring
+  useEffect(() => {
+    if (phase !== "scoring") setDisplayScores(cumulative);
+  }, [cumulative, phase]);
+
+
+
   const playCardBy = (seat: Position, card: Card) => {
     setHands((h) => ({ ...h, [seat]: h[seat].filter((c) => c.id !== card.id) }));
     setCurrentTrick((t) =>
