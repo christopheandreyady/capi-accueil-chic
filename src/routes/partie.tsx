@@ -1325,6 +1325,29 @@ function CapotChip({ suit, suitColor }: { suit: Suit; suitColor: string }) {
   );
 }
 
+function SuitBadge({ suit, size = 20 }: { suit: Suit; size?: number }) {
+  const red = isRedSuit(suit);
+  return (
+    <span
+      className="inline-flex items-center justify-center rounded-md"
+      style={{
+        width: size + 6,
+        height: size + 6,
+        background: "linear-gradient(180deg, oklch(0.99 0.01 90) 0%, oklch(0.92 0.01 85) 100%)",
+        border: "1px solid oklch(0.72 0.02 85)",
+        boxShadow: "0 1px 2px oklch(0 0 0 / 45%), inset 0 1px 0 oklch(1 0 0 / 60%)",
+        color: red ? "#dc2626" : "#0a0a0a",
+        fontSize: size,
+        lineHeight: 1,
+        fontWeight: 700,
+        textShadow: red ? "0 0 1px oklch(0.45 0.2 25 / 30%)" : "none",
+      }}
+    >
+      {suit}
+    </span>
+  );
+}
+
 function TeamStash({ team, stash }: { team: Team; stash: ChipBreakdown[] }) {
   if (stash.length === 0) return null;
   // Position: A near bottom-center (below score badge), B near left-middle (right of score badge).
