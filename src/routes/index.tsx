@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Spade, Trophy, Users, User } from "lucide-react";
 
-type RoutePath = "/salle-attente" | undefined;
+type RoutePath = "/jouer" | undefined;
 import bistrotTable from "@/assets/capi-bistrot-table.jpg";
 import capiEmblem from "@/assets/capi-emblem.png";
 
@@ -40,7 +40,7 @@ const buttons: Btn[] = [
     base: "linear-gradient(160deg, oklch(0.44 0.13 155) 0%, oklch(0.30 0.09 155) 100%)",
     edge: "oklch(0.55 0.14 155 / 60%)",
     glow: "oklch(0.42 0.13 155 / 40%)",
-    to: "/salle-attente",
+    to: "/jouer",
   },
   {
     label: "Tournois",

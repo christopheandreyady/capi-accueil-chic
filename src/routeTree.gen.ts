@@ -9,12 +9,48 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as SoloRouteImport } from './routes/solo'
 import { Route as SalleAttenteRouteImport } from './routes/salle-attente'
+import { Route as RejoindreTableRouteImport } from './routes/rejoindre-table'
+import { Route as JouerRouteImport } from './routes/jouer'
+import { Route as EnLigneRouteImport } from './routes/en-ligne'
+import { Route as CreerTableRouteImport } from './routes/creer-table'
+import { Route as AmisRouteImport } from './routes/amis'
 import { Route as IndexRouteImport } from './routes/index'
 
+const SoloRoute = SoloRouteImport.update({
+  id: '/solo',
+  path: '/solo',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const SalleAttenteRoute = SalleAttenteRouteImport.update({
   id: '/salle-attente',
   path: '/salle-attente',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RejoindreTableRoute = RejoindreTableRouteImport.update({
+  id: '/rejoindre-table',
+  path: '/rejoindre-table',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const JouerRoute = JouerRouteImport.update({
+  id: '/jouer',
+  path: '/jouer',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const EnLigneRoute = EnLigneRouteImport.update({
+  id: '/en-ligne',
+  path: '/en-ligne',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CreerTableRoute = CreerTableRouteImport.update({
+  id: '/creer-table',
+  path: '/creer-table',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AmisRoute = AmisRouteImport.update({
+  id: '/amis',
+  path: '/amis',
   getParentRoute: () => rootRouteImport,
 } as any)
 const IndexRoute = IndexRouteImport.update({
@@ -25,37 +61,128 @@ const IndexRoute = IndexRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/amis': typeof AmisRoute
+  '/creer-table': typeof CreerTableRoute
+  '/en-ligne': typeof EnLigneRoute
+  '/jouer': typeof JouerRoute
+  '/rejoindre-table': typeof RejoindreTableRoute
   '/salle-attente': typeof SalleAttenteRoute
+  '/solo': typeof SoloRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/amis': typeof AmisRoute
+  '/creer-table': typeof CreerTableRoute
+  '/en-ligne': typeof EnLigneRoute
+  '/jouer': typeof JouerRoute
+  '/rejoindre-table': typeof RejoindreTableRoute
   '/salle-attente': typeof SalleAttenteRoute
+  '/solo': typeof SoloRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/amis': typeof AmisRoute
+  '/creer-table': typeof CreerTableRoute
+  '/en-ligne': typeof EnLigneRoute
+  '/jouer': typeof JouerRoute
+  '/rejoindre-table': typeof RejoindreTableRoute
   '/salle-attente': typeof SalleAttenteRoute
+  '/solo': typeof SoloRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/salle-attente'
+  fullPaths:
+    | '/'
+    | '/amis'
+    | '/creer-table'
+    | '/en-ligne'
+    | '/jouer'
+    | '/rejoindre-table'
+    | '/salle-attente'
+    | '/solo'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/salle-attente'
-  id: '__root__' | '/' | '/salle-attente'
+  to:
+    | '/'
+    | '/amis'
+    | '/creer-table'
+    | '/en-ligne'
+    | '/jouer'
+    | '/rejoindre-table'
+    | '/salle-attente'
+    | '/solo'
+  id:
+    | '__root__'
+    | '/'
+    | '/amis'
+    | '/creer-table'
+    | '/en-ligne'
+    | '/jouer'
+    | '/rejoindre-table'
+    | '/salle-attente'
+    | '/solo'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AmisRoute: typeof AmisRoute
+  CreerTableRoute: typeof CreerTableRoute
+  EnLigneRoute: typeof EnLigneRoute
+  JouerRoute: typeof JouerRoute
+  RejoindreTableRoute: typeof RejoindreTableRoute
   SalleAttenteRoute: typeof SalleAttenteRoute
+  SoloRoute: typeof SoloRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/solo': {
+      id: '/solo'
+      path: '/solo'
+      fullPath: '/solo'
+      preLoaderRoute: typeof SoloRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/salle-attente': {
       id: '/salle-attente'
       path: '/salle-attente'
       fullPath: '/salle-attente'
       preLoaderRoute: typeof SalleAttenteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/rejoindre-table': {
+      id: '/rejoindre-table'
+      path: '/rejoindre-table'
+      fullPath: '/rejoindre-table'
+      preLoaderRoute: typeof RejoindreTableRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/jouer': {
+      id: '/jouer'
+      path: '/jouer'
+      fullPath: '/jouer'
+      preLoaderRoute: typeof JouerRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/en-ligne': {
+      id: '/en-ligne'
+      path: '/en-ligne'
+      fullPath: '/en-ligne'
+      preLoaderRoute: typeof EnLigneRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/creer-table': {
+      id: '/creer-table'
+      path: '/creer-table'
+      fullPath: '/creer-table'
+      preLoaderRoute: typeof CreerTableRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/amis': {
+      id: '/amis'
+      path: '/amis'
+      fullPath: '/amis'
+      preLoaderRoute: typeof AmisRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/': {
@@ -70,7 +197,13 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AmisRoute: AmisRoute,
+  CreerTableRoute: CreerTableRoute,
+  EnLigneRoute: EnLigneRoute,
+  JouerRoute: JouerRoute,
+  RejoindreTableRoute: RejoindreTableRoute,
   SalleAttenteRoute: SalleAttenteRoute,
+  SoloRoute: SoloRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

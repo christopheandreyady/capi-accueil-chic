@@ -106,7 +106,7 @@ function WaitingRoom() {
         {/* Header */}
         <header className="flex items-center justify-between">
           <Link
-            to="/"
+            to="/amis"
             className="flex h-10 w-10 items-center justify-center rounded-full border transition active:scale-95"
             style={{
               background: "oklch(0.2 0.03 40 / 60%)",
