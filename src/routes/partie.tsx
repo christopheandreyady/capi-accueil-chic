@@ -430,8 +430,10 @@ function GameTable() {
       raf = requestAnimationFrame(tick);
     }, 1900);
     const t3 = window.setTimeout(() => {
-      if (contract) {
-        setStashes((s) => ({ ...s, [winner]: [...s[winner], contractChipBreakdown(contract)] }));
+      const winnerPts = winner === "A" ? roundScore.A : roundScore.B;
+      const rounded = Math.round(winnerPts / 10) * 10;
+      if (rounded > 0) {
+        setStashes((s) => ({ ...s, [winner]: [...s[winner], breakdownFromScore(rounded)] }));
       }
       setChipsVisible(false);
     }, 3900);
