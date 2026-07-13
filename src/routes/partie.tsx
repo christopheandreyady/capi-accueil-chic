@@ -676,10 +676,6 @@ function GameTable() {
               </div>
             )}
 
-            {/* Team score zones anchored to the table */}
-            <TableScoreBadge team="A" label="Nous" value={displayScores.A} pulse={chipsSlideTo === "A"} />
-            <TableScoreBadge team="B" label="Eux" value={displayScores.B} pulse={chipsSlideTo === "B"} />
-
             <TeamStash team="A" stash={stashes.A} />
             <TeamStash team="B" stash={stashes.B} />
 
