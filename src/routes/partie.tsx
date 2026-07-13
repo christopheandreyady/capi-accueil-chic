@@ -228,16 +228,12 @@ function GameTable() {
   const [chipsSlideTo, setChipsSlideTo] = useState<Team | null>(null);
   const [chipsVisible, setChipsVisible] = useState(true);
   const [stashes, setStashes] = useState<{ A: ChipBreakdown[]; B: ChipBreakdown[] }>({ A: [], B: [] });
-  const [recentBid, setRecentBid] = useState<{ seat: Position; bid: Bid } | null>(null);
-  useEffect(() => {
-    if (bids.length === 0) { setRecentBid(null); return; }
-    const b = bids[bids.length - 1];
-    setRecentBid({ seat: b.seat, bid: b });
-    const id = window.setTimeout(() => {
-      setRecentBid((cur) => (cur && cur.bid === b ? null : cur));
-    }, 2000);
-    return () => window.clearTimeout(id);
-  }, [bids]);
+  // Last announcement stays visible above its author until a newer one arrives
+  // or the bidding phase ends.
+  const lastBidRef = bids.length > 0 ? bids[bids.length - 1] : null;
+  const recentBid = phase === "bidding" && lastBidRef
+    ? { seat: lastBidRef.seat, bid: lastBidRef }
+    : null;
 
   const cutter = prevSeat(dealer);
 
