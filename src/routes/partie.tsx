@@ -228,6 +228,16 @@ function GameTable() {
   const [chipsSlideTo, setChipsSlideTo] = useState<Team | null>(null);
   const [chipsVisible, setChipsVisible] = useState(true);
   const [stashes, setStashes] = useState<{ A: ChipBreakdown[]; B: ChipBreakdown[] }>({ A: [], B: [] });
+  const [recentBid, setRecentBid] = useState<{ seat: Position; bid: Bid } | null>(null);
+  useEffect(() => {
+    if (bids.length === 0) { setRecentBid(null); return; }
+    const b = bids[bids.length - 1];
+    setRecentBid({ seat: b.seat, bid: b });
+    const id = window.setTimeout(() => {
+      setRecentBid((cur) => (cur && cur.bid === b ? null : cur));
+    }, 2800);
+    return () => window.clearTimeout(id);
+  }, [bids]);
 
   const cutter = prevSeat(dealer);
 
@@ -631,14 +641,9 @@ function GameTable() {
               const isActive = (phase === "bidding" || phase === "playing") && currentTurn === p;
               const isThinking = isActive && p !== "bottom";
               const lastBid = [...bids].reverse().find((b) => b.seat === p);
-              const badgeAnnounce =
-                phase === "bidding" && lastBid
-                  ? lastBid.kind === "pass"
-                    ? "Passe"
-                    : lastBid.kind === "capot"
-                      ? `Capot ${lastBid.suit}`
-                      : `${lastBid.points} ${lastBid.suit}`
-                  : null;
+              const isRecent = recentBid?.seat === p;
+              const badgeAnnounce: Bid | null =
+                phase === "bidding" && lastBid && isRecent ? lastBid : null;
               return (
                 <PlayerBadge
                   key={p}
@@ -808,12 +813,16 @@ function trickTarget(
   // Perpendicular unit vector.
   const px = -ny;
   const py = nx;
-  const radialOffset = 62 + orderIndex * 3;
-  const tangentOffset = seatJitter(seat, 0, 1) * 10 + (orderIndex - 1.5) * 4;
+  // Cards gather at the center of the table and slightly overlap each other,
+  // like a real trick pile. Each new card is pushed a touch further from its
+  // player so play order stays readable, but they stay close enough to
+  // consistently overlap.
+  const radialOffset = 26 + orderIndex * 3;
+  const tangentOffset = seatJitter(seat, 0, 1) * 5 + (orderIndex - 1.5) * 2.5;
   return {
     x: cx + nx * radialOffset + px * tangentOffset,
     y: cy + ny * radialOffset + py * tangentOffset,
-    rotate: a.angle + seatJitter(seat, 0, 2) * 12 + (orderIndex % 2 === 0 ? -3 : 3),
+    rotate: a.angle + seatJitter(seat, 0, 2) * 8 + (orderIndex % 2 === 0 ? -2 : 2),
   };
 }
 
@@ -1062,7 +1071,7 @@ function PlayerBadge({
   position, info, isDealer, isLocal, isActive, isThinking, announcement,
 }: {
   position: Position; info: PlayerInfo; isDealer: boolean; isLocal: boolean;
-  isActive?: boolean; isThinking?: boolean; announcement?: string | null;
+  isActive?: boolean; isThinking?: boolean; announcement?: Bid | null;
 }) {
   const style: React.CSSProperties =
     position === "bottom" ? { left:"50%", bottom:0, transform:"translate(-50%, 55%)" }
@@ -1098,14 +1107,7 @@ function PlayerBadge({
           </div>
         )}
         {announcement && (
-          <div className="absolute left-1/2 -translate-x-1/2 whitespace-nowrap rounded-md border px-1.5 py-0.5 text-[10px]" style={{
-            top: position === "top" ? undefined : "auto",
-            bottom: position === "top" ? "-20px" : undefined,
-            marginTop: position !== "top" ? -22 : undefined,
-            background:"oklch(0.16 0.03 40 / 92%)", borderColor:"oklch(0.82 0.14 82 / 40%)", color:"oklch(0.94 0.1 85)",
-          }}>
-            {announcement}
-          </div>
+          <AnnouncementBubble bid={announcement} position={position} />
         )}
       </div>
       <div className="flex flex-col items-center leading-tight">
@@ -1115,6 +1117,46 @@ function PlayerBadge({
     </div>
   );
 }
+
+function AnnouncementBubble({ bid, position }: { bid: Bid; position: Position }) {
+  const isPass = bid.kind === "pass";
+  const suit = bid.kind === "pass" ? null : bid.suit;
+  const label =
+    bid.kind === "pass" ? "Passe"
+    : bid.kind === "capot" ? "Capot"
+    : String(bid.points);
+  const placement: React.CSSProperties =
+    position === "top" ? { top: "calc(100% + 8px)", left: "50%", transform: "translateX(-50%)" }
+    : position === "bottom" ? { bottom: "calc(100% + 8px)", left: "50%", transform: "translateX(-50%)" }
+    : position === "left" ? { top: "50%", left: "calc(100% + 10px)", transform: "translateY(-50%)" }
+    : { top: "50%", right: "calc(100% + 10px)", transform: "translateY(-50%)" };
+  return (
+    <div
+      className="absolute whitespace-nowrap animate-scale-in"
+      style={{
+        ...placement,
+        zIndex: 40,
+        padding: "6px 12px",
+        borderRadius: 10,
+        background: isPass
+          ? "linear-gradient(180deg, oklch(0.22 0.03 40 / 96%) 0%, oklch(0.15 0.03 40 / 96%) 100%)"
+          : "linear-gradient(180deg, oklch(0.98 0.02 88) 0%, oklch(0.88 0.03 82) 100%)",
+        border: isPass
+          ? "1px solid oklch(0.82 0.14 82 / 55%)"
+          : "1.5px solid oklch(0.65 0.16 72)",
+        boxShadow:
+          "0 10px 22px -6px oklch(0 0 0 / 75%), 0 2px 0 oklch(1 0 0 / 25%) inset, 0 0 0 1px oklch(0 0 0 / 40%)",
+        color: isPass ? "oklch(0.94 0.1 85)" : "oklch(0.2 0.05 40)",
+      }}
+    >
+      <span className="inline-flex items-center gap-1.5 font-serif font-bold" style={{ fontSize: 18, lineHeight: 1, letterSpacing: "0.02em" }}>
+        <span>{label}</span>
+        {suit && <SuitBadge suit={suit} size={16} />}
+      </span>
+    </div>
+  );
+}
+
 
 function IntegratedSuit({ symbol, color, style }: { symbol: string; color: "black" | "red"; style?: React.CSSProperties }) {
   const isRed = color === "red";
@@ -1203,18 +1245,18 @@ function ContractChips({ contract, slideTo }: { contract: Contract; slideTo?: Te
       <div className="flex flex-col items-center gap-1.5">
         {b.largeBar > 0 && (
           <div className="animate-scale-in" style={{ animationDelay: "40ms" }}>
-            <ChipBar width={72} height={17} tone="large" value={100} tilt={-5} />
+            <ChipBar width={61} height={15} tone="large" value={100} tilt={-7} />
           </div>
         )}
         {b.smallBar > 0 && (
           <div className="animate-scale-in" style={{ animationDelay: "120ms" }}>
-            <ChipBar width={52} height={14} tone="small" value={50} tilt={4} />
+            <ChipBar width={44} height={12} tone="small" value={50} tilt={6} />
           </div>
         )}
         {b.rounds > 0 && (
           <div className="flex items-center gap-1">
             {Array.from({ length: b.rounds }).map((_, i) => (
-              <div key={i} className="animate-scale-in" style={{ animationDelay: `${180 + i * 70}ms` }}>
+              <div key={i} className="animate-scale-in" style={{ animationDelay: `${180 + i * 70}ms`, transform: `rotate(${((i * 37) % 11) - 5}deg)` }}>
                 <RoundChip index={i} />
               </div>
             ))}
@@ -1302,7 +1344,7 @@ function RoundChip({ index }: { index: number }) {
     <div
       className="relative"
       style={{
-        width: 18, height: 18, borderRadius: "50%",
+        width: 15, height: 15, borderRadius: "50%",
         background: bg,
         border: "1.5px solid oklch(0.85 0.14 82 / 75%)",
         boxShadow: "0 3px 6px -2px oklch(0 0 0 / 55%), 0 1px 0 oklch(1 0 0 / 30%) inset",
@@ -1396,10 +1438,10 @@ function TeamStash({ team, stash }: { team: Team; stash: ChipBreakdown[] }) {
           >
             {b.capot && <CapotChip suit={"♠"} suitColor="oklch(0.94 0.14 82)" />}
             {!b.capot && b.largeBar > 0 && (
-              <ChipBar width={58} height={14} tone="large" value={100} tilt={-3} />
+              <ChipBar width={49} height={12} tone="large" value={100} tilt={-5} />
             )}
             {!b.capot && b.smallBar > 0 && (
-              <ChipBar width={42} height={12} tone="small" value={50} tilt={3} />
+              <ChipBar width={36} height={10} tone="small" value={50} tilt={6} />
             )}
             {!b.capot && b.rounds > 0 && (
               <div className="flex items-center gap-[2px]">
