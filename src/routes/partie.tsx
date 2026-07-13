@@ -583,6 +583,11 @@ function GameTable() {
               </div>
             )}
 
+            {/* Contract chips at center of table */}
+            {(phase === "bidding" || phase === "playing" || phase === "scoring") && currentContract(bids) && (
+              <ContractChips contract={currentContract(bids)!} />
+            )}
+
             {phase === "shuffling" && size.w > 0 && <ShuffleAnimation deckPos={deckBase} />}
 
             {phase === "shuffle" && size.w > 0 && (
@@ -1051,6 +1056,158 @@ function CardBack() {
     <div className="relative h-full w-full overflow-hidden" style={{ borderRadius:6, background:"linear-gradient(160deg, oklch(0.28 0.09 25) 0%, oklch(0.18 0.06 25) 100%)", border:"1px solid oklch(0.55 0.14 78 / 60%)", boxShadow:"0 5px 10px -3px oklch(0 0 0 / 65%), 0 1px 0 oklch(1 0 0 / 15%) inset" }}>
       <div className="absolute inset-1 rounded-[4px]" style={{ border:"1px solid oklch(0.72 0.14 82 / 55%)", backgroundImage:"repeating-linear-gradient(45deg, oklch(0.72 0.14 82 / 18%) 0 2px, transparent 2px 6px), repeating-linear-gradient(-45deg, oklch(0.72 0.14 82 / 12%) 0 2px, transparent 2px 6px)" }} />
       <div className="absolute inset-0 flex items-center justify-center font-serif text-[12px] font-bold tracking-widest" style={{ color:"oklch(0.85 0.14 82)", textShadow:"0 1px 0 oklch(0 0 0 / 60%)" }}>CAPI</div>
+    </div>
+  );
+}
+
+// --- Contract chips visualization ------------------------------------------
+type ChipBreakdown = { largeBar: number; smallBar: number; rounds: number; capot: boolean };
+
+function contractChipBreakdown(contract: Contract): ChipBreakdown {
+  if (contract.isCapot) return { largeBar: 0, smallBar: 0, rounds: 0, capot: true };
+  const p = contract.points;
+  const largeBar = p >= 100 ? 1 : 0;
+  const smallBar = p === 150 || p === 160 ? 1 : 0;
+  let rounds = 0;
+  if (p < 100) rounds = (p - 70) / 10; // 80->1, 90->2
+  else if (p <= 140) rounds = (p - 100) / 10; // 100->0..140->4
+  else rounds = p - 150; // 150->0, 160->1
+  return { largeBar, smallBar, rounds, capot: false };
+}
+
+function ContractChips({ contract }: { contract: Contract }) {
+  const b = contractChipBreakdown(contract);
+  const suitColor = isRedSuit(contract.suit) ? "oklch(0.72 0.2 25)" : "oklch(0.18 0.02 40)";
+
+  if (b.capot) {
+    return (
+      <div className="pointer-events-none absolute left-1/2 top-1/2 z-30 -translate-x-1/2 -translate-y-1/2 animate-scale-in">
+        <CapotChip suit={contract.suit} suitColor={suitColor} />
+      </div>
+    );
+  }
+
+  return (
+    <div className="pointer-events-none absolute left-1/2 top-1/2 z-30 -translate-x-1/2 -translate-y-1/2">
+      <div className="flex flex-col items-center gap-1.5">
+        {/* Large bar */}
+        {b.largeBar > 0 && (
+          <div className="animate-scale-in" style={{ animationDelay: "40ms" }}>
+            <ChipBar width={64} height={16} tone="large" />
+          </div>
+        )}
+        {/* Small bar */}
+        {b.smallBar > 0 && (
+          <div className="animate-scale-in" style={{ animationDelay: "120ms" }}>
+            <ChipBar width={44} height={12} tone="small" />
+          </div>
+        )}
+        {/* Round chips */}
+        {b.rounds > 0 && (
+          <div className="flex items-center gap-1">
+            {Array.from({ length: b.rounds }).map((_, i) => (
+              <div key={i} className="animate-scale-in" style={{ animationDelay: `${180 + i * 70}ms` }}>
+                <RoundChip index={i} />
+              </div>
+            ))}
+          </div>
+        )}
+        {/* Contract label */}
+        <div
+          className="mt-1 rounded-full px-2 py-0.5 text-[10px] font-semibold tracking-wider animate-fade-in"
+          style={{
+            background: "oklch(0.16 0.03 40 / 78%)",
+            color: "oklch(0.94 0.1 85)",
+            border: "1px solid oklch(0.72 0.14 82 / 45%)",
+            backdropFilter: "blur(6px)",
+          }}
+        >
+          {contract.points} <span style={{ color: suitColor }}>{contract.suit}</span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function ChipBar({ width, height, tone }: { width: number; height: number; tone: "large" | "small" }) {
+  const bg = tone === "large"
+    ? "linear-gradient(180deg, oklch(0.55 0.18 28) 0%, oklch(0.42 0.16 28) 55%, oklch(0.32 0.13 28) 100%)"
+    : "linear-gradient(180deg, oklch(0.72 0.16 240) 0%, oklch(0.55 0.15 240) 55%, oklch(0.4 0.13 240) 100%)";
+  return (
+    <div
+      className="relative"
+      style={{
+        width, height,
+        borderRadius: height / 2,
+        background: bg,
+        border: "1px solid oklch(0.85 0.14 82 / 65%)",
+        boxShadow: "0 4px 8px -3px oklch(0 0 0 / 55%), 0 1px 0 oklch(1 0 0 / 25%) inset, 0 -1px 0 oklch(0 0 0 / 35%) inset",
+      }}
+    >
+      <div
+        className="absolute inset-y-0.5 left-1 right-1 rounded-full"
+        style={{
+          borderTop: "1px dashed oklch(0.9 0.14 82 / 55%)",
+          borderBottom: "1px dashed oklch(0.9 0.14 82 / 40%)",
+        }}
+      />
+    </div>
+  );
+}
+
+function RoundChip({ index }: { index: number }) {
+  const palette = [
+    "linear-gradient(180deg, oklch(0.94 0.02 90) 0%, oklch(0.78 0.02 90) 100%)",
+    "linear-gradient(180deg, oklch(0.55 0.18 28) 0%, oklch(0.35 0.14 28) 100%)",
+    "linear-gradient(180deg, oklch(0.32 0.09 250) 0%, oklch(0.22 0.08 250) 100%)",
+    "linear-gradient(180deg, oklch(0.45 0.16 150) 0%, oklch(0.3 0.12 150) 100%)",
+  ];
+  const bg = palette[index % palette.length];
+  return (
+    <div
+      className="relative"
+      style={{
+        width: 18, height: 18, borderRadius: "50%",
+        background: bg,
+        border: "1.5px solid oklch(0.85 0.14 82 / 75%)",
+        boxShadow: "0 3px 6px -2px oklch(0 0 0 / 55%), 0 1px 0 oklch(1 0 0 / 30%) inset",
+      }}
+    >
+      <div className="absolute inset-1 rounded-full" style={{ border: "1px dashed oklch(0.9 0.14 82 / 55%)" }} />
+    </div>
+  );
+}
+
+function CapotChip({ suit, suitColor }: { suit: Suit; suitColor: string }) {
+  return (
+    <div
+      className="relative flex items-center justify-center"
+      style={{
+        width: 76, height: 76, borderRadius: "50%",
+        background: "radial-gradient(circle at 35% 30%, oklch(0.55 0.2 25) 0%, oklch(0.35 0.17 25) 55%, oklch(0.22 0.13 25) 100%)",
+        border: "2px solid oklch(0.82 0.16 82)",
+        boxShadow: "0 8px 18px -5px oklch(0 0 0 / 70%), 0 2px 0 oklch(1 0 0 / 25%) inset, 0 -2px 0 oklch(0 0 0 / 45%) inset, 0 0 0 1px oklch(0.55 0.14 78 / 60%)",
+      }}
+    >
+      <div
+        className="absolute inset-1.5 rounded-full"
+        style={{ border: "1.5px dashed oklch(0.88 0.15 82 / 70%)" }}
+      />
+      <div className="flex flex-col items-center leading-none">
+        <span
+          className="font-serif text-[16px] font-bold"
+          style={{ color: "oklch(0.94 0.14 82)", textShadow: "0 1px 0 oklch(0 0 0 / 60%)" }}
+        >
+          CAPI
+        </span>
+        <span
+          className="mt-0.5 text-[8px] font-bold tracking-[0.18em]"
+          style={{ color: "oklch(0.94 0.14 82)" }}
+        >
+          CAPOT
+        </span>
+        <span className="mt-0.5 text-[11px]" style={{ color: suitColor }}>{suit}</span>
+      </div>
     </div>
   );
 }
