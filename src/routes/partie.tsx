@@ -68,14 +68,15 @@ const PLAYERS: Record<Position, PlayerInfo> = {
   right: { name: "Bot Alex", level: 12, photo: "https://i.pravatar.cc/200?img=15" },
 };
 
-// Card sizes — reduced ~30% so the felt stays visible and the table reads
-// as the hero of the screen.
-const CARD_W_BIG = 76;
-const CARD_H_BIG = 112;
-const CARD_W_SMALL = 36;
-const CARD_H_SMALL = 54;
-const CARD_W_TRICK = 54;
-const CARD_H_TRICK = 80;
+// Card sizes — reduced ~20% so the felt / center emblem stay visible.
+const CARD_W_BIG = 62;
+const CARD_H_BIG = 92;
+const CARD_W_SMALL = 32;
+const CARD_H_SMALL = 48;
+const CARD_W_TRICK = 46;
+const CARD_H_TRICK = 68;
+const CARD_W_DECK = 42;
+const CARD_H_DECK = 60;
 
 const FLIGHT_MS = 460;
 const CUT_MS = 2900;
