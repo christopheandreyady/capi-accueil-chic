@@ -1186,10 +1186,10 @@ function PlayerBadge({
   // just inside the table edge so no avatar can visually leave the play
   // zone, and every seat scales automatically with the table.
   const style: React.CSSProperties =
-    position === "bottom" ? { left:"50%", bottom:"3%", transform:"translate(-50%, 0)" }
-    : position === "top" ? { left:"50%", top:"3%", transform:"translate(-50%, 0)" }
-    : position === "left" ? { left:"3%", top:"50%", transform:"translate(0, -50%)" }
-    : { right:"3%", top:"50%", transform:"translate(0, -50%)" };
+    position === "bottom" ? { left:"50%", bottom:"6%", transform:"translate(-50%, 0)" }
+    : position === "top" ? { left:"50%", top:"6%", transform:"translate(-50%, 0)" }
+    : position === "left" ? { left:"6%", top:"50%", transform:"translate(0, -50%)" }
+    : { right:"6%", top:"50%", transform:"translate(0, -50%)" };
 
 
 
