@@ -352,29 +352,30 @@ function WaitingRoom() {
                 obstruct the seats or the empty center of the table. */}
             <AmbientDecor />
 
-            {/* Seats — positioned around the OUTSIDE of the wooden border,
-                following the rounded shape of the table. */}
+            {/* Seats — anchored to the TABLE container (percentages), sitting
+                on the wooden rim just inside the table edge so every avatar
+                stays in the play zone and scales with the table. */}
             <SeatSlot
               seat={seats.find((s) => s.position === "top")!}
-              style={{ left: "50%", top: "-100px", transform: "translate(-50%, 0)" }}
+              style={{ left: "50%", top: "3%", transform: "translate(-50%, 0)" }}
               delay={80}
               onInvite={() => setInviteOpen(true)}
             />
             <SeatSlot
               seat={seats.find((s) => s.position === "left")!}
-              style={{ left: "-86px", top: "38%", transform: "translate(0, -50%)" }}
+              style={{ left: "3%", top: "50%", transform: "translate(0, -50%)" }}
               delay={180}
               onInvite={() => setInviteOpen(true)}
             />
             <SeatSlot
               seat={seats.find((s) => s.position === "right")!}
-              style={{ right: "-86px", top: "38%", transform: "translate(0, -50%)" }}
+              style={{ right: "3%", top: "50%", transform: "translate(0, -50%)" }}
               delay={260}
               onInvite={() => setInviteOpen(true)}
             />
             <SeatSlot
               seat={seats.find((s) => s.position === "bottom")!}
-              style={{ left: "50%", bottom: "-118px", transform: "translate(-50%, 0)" }}
+              style={{ left: "50%", bottom: "3%", transform: "translate(-50%, 0)" }}
               isLocal
               delay={0}
               onInvite={() => setInviteOpen(true)}
