@@ -1347,6 +1347,32 @@ function CardBack() {
           }}
         />
       </div>
+      {/* Wordmark integrated into the design — top and bottom, mirrored so
+          the back reads the same rotated 180°. */}
+      <span
+        className="pointer-events-none absolute left-1/2 -translate-x-1/2 font-serif font-semibold select-none"
+        style={{
+          top: 3,
+          fontSize: 6,
+          letterSpacing: "0.32em",
+          color: "oklch(0.85 0.14 82 / 78%)",
+          textShadow: "0 1px 0 oklch(0 0 0 / 65%)",
+        }}
+      >
+        CAPI
+      </span>
+      <span
+        className="pointer-events-none absolute left-1/2 -translate-x-1/2 rotate-180 font-serif font-semibold select-none"
+        style={{
+          bottom: 3,
+          fontSize: 6,
+          letterSpacing: "0.32em",
+          color: "oklch(0.85 0.14 82 / 78%)",
+          textShadow: "0 1px 0 oklch(0 0 0 / 65%)",
+        }}
+      >
+        CAPI
+      </span>
     </div>
   );
 }
