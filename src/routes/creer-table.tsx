@@ -140,12 +140,12 @@ function CreateTable() {
               onChange={(v) => update("announcements", v)}
             />
             <SwitchRow
-              label="Coinche"
+              label="Contrer"
               value={cfg.coinche}
               onChange={(v) => update("coinche", v)}
             />
             <SwitchRow
-              label="Surcoinche"
+              label="Surcontrer"
               value={cfg.surcoinche}
               onChange={(v) => update("surcoinche", v)}
               disabled={!cfg.coinche}
