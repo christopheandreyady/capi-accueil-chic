@@ -220,6 +220,7 @@ function WaitingRoom() {
         width={1024}
         height={1536}
         className="pointer-events-none absolute inset-0 h-full w-full object-cover"
+        style={{ transform: "scale(0.9)", transformOrigin: "50% 46%" }}
       />
       {/* Same lighting stack as /partie: warm bistro key light + vignette. */}
       <div className="pointer-events-none absolute inset-0" style={{ background:"radial-gradient(70% 42% at 50% -4%, oklch(0.9 0.16 78 / 44%) 0%, oklch(0.78 0.14 68 / 22%) 30%, transparent 62%)" }} />
