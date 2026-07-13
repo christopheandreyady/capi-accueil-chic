@@ -463,10 +463,9 @@ function WaitingRoom() {
           </div>
         </section>
 
-        {/* Bottom actions — always above the table; lobby chrome hidden once 4 players are seated */}
+        {/* Bottom actions — a single "Je suis prêt" button; everything disappears when the table is fully ready */}
         <div className="relative z-30 mt-10 flex flex-col gap-3">
           {playersCount < total && (
-
             <button
               type="button"
               onClick={() => setInviteOpen(true)}
@@ -484,107 +483,76 @@ function WaitingRoom() {
             </button>
           )}
 
-          <button
-            type="button"
-            disabled={!roomFull}
-            onClick={() => {
-              if (!roomFull) return;
-              if (allReady) navigate({ to: "/partie" });
-              else toggleReady("bottom");
-            }}
-            className="group relative flex w-full items-center justify-center gap-3 overflow-hidden px-6 py-4 transition-all duration-200 ease-out active:scale-[0.985] disabled:cursor-not-allowed disabled:active:scale-100"
-            style={{
-              borderRadius: "1.15rem",
-              background: allReady
-                ? "linear-gradient(168deg, oklch(0.42 0.12 152) 0%, oklch(0.30 0.10 152) 48%, oklch(0.20 0.07 150) 100%)"
-                : roomFull
-                  ? localReady
-                    ? "linear-gradient(168deg, oklch(0.30 0.06 42) 0%, oklch(0.20 0.04 40) 100%)"
-                    : "linear-gradient(168deg, oklch(0.40 0.11 82) 0%, oklch(0.28 0.09 78) 100%)"
+          {!allReady && !localReady && (
+            <button
+              type="button"
+              disabled={!roomFull}
+              onClick={() => roomFull && toggleReady("bottom")}
+              className="group relative flex w-full items-center justify-center gap-3 overflow-hidden px-6 py-4 transition-all duration-200 ease-out active:scale-[0.985] disabled:cursor-not-allowed disabled:active:scale-100 animate-fade-in"
+              style={{
+                borderRadius: "1.15rem",
+                background: roomFull
+                  ? "linear-gradient(168deg, oklch(0.42 0.12 152) 0%, oklch(0.30 0.10 152) 48%, oklch(0.20 0.07 150) 100%)"
                   : "linear-gradient(168deg, oklch(0.24 0.03 42) 0%, oklch(0.16 0.02 40) 100%)",
-              border: `1px solid ${allReady || roomFull ? "oklch(0.82 0.14 82 / 65%)" : "oklch(0.35 0.02 40 / 45%)"}`,
-              boxShadow: allReady
-                ? "0 18px 32px -14px oklch(0 0 0 / 80%), 0 8px 16px -6px oklch(0.32 0.10 152 / 55%), inset 0 1px 0 oklch(1 0 0 / 18%), inset 0 -10px 18px oklch(0 0 0 / 45%), inset 0 0 0 1px oklch(0.82 0.14 82 / 22%)"
-                : "0 12px 24px -12px oklch(0 0 0 / 72%), inset 0 1px 0 oklch(1 0 0 / 12%), inset 0 -8px 14px oklch(0 0 0 / 40%)",
-              opacity: roomFull ? 1 : 0.75,
-              animation: allReady ? "capi-glow 3s ease-in-out infinite" : undefined,
-            }}
-          >
-            {/* Leather grain texture */}
-            <span
-              className="pointer-events-none absolute inset-0 opacity-25 mix-blend-overlay"
-              style={{
-                backgroundImage:
-                  "radial-gradient(oklch(1 0 0 / 8%) 0.5px, transparent 0.5px), radial-gradient(oklch(0 0 0 / 12%) 0.5px, transparent 0.5px)",
-                backgroundSize: "3px 3px, 4px 4px",
-                backgroundPosition: "0 0, 1px 2px",
+                border: `1px solid ${roomFull ? "oklch(0.82 0.14 82 / 65%)" : "oklch(0.35 0.02 40 / 45%)"}`,
+                boxShadow: roomFull
+                  ? "0 18px 32px -14px oklch(0 0 0 / 80%), 0 8px 16px -6px oklch(0.32 0.10 152 / 55%), inset 0 1px 0 oklch(1 0 0 / 18%), inset 0 -10px 18px oklch(0 0 0 / 45%), inset 0 0 0 1px oklch(0.82 0.14 82 / 22%)"
+                  : "0 12px 24px -12px oklch(0 0 0 / 72%), inset 0 1px 0 oklch(1 0 0 / 12%), inset 0 -8px 14px oklch(0 0 0 / 40%)",
+                opacity: roomFull ? 1 : 0.75,
               }}
-            />
-            {/* Top satin highlight */}
-            <span
-              className="pointer-events-none absolute inset-x-0 top-0 h-1/2 opacity-70"
-              style={{
-                background:
-                  "linear-gradient(180deg, oklch(1 0 0 / 18%) 0%, oklch(1 0 0 / 3%) 60%, transparent 100%)",
-              }}
-            />
-            {/* Inner gold hairline frame */}
-            {(allReady || roomFull) && (
+            >
               <span
-                className="pointer-events-none absolute inset-[3px] rounded-[0.95rem]"
-                style={{ border: "1px solid oklch(0.82 0.14 82 / 28%)" }}
+                className="pointer-events-none absolute inset-0 opacity-25 mix-blend-overlay"
+                style={{
+                  backgroundImage:
+                    "radial-gradient(oklch(1 0 0 / 8%) 0.5px, transparent 0.5px), radial-gradient(oklch(0 0 0 / 12%) 0.5px, transparent 0.5px)",
+                  backgroundSize: "3px 3px, 4px 4px",
+                  backgroundPosition: "0 0, 1px 2px",
+                }}
               />
-            )}
-            {allReady && (
               <span
-                className="pointer-events-none absolute inset-y-0 -left-1/3 w-1/3 skew-x-[-20deg]"
+                className="pointer-events-none absolute inset-x-0 top-0 h-1/2 opacity-70"
                 style={{
                   background:
-                    "linear-gradient(90deg, transparent, oklch(1 0 0 / 22%), transparent)",
-                  animation: "capi-sheen 3.4s ease-in-out infinite",
+                    "linear-gradient(180deg, oklch(1 0 0 / 18%) 0%, oklch(1 0 0 / 3%) 60%, transparent 100%)",
                 }}
               />
-            )}
-            {allReady ? (
-              <Play
-                className="relative h-4 w-4"
-                style={{
-                  color: "oklch(0.94 0.11 88)",
-                  filter:
-                    "drop-shadow(0 1px 2px oklch(0 0 0 / 60%)) drop-shadow(0 0 6px oklch(0.82 0.14 82 / 45%))",
-                }}
-                strokeWidth={2.2}
-                fill="currentColor"
-              />
-            ) : roomFull ? (
+              {roomFull && (
+                <span
+                  className="pointer-events-none absolute inset-[3px] rounded-[0.95rem]"
+                  style={{ border: "1px solid oklch(0.82 0.14 82 / 28%)" }}
+                />
+              )}
               <Check
                 className="relative h-4 w-4"
                 style={{ color: "oklch(0.94 0.11 88)" }}
                 strokeWidth={2.6}
               />
-            ) : null}
-            <span
-              className="relative font-serif text-base font-semibold tracking-wide"
-              style={{
-                background:
-                  allReady || roomFull
+              <span
+                className="relative font-serif text-base font-semibold tracking-wide"
+                style={{
+                  background: roomFull
                     ? "linear-gradient(180deg, oklch(0.98 0.10 88), oklch(0.72 0.14 78))"
                     : "linear-gradient(180deg, oklch(0.62 0.03 80), oklch(0.48 0.03 80))",
-                WebkitBackgroundClip: "text",
-                backgroundClip: "text",
-                color: "transparent",
-                textShadow: "0 1px 0 oklch(0 0 0 / 45%)",
-              }}
+                  WebkitBackgroundClip: "text",
+                  backgroundClip: "text",
+                  color: "transparent",
+                  textShadow: "0 1px 0 oklch(0 0 0 / 45%)",
+                }}
+              >
+                {roomFull ? "Je suis prêt" : "Salle incomplète"}
+              </span>
+            </button>
+          )}
+
+          {allReady && (
+            <p
+              className="text-center font-serif text-sm tracking-[0.25em] uppercase animate-fade-in"
+              style={{ color: "oklch(0.92 0.11 85)", textShadow: "0 1px 0 oklch(0 0 0 / 50%)" }}
             >
-              {allReady
-                ? "Commencer la partie"
-                : roomFull
-                  ? localReady
-                    ? "Annuler"
-                    : "Je suis prêt"
-                  : "Salle incomplète"}
-            </span>
-          </button>
+              La partie commence…
+            </p>
+          )}
 
           {playersCount < total && (
             <p
@@ -594,8 +562,8 @@ function WaitingRoom() {
               {`${total - playersCount} place${total - playersCount > 1 ? "s" : ""} libre${total - playersCount > 1 ? "s" : ""}`}
             </p>
           )}
-
         </div>
+
 
       </div>
 
