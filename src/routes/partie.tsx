@@ -585,18 +585,31 @@ function GameTable() {
         @keyframes capi-think-dots { 0%,20%{opacity:.2;} 50%{opacity:1;} 80%,100%{opacity:.2;} }
       `}</style>
 
-      {/* French bistro environment — blurred bar, banquette and warm bokeh
-          fills the space AROUND the table but never touches it thanks to the
-          overlaid vignette and the table object rendered on top. */}
-      <img
-        src={bistrotRoom}
-        alt=""
-        aria-hidden="true"
-        className="pointer-events-none absolute inset-0 h-full w-full object-cover"
-        style={{ filter: "blur(2px) brightness(0.55) saturate(0.9)" }}
+      {/* Ambient bistro atmosphere — identical stack to the homepage /
+          BistrotShell so the gameplay screen shares the same visual
+          identity: warm overhead tungsten light + vignette + soft floor. */}
+      <div
+        className="pointer-events-none absolute inset-0"
+        style={{
+          background:
+            "radial-gradient(60% 35% at 50% 0%, oklch(0.85 0.14 75 / 32%) 0%, oklch(0.7 0.12 65 / 12%) 40%, transparent 70%)",
+        }}
       />
-      <div className="pointer-events-none absolute inset-0" style={{ background:"radial-gradient(75% 60% at 50% 50%, oklch(0 0 0 / 15%) 0%, oklch(0 0 0 / 55%) 60%, oklch(0.03 0.01 40 / 90%) 100%)" }} />
-      <div className="pointer-events-none absolute inset-0" style={{ background:"radial-gradient(70% 40% at 50% -6%, oklch(0.92 0.17 76 / 28%) 0%, oklch(0.78 0.14 66 / 10%) 32%, transparent 62%)" }} />
+      <div
+        className="pointer-events-none absolute inset-0"
+        style={{
+          background:
+            "radial-gradient(120% 80% at 50% 50%, transparent 0%, oklch(0 0 0 / 45%) 60%, oklch(0.08 0.02 40 / 94%) 100%)",
+        }}
+      />
+      <div
+        className="pointer-events-none absolute inset-0"
+        style={{
+          background:
+            "linear-gradient(180deg, oklch(0.12 0.03 40 / 75%) 0%, transparent 22%, transparent 55%, oklch(0.08 0.02 40 / 92%) 100%)",
+        }}
+      />
+
 
 
       <div className="relative z-10 mx-auto flex min-h-screen w-full max-w-md flex-col px-4 pt-4 pb-4">
