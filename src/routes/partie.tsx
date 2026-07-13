@@ -425,11 +425,7 @@ function GameTable() {
     if (phase !== "playing" || !contract || !currentTrick) return;
     if (currentTurn !== "bottom") return;
     const legal = legalMoves(hands.bottom, currentTrick, contract.suit, "bottom");
-    if (!legal.some((c) => c.id === card.id)) {
-      // Not legal → just flash select
-      setSelectedCardId(card.id);
-      return;
-    }
+    if (!legal.some((c) => c.id === card.id)) return;
     playCardBy("bottom", card);
   };
 
@@ -812,34 +808,20 @@ function GameCards({
         const hand = hands[seat];
         return hand.map((card, index) => {
           const t = handTarget(seat, index, hand.length, anchors);
-          const isSelected = selectedCardId === card.id && seat === "bottom";
           const isBottom = seat === "bottom";
-          let lx = 0, ly = 0;
-          if (isSelected) {
-            const seatRad = (t.seatAngle * Math.PI) / 180;
-            const upX = -Math.sin(seatRad + Math.PI);
-            const upY = Math.cos(seatRad + Math.PI);
-            lx = upX * 20;
-            ly = upY * 20;
-          }
           const showFace = isBottom;
-          const dim = legalIds && !legalIds.has(card.id) ? 0.55 : 1;
-          const clickable = isBottom && phase === "playing" && currentTurn === "bottom";
+          const clickable = isBottom && phase === "playing" && currentTurn === "bottom" && (!legalIds || legalIds.has(card.id));
           return (
             <div
               key={card.id}
               onClick={clickable ? () => onLocalPlay(card) : undefined}
-              onMouseEnter={isBottom ? () => setSelectedCardId(card.id) : undefined}
               className={`absolute left-0 top-0 ${clickable ? "cursor-pointer" : ""}`}
               style={{
                 width: t.w, height: t.h,
-                transform: `translate3d(${t.x + lx - t.w/2}px, ${t.y + ly - t.h/2}px, 0) rotate(${t.rotate}deg)`,
-                transition: `transform ${isSelected ? 180 : 320}ms cubic-bezier(0.22, 0.7, 0.25, 1), opacity 200ms ease`,
-                zIndex: isSelected ? 400 : 100 + index + (isBottom ? 50 : 0),
-                opacity: dim,
-                filter: isSelected
-                  ? "drop-shadow(0 10px 14px oklch(0 0 0 / 55%)) drop-shadow(0 0 8px oklch(0.85 0.14 82 / 55%))"
-                  : undefined,
+                transform: `translate3d(${t.x - t.w/2}px, ${t.y - t.h/2}px, 0) rotate(${t.rotate}deg)`,
+                transition: `transform 320ms cubic-bezier(0.22, 0.7, 0.25, 1)`,
+                zIndex: 100 + index + (isBottom ? 50 : 0),
+                opacity: 1,
               }}
             >
               {showFace ? <CardFace card={card} /> : <CardBack />}
@@ -1166,12 +1148,12 @@ function ContractChips({ contract, slideTo }: { contract: Contract; slideTo?: Te
       <div className="flex flex-col items-center gap-1.5">
         {b.largeBar > 0 && (
           <div className="animate-scale-in" style={{ animationDelay: "40ms" }}>
-            <ChipBar width={64} height={16} tone="large" />
+            <ChipBar width={72} height={22} tone="large" value={100} />
           </div>
         )}
         {b.smallBar > 0 && (
           <div className="animate-scale-in" style={{ animationDelay: "120ms" }}>
-            <ChipBar width={44} height={12} tone="small" />
+            <ChipBar width={52} height={18} tone="small" value={50} />
           </div>
         )}
         {b.rounds > 0 && (
@@ -1181,19 +1163,6 @@ function ContractChips({ contract, slideTo }: { contract: Contract; slideTo?: Te
                 <RoundChip index={i} />
               </div>
             ))}
-          </div>
-        )}
-        {!slideTo && (
-          <div
-            className="mt-1 rounded-full px-2 py-0.5 text-[10px] font-semibold tracking-wider animate-fade-in"
-            style={{
-              background: "oklch(0.16 0.03 40 / 78%)",
-              color: "oklch(0.94 0.1 85)",
-              border: "1px solid oklch(0.72 0.14 82 / 45%)",
-              backdropFilter: "blur(6px)",
-            }}
-          >
-            {contract.points} <span style={{ color: suitColor }}>{contract.suit}</span>
           </div>
         )}
       </div>
@@ -1230,28 +1199,37 @@ function TableScoreBadge({ team, label, value, pulse }: { team: Team; label: str
 }
 
 
-function ChipBar({ width, height, tone }: { width: number; height: number; tone: "large" | "small" }) {
+function ChipBar({ width, height, tone, value }: { width: number; height: number; tone: "large" | "small"; value: number }) {
   const bg = tone === "large"
-    ? "linear-gradient(180deg, oklch(0.55 0.18 28) 0%, oklch(0.42 0.16 28) 55%, oklch(0.32 0.13 28) 100%)"
-    : "linear-gradient(180deg, oklch(0.72 0.16 240) 0%, oklch(0.55 0.15 240) 55%, oklch(0.4 0.13 240) 100%)";
+    ? "linear-gradient(180deg, oklch(0.58 0.19 28) 0%, oklch(0.44 0.17 28) 50%, oklch(0.3 0.13 28) 100%)"
+    : "linear-gradient(180deg, oklch(0.72 0.16 240) 0%, oklch(0.55 0.15 240) 50%, oklch(0.38 0.13 240) 100%)";
+  // Rectangular with tiny chamfered corners (bevel), flat top.
+  const bevel = Math.max(2, Math.round(height * 0.18));
+  const clip = `polygon(${bevel}px 0, calc(100% - ${bevel}px) 0, 100% ${bevel}px, 100% calc(100% - ${bevel}px), calc(100% - ${bevel}px) 100%, ${bevel}px 100%, 0 calc(100% - ${bevel}px), 0 ${bevel}px)`;
   return (
     <div
-      className="relative"
+      className="relative flex items-center justify-center"
       style={{
         width, height,
-        borderRadius: height / 2,
         background: bg,
-        border: "1px solid oklch(0.85 0.14 82 / 65%)",
-        boxShadow: "0 4px 8px -3px oklch(0 0 0 / 55%), 0 1px 0 oklch(1 0 0 / 25%) inset, 0 -1px 0 oklch(0 0 0 / 35%) inset",
+        clipPath: clip,
+        boxShadow: "0 4px 8px -3px oklch(0 0 0 / 55%), 0 1px 0 oklch(1 0 0 / 22%) inset, 0 -1px 0 oklch(0 0 0 / 40%) inset",
       }}
     >
-      <div
-        className="absolute inset-y-0.5 left-1 right-1 rounded-full"
+      {/* engraved number */}
+      <span
+        className="font-serif font-bold select-none"
         style={{
-          borderTop: "1px dashed oklch(0.9 0.14 82 / 55%)",
-          borderBottom: "1px dashed oklch(0.9 0.14 82 / 40%)",
+          fontSize: Math.round(height * 0.62),
+          lineHeight: 1,
+          letterSpacing: "0.04em",
+          color: "oklch(0.18 0.05 30 / 85%)",
+          textShadow:
+            "0 1px 0 oklch(1 0 0 / 22%), 0 -1px 0 oklch(0 0 0 / 55%)",
         }}
-      />
+      >
+        {value}
+      </span>
     </div>
   );
 }
