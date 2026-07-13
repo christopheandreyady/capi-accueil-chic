@@ -1324,3 +1324,41 @@ function CapotChip({ suit, suitColor }: { suit: Suit; suitColor: string }) {
     </div>
   );
 }
+
+function TeamStash({ team, stash }: { team: Team; stash: ChipBreakdown[] }) {
+  if (stash.length === 0) return null;
+  // Position: A near bottom-center (below score badge), B near left-middle (right of score badge).
+  const style: React.CSSProperties =
+    team === "A"
+      ? { left: "50%", top: "80%", transform: "translate(-50%, -50%)", maxWidth: "70%" }
+      : { left: "18%", top: "50%", transform: "translate(-50%, -50%)", maxWidth: "22%" };
+  return (
+    <div
+      className="pointer-events-none absolute z-[22] flex flex-wrap items-center justify-center gap-1 animate-fade-in"
+      style={style}
+    >
+      {stash.map((b, i) => (
+        <div key={i} className="flex items-center gap-0.5" style={{ transform: `rotate(${((i * 37) % 11) - 5}deg)` }}>
+          {b.capot && <CapotChip suit={"♠"} suitColor="oklch(0.94 0.14 82)" />}
+          {!b.capot && b.largeBar > 0 && <ChipBar width={34} height={10} tone="large" value={100} tilt={-3} />}
+          {!b.capot && b.smallBar > 0 && <ChipBar width={26} height={9} tone="small" value={50} tilt={3} />}
+          {!b.capot && b.rounds > 0 && (
+            <div className="flex items-center gap-[1px]">
+              {Array.from({ length: b.rounds }).map((_, j) => (
+                <div
+                  key={j}
+                  style={{
+                    width: 9, height: 9, borderRadius: "50%",
+                    background: "linear-gradient(180deg, oklch(0.94 0.02 90) 0%, oklch(0.7 0.02 90) 100%)",
+                    border: "1px solid oklch(0.82 0.14 82 / 70%)",
+                    boxShadow: "0 1px 2px oklch(0 0 0 / 45%)",
+                  }}
+                />
+              ))}
+            </div>
+          )}
+        </div>
+      ))}
+    </div>
+  );
+}
