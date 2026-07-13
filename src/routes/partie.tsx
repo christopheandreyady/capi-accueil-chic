@@ -21,6 +21,7 @@ export const Route = createFileRoute("/partie")({
 
 type Position = "bottom" | "left" | "top" | "right";
 
+// Clockwise seating order used for turn / deal rotation.
 const POSITIONS: Position[] = ["bottom", "left", "top", "right"];
 
 const PLAYERS: Record<Position, { name: string; level: number }> = {
@@ -30,14 +31,14 @@ const PLAYERS: Record<Position, { name: string; level: number }> = {
   right: { name: "Alex", level: 8 },
 };
 
-// Card sizes (px). Bottom player has larger, readable cards.
 const CARD_W_BIG = 56;
 const CARD_H_BIG = 82;
 const CARD_W_SMALL = 34;
 const CARD_H_SMALL = 50;
 
-const DEAL_MS = 110; // stagger between cards
-const FLIGHT_MS = 420; // per-card flight duration
+const DEAL_MS = 170; // stagger between cards (~0.17s)
+const FLIGHT_MS = 360; // per-card flight duration
+const CUT_MS = 1700; // total cut animation
 
 type Dealt = {
   card: Card;
@@ -45,25 +46,73 @@ type Dealt = {
   indexInHand: number; // 0..7
 };
 
+type Phase = "cut" | "dealing" | "done";
+
+function nextClockwise(p: Position): Position {
+  return POSITIONS[(POSITIONS.indexOf(p) + 1) % 4];
+}
+
+// Lightweight card-flick sound using the WebAudio API — no assets.
+function playCardSound() {
+  try {
+    const w = window as unknown as {
+      __capiAudioCtx?: AudioContext;
+      AudioContext: typeof AudioContext;
+      webkitAudioContext?: typeof AudioContext;
+    };
+    const Ctor = w.AudioContext ?? w.webkitAudioContext;
+    if (!Ctor) return;
+    if (!w.__capiAudioCtx) w.__capiAudioCtx = new Ctor();
+    const ctx = w.__capiAudioCtx!;
+    const now = ctx.currentTime;
+    // Short filtered noise burst = card flick
+    const dur = 0.07;
+    const buffer = ctx.createBuffer(1, Math.floor(ctx.sampleRate * dur), ctx.sampleRate);
+    const data = buffer.getChannelData(0);
+    for (let i = 0; i < data.length; i++) {
+      const t = i / data.length;
+      data[i] = (Math.random() * 2 - 1) * (1 - t) * 0.55;
+    }
+    const src = ctx.createBufferSource();
+    src.buffer = buffer;
+    const filter = ctx.createBiquadFilter();
+    filter.type = "highpass";
+    filter.frequency.value = 1800;
+    const gain = ctx.createGain();
+    gain.gain.setValueAtTime(0.18, now);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + dur);
+    src.connect(filter).connect(gain).connect(ctx.destination);
+    src.start(now);
+    src.stop(now + dur);
+  } catch {
+    /* silent */
+  }
+}
+
 function GameTable() {
   const boxRef = useRef<HTMLDivElement>(null);
   const [size, setSize] = useState({ w: 0, h: 0 });
   const [dealtCount, setDealtCount] = useState(0);
   const [dealSeed, setDealSeed] = useState(0);
+  const [dealer, setDealer] = useState<Position>("bottom");
+  const [phase, setPhase] = useState<Phase>("cut");
+  const [cutStep, setCutStep] = useState<0 | 1 | 2>(0); // 0 idle, 1 split, 2 recomposed
+
+  const cutter = nextClockwise(dealer);
 
   const dealOrder = useMemo<Dealt[]>(() => {
     const deck = shuffle(buildDeck());
     const order: Dealt[] = [];
-    // 8 rounds, clockwise from bottom: bottom → left → top → right
-    for (let round = 0; round < 8; round++) {
-      for (const seat of POSITIONS) {
-        const idx = round * 4 + POSITIONS.indexOf(seat);
-        order.push({ card: deck[idx], seat, indexInHand: round });
-      }
+    // 8 cards each, dealt one-by-one clockwise starting AFTER the dealer.
+    const start = (POSITIONS.indexOf(dealer) + 1) % 4;
+    const handIdx: Record<Position, number> = { bottom: 0, left: 0, top: 0, right: 0 };
+    for (let k = 0; k < 32; k++) {
+      const seat = POSITIONS[(start + k) % 4];
+      order.push({ card: deck[k], seat, indexInHand: handIdx[seat]++ });
     }
     return order;
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [dealSeed]);
+  }, [dealSeed, dealer]);
 
   useLayoutEffect(() => {
     const el = boxRef.current;
@@ -75,17 +124,34 @@ function GameTable() {
     return () => ro.disconnect();
   }, []);
 
+  // Round lifecycle: cut → deal → done.
   useEffect(() => {
-    setDealtCount(0);
     if (size.w === 0) return;
+    setPhase("cut");
+    setCutStep(0);
+    setDealtCount(0);
     const timers: number[] = [];
-    for (let k = 1; k <= 32; k++) {
-      timers.push(
-        window.setTimeout(() => setDealtCount(k), 250 + k * DEAL_MS),
-      );
-    }
+    // Split
+    timers.push(window.setTimeout(() => setCutStep(1), 550));
+    // Recompose
+    timers.push(window.setTimeout(() => setCutStep(2), 550 + 700));
+    // Start dealing
+    timers.push(
+      window.setTimeout(() => {
+        setPhase("dealing");
+        for (let k = 1; k <= 32; k++) {
+          timers.push(
+            window.setTimeout(() => {
+              setDealtCount(k);
+              playCardSound();
+            }, k * DEAL_MS),
+          );
+        }
+        timers.push(window.setTimeout(() => setPhase("done"), 32 * DEAL_MS + FLIGHT_MS + 200));
+      }, CUT_MS),
+    );
     return () => timers.forEach(clearTimeout);
-  }, [dealSeed, size.w]);
+  }, [dealSeed, dealer, size.w]);
 
   // Seat anchor points (center of the fanned hand)
   const anchors = useMemo(() => {
@@ -99,38 +165,58 @@ function GameTable() {
     } as const;
   }, [size]);
 
-  const center = { x: (size.w || 0) / 2, y: (size.h || 0) / 2 };
+  // Deck sits just in front of the dealer (pulled toward table center from seat).
+  const deckPos = useMemo(() => {
+    const a = anchors[dealer];
+    const cx = (size.w || 0) / 2;
+    const cy = (size.h || 0) / 2;
+    const dx = cx - a.x;
+    const dy = cy - a.y;
+    const len = Math.hypot(dx, dy) || 1;
+    const inset = dealer === "bottom" || dealer === "top" ? 110 : 90;
+    return {
+      x: a.x + (dx / len) * inset,
+      y: a.y + (dy / len) * inset,
+      angle: a.angle,
+    };
+  }, [anchors, dealer, size]);
 
   const computeTarget = (d: Dealt) => {
     const isBottom = d.seat === "bottom";
     const cardW = isBottom ? CARD_W_BIG : CARD_W_SMALL;
     const cardH = isBottom ? CARD_H_BIG : CARD_H_SMALL;
     const a = anchors[d.seat];
-    // Fan geometry: pivot below the visible cards, arc them symmetrically
     const n = 8;
-    const spread = isBottom ? 34 : 22; // total angular spread deg
+    const spread = isBottom ? 34 : 22;
     const step = spread / (n - 1);
-    const localAngle = -spread / 2 + step * d.indexInHand; // deg
+    const localAngle = -spread / 2 + step * d.indexInHand;
     const radius = isBottom ? 140 : 90;
-    // Local point (before seat rotation): pivot at (0,0) below, cards up
     const rad = (localAngle * Math.PI) / 180;
     const lx = Math.sin(rad) * radius;
     const ly = -Math.cos(rad) * radius;
-    // Rotate by seat orientation
     const seatRad = (a.angle * Math.PI) / 180;
     const rx = lx * Math.cos(seatRad) - ly * Math.sin(seatRad);
     const ry = lx * Math.sin(seatRad) + ly * Math.cos(seatRad);
-    // Anchor is roughly the seat pivot; pull cards inward from edge
-    const cx = a.x + rx;
-    const cy = a.y + ry;
     return {
-      x: cx,
-      y: cy,
-      rotate: localAngle + a.angle,
+      x: a.x + rx,
+      y: a.y + ry,
+      rotate: localAngle + a.angle + (Math.random() < 0.5 ? -1 : 1) * (2 + Math.random() * 3),
       w: cardW,
       h: cardH,
     };
   };
+
+  // Persist per-card target so rotation jitter doesn't jump each render.
+  const targetsRef = useRef<Record<string, ReturnType<typeof computeTarget>>>({});
+  useEffect(() => {
+    targetsRef.current = {};
+  }, [dealSeed, dealer, size.w]);
+
+  const nextRound = () => {
+    setDealer((d) => nextClockwise(d));
+    setDealSeed((s) => s + 1);
+  };
+  const redeal = () => setDealSeed((s) => s + 1);
 
   return (
     <main className="relative min-h-screen w-full overflow-hidden bg-background">
@@ -181,11 +267,11 @@ function GameTable() {
               textShadow: "0 1px 0 oklch(0 0 0 / 40%)",
             }}
           >
-            Distribution
+            {phase === "cut" ? "Coupe" : "Distribution"}
           </h1>
           <button
             type="button"
-            onClick={() => setDealSeed((s) => s + 1)}
+            onClick={nextRound}
             className="flex h-9 w-9 items-center justify-center rounded-full border transition active:scale-95"
             style={{
               background: "oklch(0.2 0.03 40 / 60%)",
@@ -193,7 +279,7 @@ function GameTable() {
               backdropFilter: "blur(8px)",
               color: "oklch(0.9 0.1 85)",
             }}
-            aria-label="Redistribuer"
+            aria-label="Manche suivante"
           >
             <RotateCcw className="h-4 w-4" />
           </button>
@@ -214,22 +300,47 @@ function GameTable() {
             }}
           />
 
-          {/* Seat name plates */}
+          {/* Seat labels + dealer badge */}
           {POSITIONS.map((p) => (
-            <SeatLabel key={p} position={p} anchors={anchors} />
+            <SeatLabel key={p} position={p} anchors={anchors} isDealer={p === dealer} />
           ))}
+
+          {/* Cut message */}
+          {phase === "cut" && (
+            <div
+              className="pointer-events-none absolute left-1/2 top-6 z-40 -translate-x-1/2 whitespace-nowrap rounded-full border px-3 py-1.5 text-[12px] font-medium animate-fade-in"
+              style={{
+                background: "oklch(0.18 0.03 40 / 80%)",
+                borderColor: "oklch(0.82 0.14 82 / 35%)",
+                color: "oklch(0.94 0.1 85)",
+                backdropFilter: "blur(8px)",
+                textShadow: "0 1px 2px oklch(0 0 0 / 60%)",
+              }}
+            >
+              À {PLAYERS[cutter].name} de couper le paquet.
+            </div>
+          )}
+
+          {/* Deck (in front of dealer) — split during cut */}
+          {phase !== "done" && (
+            <DeckStack deckPos={deckPos} cutStep={phase === "cut" ? cutStep : 2} remaining={32 - dealtCount} />
+          )}
 
           {/* Cards */}
           {dealOrder.map((d, i) => {
-            const isDealt = i < dealtCount;
-            const target = computeTarget(d);
-            const x = isDealt ? target.x : center.x;
-            const y = isDealt ? target.y : center.y;
-            const rotate = isDealt ? target.rotate : (i % 2 === 0 ? -6 : 6);
+            const isDealt = i < dealtCount && phase !== "cut";
+            if (!targetsRef.current[d.card.id]) {
+              targetsRef.current[d.card.id] = computeTarget(d);
+            }
+            const target = targetsRef.current[d.card.id];
+            const x = isDealt ? target.x : deckPos.x;
+            const y = isDealt ? target.y : deckPos.y;
+            const rotate = isDealt ? target.rotate : deckPos.angle + (i % 2 === 0 ? -1.5 : 1.5);
             const w = target.w;
             const h = target.h;
             const showFace = isDealt && d.seat === "bottom";
-            const z = isDealt ? 100 + d.indexInHand + (d.seat === "bottom" ? 50 : 0) : 500 - i;
+            const z = isDealt ? 100 + d.indexInHand + (d.seat === "bottom" ? 50 : 0) : 20 + (32 - i);
+            const visible = isDealt || phase === "dealing";
             return (
               <div
                 key={d.card.id}
@@ -241,6 +352,7 @@ function GameTable() {
                   transition: `transform ${FLIGHT_MS}ms cubic-bezier(0.22, 0.7, 0.25, 1)`,
                   zIndex: z,
                   willChange: "transform",
+                  opacity: visible ? 1 : 0,
                 }}
               >
                 {showFace ? <CardFace card={d.card} /> : <CardBack />}
@@ -253,16 +365,87 @@ function GameTable() {
   );
 }
 
+function DeckStack({
+  deckPos,
+  cutStep,
+  remaining,
+}: {
+  deckPos: { x: number; y: number; angle: number };
+  cutStep: 0 | 1 | 2;
+  remaining: number;
+}) {
+  if (remaining <= 0) return null;
+  const w = 40;
+  const h = 58;
+  // During cut, top half slides aside then swaps under.
+  const splitOffset = cutStep === 1 ? 46 : 0;
+  const topZ = cutStep === 2 ? 1 : 3; // after recompose, ex-top goes underneath
+  const bottomZ = cutStep === 2 ? 3 : 1;
+  const rad = (deckPos.angle * Math.PI) / 180;
+  const ox = Math.cos(rad) * splitOffset;
+  const oy = Math.sin(rad) * splitOffset;
+  return (
+    <>
+      {/* Bottom half */}
+      <div
+        className="absolute left-0 top-0"
+        style={{
+          width: w,
+          height: h,
+          transform: `translate3d(${deckPos.x - w / 2 - ox}px, ${deckPos.y - h / 2 - oy}px, 0) rotate(${deckPos.angle}deg)`,
+          transition: "transform 650ms cubic-bezier(0.22, 0.7, 0.25, 1)",
+          zIndex: bottomZ + 40,
+        }}
+      >
+        <DeckSlab count={Math.min(remaining, 16)} />
+      </div>
+      {/* Top half */}
+      <div
+        className="absolute left-0 top-0"
+        style={{
+          width: w,
+          height: h,
+          transform: `translate3d(${deckPos.x - w / 2 + ox}px, ${deckPos.y - h / 2 + oy}px, 0) rotate(${deckPos.angle}deg)`,
+          transition: "transform 650ms cubic-bezier(0.22, 0.7, 0.25, 1)",
+          zIndex: topZ + 40,
+        }}
+      >
+        <DeckSlab count={Math.max(remaining - 16, 1)} />
+      </div>
+    </>
+  );
+}
+
+function DeckSlab({ count }: { count: number }) {
+  const layers = Math.max(1, Math.min(4, Math.ceil(count / 4)));
+  return (
+    <div className="relative h-full w-full">
+      {Array.from({ length: layers }).map((_, i) => (
+        <div
+          key={i}
+          className="absolute inset-0"
+          style={{
+            transform: `translate(${i * 0.6}px, ${-i * 0.8}px)`,
+          }}
+        >
+          <CardBack />
+        </div>
+      ))}
+    </div>
+  );
+}
+
 function SeatLabel({
   position,
   anchors,
+  isDealer,
 }: {
   position: Position;
   anchors: Record<Position, { x: number; y: number; angle: number }>;
+  isDealer: boolean;
 }) {
   const a = anchors[position];
   const p = PLAYERS[position];
-  // Offset the label outward from the fan
   const offset = position === "bottom" ? { x: 0, y: 42 }
     : position === "top" ? { x: 0, y: -42 }
     : position === "left" ? { x: -8, y: -70 }
@@ -272,15 +455,31 @@ function SeatLabel({
       className="pointer-events-none absolute flex -translate-x-1/2 -translate-y-1/2 flex-col items-center"
       style={{ left: a.x + offset.x, top: a.y + offset.y, zIndex: 5 }}
     >
-      <span
-        className="font-serif text-[12px] font-semibold tracking-wide"
-        style={{
-          color: "oklch(0.94 0.09 85)",
-          textShadow: "0 1px 2px oklch(0 0 0 / 70%)",
-        }}
-      >
-        {p.name}
-      </span>
+      <div className="flex items-center gap-1.5">
+        <span
+          className="font-serif text-[12px] font-semibold tracking-wide"
+          style={{
+            color: "oklch(0.94 0.09 85)",
+            textShadow: "0 1px 2px oklch(0 0 0 / 70%)",
+          }}
+        >
+          {p.name}
+        </span>
+        {isDealer && (
+          <span
+            className="flex h-[16px] w-[16px] items-center justify-center rounded-full text-[9px] font-bold animate-scale-in"
+            style={{
+              background: "linear-gradient(180deg, oklch(0.9 0.14 88), oklch(0.65 0.16 72))",
+              color: "oklch(0.2 0.05 40)",
+              boxShadow: "0 1px 2px oklch(0 0 0 / 60%), 0 0 0 1px oklch(0.4 0.08 55) inset",
+            }}
+            aria-label="Donneur"
+            title="Donneur"
+          >
+            D
+          </span>
+        )}
+      </div>
       <span
         className="mt-0.5 text-[9px] uppercase tracking-[0.2em]"
         style={{ color: "oklch(0.85 0.06 82 / 80%)" }}
