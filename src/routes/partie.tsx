@@ -940,13 +940,13 @@ function BiddingPanel({ bids, onBid }: { bids: Bid[]; onBid: (b: Bid) => void })
       <div className="flex flex-wrap items-center justify-center gap-1.5">
         <button type="button" onClick={() => onBid({ kind:"pass", seat:"bottom" })} className="rounded-xl border px-3 py-2 font-serif text-sm transition active:scale-[0.97]" style={{ background:"linear-gradient(168deg, oklch(0.24 0.04 42) 0%, oklch(0.16 0.03 40) 100%)", borderColor:"oklch(0.82 0.14 82 / 40%)", color:"oklch(0.94 0.1 85)" }}>Passer</button>
         {canBidLevel && SUITS.map((s) => (
-          <button key={s} type="button" onClick={() => onBid({ kind:"bid", seat:"bottom", points: next, suit: s })} className="rounded-xl border px-3 py-2 font-serif text-sm transition active:scale-[0.97]" style={{ background:"linear-gradient(168deg, oklch(0.36 0.10 152) 0%, oklch(0.24 0.08 152) 100%)", borderColor:"oklch(0.82 0.14 82 / 45%)", color: isRedSuit(s)?"oklch(0.85 0.16 25)":"oklch(0.94 0.1 85)" }}>
-            {next} <span className="text-base">{s}</span>
+          <button key={s} type="button" onClick={() => onBid({ kind:"bid", seat:"bottom", points: next, suit: s })} className="flex items-center gap-1.5 rounded-xl border px-3 py-2 font-serif text-sm transition active:scale-[0.97]" style={{ background:"linear-gradient(168deg, oklch(0.36 0.10 152) 0%, oklch(0.24 0.08 152) 100%)", borderColor:"oklch(0.82 0.14 82 / 45%)", color:"oklch(0.94 0.1 85)" }}>
+            {next} <SuitBadge suit={s} size={20} />
           </button>
         ))}
         {SUITS.map((s) => (
-          <button key={"c"+s} type="button" onClick={() => onBid({ kind:"capot", seat:"bottom", suit: s })} className="rounded-xl border px-2.5 py-2 font-serif text-xs transition active:scale-[0.97]" style={{ background:"linear-gradient(168deg, oklch(0.35 0.13 55) 0%, oklch(0.22 0.10 45) 100%)", borderColor:"oklch(0.82 0.14 82 / 45%)", color: isRedSuit(s)?"oklch(0.9 0.16 25)":"oklch(0.94 0.1 85)" }}>
-            Capot <span className="text-sm">{s}</span>
+          <button key={"c"+s} type="button" onClick={() => onBid({ kind:"capot", seat:"bottom", suit: s })} className="flex items-center gap-1 rounded-xl border px-2.5 py-2 font-serif text-xs transition active:scale-[0.97]" style={{ background:"linear-gradient(168deg, oklch(0.35 0.13 55) 0%, oklch(0.22 0.10 45) 100%)", borderColor:"oklch(0.82 0.14 82 / 45%)", color:"oklch(0.94 0.1 85)" }}>
+            Capot <SuitBadge suit={s} size={18} />
           </button>
         ))}
       </div>
