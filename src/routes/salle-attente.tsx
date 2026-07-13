@@ -319,33 +319,38 @@ function WaitingRoom() {
         {/* Table area — background artwork provides the wooden table + felt.
             No CSS table is drawn on top; seats sit directly on the photo like
             in /partie before the first card is dealt. */}
-        <section className="relative mx-auto mt-2 w-full max-w-[520px] flex-1">
+        <section className="relative mx-auto mt-2 w-full max-w-[480px] flex-1">
           <div className="relative mx-auto aspect-square w-full">
-            {/* Soft focus vignette on the central play area */}
-            <div className="pointer-events-none absolute inset-0" style={{ background:"radial-gradient(60% 55% at 50% 50%, transparent 0%, transparent 55%, oklch(0 0 0 / 30%) 100%)" }} />
+            {/* Warm central halo + soft focus vignette on the play area */}
+            <div className="pointer-events-none absolute inset-0" style={{ background:"radial-gradient(38% 30% at 50% 50%, oklch(0.9 0.14 78 / 16%) 0%, oklch(0.85 0.12 72 / 6%) 45%, transparent 75%)" }} />
+            <div className="pointer-events-none absolute inset-0" style={{ background:"radial-gradient(60% 55% at 50% 50%, transparent 0%, transparent 55%, oklch(0 0 0 / 32%) 100%)" }} />
+
+            {/* Ambient decorations resting on the wood — corners only, never
+                obstruct the seats or the empty center of the table. */}
+            <AmbientDecor />
 
             {/* Seats — positioned exactly like /partie's PlayerBadge */}
             <SeatSlot
               seat={seats.find((s) => s.position === "top")!}
-              style={{ left: "50%", top: "2%", transform: "translate(-50%, 0)" }}
+              style={{ left: "50%", top: "1%", transform: "translate(-50%, 0)" }}
               delay={80}
               onInvite={() => setInviteOpen(true)}
             />
             <SeatSlot
               seat={seats.find((s) => s.position === "left")!}
-              style={{ left: "6%", top: "50%", transform: "translate(0, -50%)" }}
+              style={{ left: "3%", top: "50%", transform: "translate(0, -50%)" }}
               delay={180}
               onInvite={() => setInviteOpen(true)}
             />
             <SeatSlot
               seat={seats.find((s) => s.position === "right")!}
-              style={{ right: "6%", top: "50%", transform: "translate(0, -50%)" }}
+              style={{ right: "3%", top: "50%", transform: "translate(0, -50%)" }}
               delay={260}
               onInvite={() => setInviteOpen(true)}
             />
             <SeatSlot
               seat={seats.find((s) => s.position === "bottom")!}
-              style={{ left: "50%", bottom: "2%", transform: "translate(-50%, 0)" }}
+              style={{ left: "50%", bottom: "1%", transform: "translate(-50%, 0)" }}
               isLocal
               delay={0}
               onInvite={() => setInviteOpen(true)}
