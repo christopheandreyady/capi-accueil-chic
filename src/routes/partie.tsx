@@ -1294,13 +1294,13 @@ function ContractChips({ contract, slideTo }: { contract: Contract; slideTo?: Te
   const b = contractChipBreakdown(contract);
   const suitColor = isRedSuit(contract.suit) ? "oklch(0.72 0.2 25)" : "oklch(0.18 0.02 40)";
 
-  // Slide from center → team score zone.
-  // A (Nous) → bottom-center (top≈88%). B (Eux) → left-middle (left≈12%).
+  // Slides toward the same side as the winning team's stash so the handoff
+  // reads as one continuous motion (A → bottom-right, B → top-left).
   const slideStyle: React.CSSProperties = slideTo
     ? {
-        top: slideTo === "A" ? "86%" : "50%",
-        left: slideTo === "A" ? "50%" : "12%",
-        transform: "translate(-50%, -50%) scale(0.62)",
+        top: slideTo === "A" ? "78%" : "22%",
+        left: slideTo === "A" ? "82%" : "18%",
+        transform: "translate(-50%, -50%) scale(0.66)",
         opacity: 0.85,
       }
     : { top: "50%", left: "50%", transform: "translate(-50%, -50%)" };
@@ -1323,21 +1323,28 @@ function ContractChips({ contract, slideTo }: { contract: Contract; slideTo?: Te
 
   return (
     <div style={wrapperStyle}>
-      <div className="flex flex-col items-center gap-1.5">
+      <div className="relative flex flex-col items-center" style={{ gap: 4 }}>
         {b.largeBar > 0 && (
-          <div className="animate-scale-in" style={{ animationDelay: "40ms" }}>
-            <ChipBar width={61} height={15} tone="large" value={100} tilt={-7} />
+          <div className="animate-scale-in" style={{ animationDelay: "40ms", transform: `translateX(${seatJitter("bottom", 0, 3) * 4}px)` }}>
+            <ChipBar width={52} height={13} tone="large" value={100} tilt={-6 + seatJitter("bottom", 1, 4) * 3} />
           </div>
         )}
         {b.smallBar > 0 && (
-          <div className="animate-scale-in" style={{ animationDelay: "120ms" }}>
-            <ChipBar width={30} height={12} tone="small" value={50} tilt={6} />
+          <div className="animate-scale-in" style={{ animationDelay: "120ms", transform: `translateX(${seatJitter("bottom", 2, 3) * 5}px)` }}>
+            <ChipBar width={26} height={11} tone="small" value={50} tilt={7 + seatJitter("bottom", 3, 4) * 3} />
           </div>
         )}
         {b.rounds > 0 && (
-          <div className="flex items-center gap-1">
+          <div className="flex items-center" style={{ gap: 3 }}>
             {Array.from({ length: b.rounds }).map((_, i) => (
-              <div key={i} className="animate-scale-in" style={{ animationDelay: `${180 + i * 70}ms`, transform: `rotate(${((i * 37) % 11) - 5}deg)` }}>
+              <div
+                key={i}
+                className="animate-scale-in"
+                style={{
+                  animationDelay: `${180 + i * 70}ms`,
+                  transform: `translate(${seatJitter("bottom", i, 6) * 3}px, ${seatJitter("bottom", i, 8) * 3}px) rotate(${((i * 37) % 17) - 8}deg)`,
+                }}
+              >
                 <RoundChip index={i} />
               </div>
             ))}
