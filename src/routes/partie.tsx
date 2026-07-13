@@ -648,11 +648,11 @@ function GameTable() {
         </header>
 
 
-        <div className="relative mx-auto my-auto flex w-full flex-1 items-center justify-center px-2 py-3">
+        <div className="relative mx-auto my-auto flex w-full flex-1 items-center justify-center px-1 py-2">
           <div
             ref={boxRef}
-            className="relative aspect-square"
-            style={{ width: "min(88vw, calc(100dvh - 240px), 540px)" }}
+            className="relative"
+            style={{ width: "min(98vw, calc((100dvh - 200px) * 1.5), 720px)", aspectRatio: "3 / 2" }}
           >
             {/* Round wooden bistro table — a physical object floating in the
                 room. Transparent PNG so the environment stays visible around
