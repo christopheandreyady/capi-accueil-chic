@@ -81,8 +81,8 @@ export function BistrotShell({ title, subtitle, backTo, children }: BistrotShell
             alt="CAPI"
             width={1024}
             height={1024}
-            className="h-10 w-10"
-            style={{ filter: "drop-shadow(0 4px 8px oklch(0 0 0 / 60%))" }}
+            className="h-12 w-12"
+            style={{ filter: "drop-shadow(0 6px 10px oklch(0 0 0 / 70%)) drop-shadow(0 0 12px oklch(0.85 0.15 82 / 40%)) contrast(1.1) saturate(1.1) brightness(1.08)" }}
           />
         </header>
 

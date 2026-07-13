@@ -643,8 +643,20 @@ function GameTable() {
               </span>
             </div>
           </div>
-          <h1 className="hidden font-serif text-base font-semibold tracking-wide sm:block" style={{ background:"linear-gradient(180deg, oklch(0.95 0.1 88), oklch(0.72 0.14 78))", WebkitBackgroundClip:"text", backgroundClip:"text", color:"transparent", textShadow:"0 1px 0 oklch(0 0 0 / 40%)" }}>{phaseTitle}</h1>
-          <button type="button" onClick={nextRound} className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border transition active:scale-95" style={{ background:"oklch(0.2 0.03 40 / 60%)", borderColor:"oklch(0.82 0.14 82 / 30%)", backdropFilter:"blur(8px)", color:"oklch(0.9 0.1 85)" }} aria-label="Manche suivante"><RotateCcw className="h-4 w-4" /></button>
+          <div className="flex items-center gap-2">
+            <img
+              src={capiEmblem}
+              alt="CAPI"
+              width={1024}
+              height={1024}
+              className="h-12 w-12"
+              style={{
+                filter:
+                  "drop-shadow(0 6px 10px oklch(0 0 0 / 70%)) drop-shadow(0 0 12px oklch(0.85 0.15 82 / 40%)) contrast(1.1) saturate(1.1) brightness(1.08)",
+              }}
+            />
+            <button type="button" onClick={nextRound} className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border transition active:scale-95" style={{ background:"oklch(0.2 0.03 40 / 60%)", borderColor:"oklch(0.82 0.14 82 / 30%)", backdropFilter:"blur(8px)", color:"oklch(0.9 0.1 85)" }} aria-label="Manche suivante"><RotateCcw className="h-4 w-4" /></button>
+          </div>
         </header>
 
 
@@ -652,7 +664,7 @@ function GameTable() {
           <div
             ref={boxRef}
             className="relative"
-            style={{ width: "min(98vw, calc((100dvh - 200px) * 1.5), 720px)", aspectRatio: "3 / 2" }}
+            style={{ width: "min(98vw, calc((100dvh - 180px) * 1.5), 760px)", aspectRatio: "3 / 2" }}
           >
             {/* Round wooden bistro table — a physical object floating in the
                 room. Transparent PNG so the environment stays visible around
@@ -668,6 +680,24 @@ function GameTable() {
             {/* Warm key light on the felt — masked to a circle so it never spills onto the room. */}
             <div className="pointer-events-none absolute inset-[8%] rounded-full" style={{ background:"radial-gradient(45% 38% at 50% 45%, oklch(0.92 0.15 78 / 22%) 0%, oklch(0.85 0.12 72 / 8%) 50%, transparent 78%)" }} />
             <div className="pointer-events-none absolute inset-[8%] rounded-full" style={{ background:"radial-gradient(60% 55% at 50% 55%, transparent 0%, transparent 55%, oklch(0 0 0 / 32%) 100%)" }} />
+
+            {/* CAPI emblem engraved into the felt — subtle watermark that
+                reads clearly without breaking the embossed felt feel. */}
+            <img
+              src={capiEmblem}
+              alt=""
+              aria-hidden="true"
+              width={512}
+              height={512}
+              className="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-[5]"
+              style={{
+                width: "22%",
+                height: "auto",
+                opacity: 0.28,
+                mixBlendMode: "overlay",
+                filter: "drop-shadow(0 1px 0 oklch(0 0 0 / 55%)) drop-shadow(0 -1px 0 oklch(1 0 0 / 12%))",
+              }}
+            />
 
 
 
@@ -1156,10 +1186,10 @@ function PlayerBadge({
   // just inside the table edge so no avatar can visually leave the play
   // zone, and every seat scales automatically with the table.
   const style: React.CSSProperties =
-    position === "bottom" ? { left:"50%", bottom:"3%", transform:"translate(-50%, 0)" }
-    : position === "top" ? { left:"50%", top:"3%", transform:"translate(-50%, 0)" }
-    : position === "left" ? { left:"3%", top:"50%", transform:"translate(0, -50%)" }
-    : { right:"3%", top:"50%", transform:"translate(0, -50%)" };
+    position === "bottom" ? { left:"50%", bottom:"6%", transform:"translate(-50%, 0)" }
+    : position === "top" ? { left:"50%", top:"6%", transform:"translate(-50%, 0)" }
+    : position === "left" ? { left:"6%", top:"50%", transform:"translate(0, -50%)" }
+    : { right:"6%", top:"50%", transform:"translate(0, -50%)" };
 
 
 
@@ -1317,6 +1347,32 @@ function CardBack() {
           }}
         />
       </div>
+      {/* Wordmark integrated into the design — top and bottom, mirrored so
+          the back reads the same rotated 180°. */}
+      <span
+        className="pointer-events-none absolute left-1/2 -translate-x-1/2 font-serif font-semibold select-none"
+        style={{
+          top: 3,
+          fontSize: 6,
+          letterSpacing: "0.32em",
+          color: "oklch(0.85 0.14 82 / 78%)",
+          textShadow: "0 1px 0 oklch(0 0 0 / 65%)",
+        }}
+      >
+        CAPI
+      </span>
+      <span
+        className="pointer-events-none absolute left-1/2 -translate-x-1/2 rotate-180 font-serif font-semibold select-none"
+        style={{
+          bottom: 3,
+          fontSize: 6,
+          letterSpacing: "0.32em",
+          color: "oklch(0.85 0.14 82 / 78%)",
+          textShadow: "0 1px 0 oklch(0 0 0 / 65%)",
+        }}
+      >
+        CAPI
+      </span>
     </div>
   );
 }
