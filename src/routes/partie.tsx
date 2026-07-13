@@ -1207,18 +1207,18 @@ function ContractChips({ contract, slideTo }: { contract: Contract; slideTo?: Te
       <div className="flex flex-col items-center gap-1.5">
         {b.largeBar > 0 && (
           <div className="animate-scale-in" style={{ animationDelay: "40ms" }}>
-            <ChipBar width={72} height={17} tone="large" value={100} tilt={-5} />
+            <ChipBar width={61} height={15} tone="large" value={100} tilt={-7} />
           </div>
         )}
         {b.smallBar > 0 && (
           <div className="animate-scale-in" style={{ animationDelay: "120ms" }}>
-            <ChipBar width={52} height={14} tone="small" value={50} tilt={4} />
+            <ChipBar width={44} height={12} tone="small" value={50} tilt={6} />
           </div>
         )}
         {b.rounds > 0 && (
           <div className="flex items-center gap-1">
             {Array.from({ length: b.rounds }).map((_, i) => (
-              <div key={i} className="animate-scale-in" style={{ animationDelay: `${180 + i * 70}ms` }}>
+              <div key={i} className="animate-scale-in" style={{ animationDelay: `${180 + i * 70}ms`, transform: `rotate(${((i * 37) % 11) - 5}deg)` }}>
                 <RoundChip index={i} />
               </div>
             ))}
