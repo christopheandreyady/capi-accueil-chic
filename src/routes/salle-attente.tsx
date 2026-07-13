@@ -140,6 +140,9 @@ function WaitingRoom() {
   const total = 4;
   const readyCount = seats.filter((s) => s.player?.ready).length;
   const allReady = playersCount === total && readyCount === total;
+  const roomFull = playersCount === total;
+  const localReady = seats.find((s) => s.position === "bottom")?.player?.ready ?? false;
+
 
   function toggleReady(pos: Position) {
     setSeats((s) =>
@@ -483,23 +486,30 @@ function WaitingRoom() {
 
           <button
             type="button"
-            disabled={!allReady}
-            onClick={() => allReady && navigate({ to: "/partie" })}
+            disabled={!roomFull}
+            onClick={() => {
+              if (!roomFull) return;
+              if (allReady) navigate({ to: "/partie" });
+              else toggleReady("bottom");
+            }}
             className="group relative flex w-full items-center justify-center gap-3 overflow-hidden px-6 py-3.5 transition-all duration-200 ease-out active:scale-[0.985] disabled:cursor-not-allowed disabled:active:scale-100"
             style={{
               borderRadius: "1rem",
               background: allReady
                 ? "linear-gradient(168deg, oklch(0.38 0.11 152) 0%, oklch(0.28 0.09 152) 50%, oklch(0.20 0.07 150) 100%)"
-                : "linear-gradient(168deg, oklch(0.22 0.03 42) 0%, oklch(0.16 0.02 40) 100%)",
-              border: `1px solid ${allReady ? "oklch(0.78 0.14 82 / 55%)" : "oklch(0.35 0.02 40 / 45%)"}`,
+                : roomFull
+                  ? localReady
+                    ? "linear-gradient(168deg, oklch(0.28 0.06 42) 0%, oklch(0.20 0.04 40) 100%)"
+                    : "linear-gradient(168deg, oklch(0.36 0.10 82) 0%, oklch(0.26 0.08 78) 100%)"
+                  : "linear-gradient(168deg, oklch(0.22 0.03 42) 0%, oklch(0.16 0.02 40) 100%)",
+              border: `1px solid ${allReady || roomFull ? "oklch(0.78 0.14 82 / 55%)" : "oklch(0.35 0.02 40 / 45%)"}`,
               boxShadow: allReady
                 ? "0 14px 26px -14px oklch(0 0 0 / 75%), 0 6px 12px -6px oklch(0.32 0.10 152 / 55%), inset 0 1px 0 oklch(1 0 0 / 14%), inset 0 -8px 14px oklch(0 0 0 / 40%), inset 0 0 0 1px oklch(0.82 0.14 82 / 18%)"
-                : "0 6px 14px -8px oklch(0 0 0 / 70%), inset 0 1px 0 oklch(1 0 0 / 6%), inset 0 -6px 10px oklch(0 0 0 / 35%)",
-              opacity: allReady ? 1 : 0.75,
+                : "0 10px 20px -12px oklch(0 0 0 / 70%), inset 0 1px 0 oklch(1 0 0 / 10%), inset 0 -6px 12px oklch(0 0 0 / 35%)",
+              opacity: roomFull ? 1 : 0.75,
               animation: allReady ? "capi-glow 3s ease-in-out infinite" : undefined,
             }}
           >
-            {/* Top satin highlight */}
             <span
               className="pointer-events-none absolute inset-x-0 top-0 h-1/2 opacity-70"
               style={{
@@ -507,13 +517,10 @@ function WaitingRoom() {
                   "linear-gradient(180deg, oklch(1 0 0 / 14%) 0%, oklch(1 0 0 / 3%) 60%, transparent 100%)",
               }}
             />
-            {/* Inner gold hairline */}
             {allReady && (
               <span
                 className="pointer-events-none absolute inset-[3px] rounded-[0.85rem]"
-                style={{
-                  border: "1px solid oklch(0.82 0.14 82 / 22%)",
-                }}
+                style={{ border: "1px solid oklch(0.82 0.14 82 / 22%)" }}
               />
             )}
             {allReady && (
@@ -526,32 +533,47 @@ function WaitingRoom() {
                 }}
               />
             )}
-            <Play
-              className="relative h-4 w-4"
-              style={{
-                color: allReady ? "oklch(0.94 0.11 88)" : "oklch(0.55 0.03 80)",
-                filter: allReady
-                  ? "drop-shadow(0 1px 2px oklch(0 0 0 / 60%)) drop-shadow(0 0 6px oklch(0.82 0.14 82 / 45%))"
-                  : "none",
-              }}
-              strokeWidth={2.2}
-              fill="currentColor"
-            />
+            {allReady ? (
+              <Play
+                className="relative h-4 w-4"
+                style={{
+                  color: "oklch(0.94 0.11 88)",
+                  filter:
+                    "drop-shadow(0 1px 2px oklch(0 0 0 / 60%)) drop-shadow(0 0 6px oklch(0.82 0.14 82 / 45%))",
+                }}
+                strokeWidth={2.2}
+                fill="currentColor"
+              />
+            ) : roomFull ? (
+              <Check
+                className="relative h-4 w-4"
+                style={{ color: "oklch(0.94 0.11 88)" }}
+                strokeWidth={2.6}
+              />
+            ) : null}
             <span
               className="relative font-serif text-base font-semibold tracking-wide"
               style={{
-                background: allReady
-                  ? "linear-gradient(180deg, oklch(0.97 0.10 88), oklch(0.74 0.14 78))"
-                  : "linear-gradient(180deg, oklch(0.62 0.03 80), oklch(0.48 0.03 80))",
+                background:
+                  allReady || roomFull
+                    ? "linear-gradient(180deg, oklch(0.97 0.10 88), oklch(0.74 0.14 78))"
+                    : "linear-gradient(180deg, oklch(0.62 0.03 80), oklch(0.48 0.03 80))",
                 WebkitBackgroundClip: "text",
                 backgroundClip: "text",
                 color: "transparent",
                 textShadow: "0 1px 0 oklch(0 0 0 / 40%)",
               }}
             >
-              {allReady ? "Commencer la partie" : "En attente des joueurs…"}
+              {allReady
+                ? "Commencer la partie"
+                : roomFull
+                  ? localReady
+                    ? "Annuler"
+                    : "Je suis prêt"
+                  : "Salle incomplète"}
             </span>
           </button>
+
           {playersCount < total && (
             <p
               className="text-center text-[11px] uppercase tracking-[0.22em] animate-fade-in"
