@@ -437,7 +437,7 @@ function GameTable() {
 
 
   const playCardBy = (seat: Position, card: Card) => {
-    setHands((h) => ({ ...h, [seat]: h[seat].filter((c) => c.id !== card.id) }));
+    setHands((h) => ({ ...h, [seat]: sortHand(h[seat].filter((c) => c.id !== card.id), contract?.suit ?? null) }));
     setCurrentTrick((t) =>
       t ? { ...t, plays: [...t.plays, { seat, card } as TrickPlay] } : t,
     );
