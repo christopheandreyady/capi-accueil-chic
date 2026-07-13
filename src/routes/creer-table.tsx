@@ -141,14 +141,14 @@ function CreateTable() {
             />
             <SwitchRow
               label="Contrer"
-              value={cfg.coinche}
-              onChange={(v) => update("coinche", v)}
+              value={cfg.contrer}
+              onChange={(v) => update("contrer", v)}
             />
             <SwitchRow
               label="Surcontrer"
-              value={cfg.surcoinche}
-              onChange={(v) => update("surcoinche", v)}
-              disabled={!cfg.coinche}
+              value={cfg.surcontrer}
+              onChange={(v) => update("surcontrer", v)}
+              disabled={!cfg.contrer}
             />
             <SwitchRow
               label="Mélange avant distribution"
