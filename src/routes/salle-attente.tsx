@@ -729,8 +729,8 @@ function SeatSlot({
             <div
               className="overflow-hidden rounded-full border-2"
               style={{
-                width: 76,
-                height: 76,
+                width: 65,
+                height: 65,
                 borderColor: teamRing,
                 background:
                   "linear-gradient(160deg, oklch(0.38 0.05 40), oklch(0.24 0.04 40))",
@@ -844,8 +844,8 @@ function SeatSlot({
           <div
             className="relative flex items-center justify-center overflow-hidden rounded-full border-2"
             style={{
-              width: 76,
-              height: 76,
+              width: 65,
+              height: 65,
               background:
                 "radial-gradient(circle at 35% 22%, oklch(0.45 0.09 45) 0%, oklch(0.28 0.07 40) 55%, oklch(0.16 0.05 35) 100%)",
               borderColor: "oklch(0.82 0.14 82 / 75%)",
