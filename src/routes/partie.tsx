@@ -1118,15 +1118,15 @@ function PlayerBadge({
   isActive?: boolean; isThinking?: boolean; announcement?: Bid | null; announcementIsTaker?: boolean;
 }) {
   const style: React.CSSProperties =
-    position === "bottom" ? { left:"50%", bottom:"2%", transform:"translate(-50%, 0)" }
-    : position === "top" ? { left:"50%", top:"2%", transform:"translate(-50%, 0)" }
-    : position === "left" ? { left:"6%", top:"50%", transform:"translate(0, -50%)" }
-    : { right:"6%", top:"50%", transform:"translate(0, -50%)" };
+    position === "bottom" ? { left:"50%", bottom:"-66px", transform:"translate(-50%, 0)" }
+    : position === "top" ? { left:"50%", top:"1%", transform:"translate(-50%, 0)" }
+    : position === "left" ? { left:"3%", top:"50%", transform:"translate(0, -50%)" }
+    : { right:"3%", top:"50%", transform:"translate(0, -50%)" };
 
 
   const team = position === "bottom" || position === "top" ? "A" : "B";
   const ring = team === "A" ? "oklch(0.72 0.16 55 / 85%)" : "oklch(0.62 0.16 240 / 85%)";
-  const avatarSize = isLocal ? 56 : 48;
+  const avatarSize = isLocal ? 58 : 46;
 
   return (
     <div className="pointer-events-none absolute z-20 flex flex-col items-center gap-1" style={style}>
@@ -1142,7 +1142,7 @@ function PlayerBadge({
           <img src={info.photo} alt={info.name} width={200} height={200} className="h-full w-full object-cover" loading="lazy" />
         </div>
         {isDealer && (
-          <span className="absolute -bottom-1 -right-1 flex h-[18px] w-[18px] items-center justify-center rounded-full text-[10px] font-bold" style={{ background:"linear-gradient(180deg, oklch(0.9 0.14 88), oklch(0.65 0.16 72))", color:"oklch(0.2 0.05 40)", boxShadow:"0 2px 4px oklch(0 0 0 / 60%), 0 0 0 1px oklch(0.4 0.08 55) inset" }} aria-label="Donneur">D</span>
+          <span className="absolute -top-1 -right-1 flex h-[19px] w-[19px] items-center justify-center rounded-full font-serif text-[10px] font-bold" style={{ background:"radial-gradient(circle at 35% 30%, oklch(0.96 0.11 88), oklch(0.72 0.16 72) 65%, oklch(0.48 0.10 55))", color:"oklch(0.18 0.05 40)", boxShadow:"0 2px 4px oklch(0 0 0 / 65%), 0 0 0 1px oklch(0.35 0.08 55) inset, 0 0 0 2px oklch(0.10 0.02 40 / 80%)" }} aria-label="Donneur">D</span>
         )}
         {isThinking && (
           <div className="absolute -top-1 -left-1 rounded-full border px-1.5 py-0.5 text-[10px]" style={{ background:"oklch(0.18 0.03 40 / 90%)", borderColor:"oklch(0.82 0.14 82 / 40%)", color:"oklch(0.94 0.1 85)" }}>
