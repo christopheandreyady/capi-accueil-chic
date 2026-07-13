@@ -1,7 +1,8 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { ArrowLeft, RotateCcw, Shuffle, Check } from "lucide-react";
-import bistrotTable from "@/assets/capi-bistrot-table.jpg";
+import bistrotTable from "@/assets/capi-table-only.png";
+import bistrotRoom from "@/assets/capi-bistrot-room.jpg";
 import { buildDeck, isRedSuit, shuffle, type Card, type Rank, type Suit } from "@/lib/deck";
 import {
   CLOCKWISE,
@@ -585,15 +586,18 @@ function GameTable() {
         @keyframes capi-think-dots { 0%,20%{opacity:.2;} 50%{opacity:1;} 80%,100%{opacity:.2;} }
       `}</style>
 
-      {/* Deep bistro room background — kept dark so the wooden table becomes
-          the actual UI object rather than a wallpaper. */}
-      <div className="pointer-events-none absolute inset-0" style={{ background:"radial-gradient(120% 90% at 50% 40%, oklch(0.14 0.03 40) 0%, oklch(0.07 0.02 40) 55%, oklch(0.03 0.01 40) 100%)" }} />
-      {/* Subtle dark wooden floor at the bottom of the room — heavily blurred so it never competes with the table. */}
-      <div className="pointer-events-none absolute inset-x-0 bottom-0 h-[42%]" style={{ background:"repeating-linear-gradient(92deg, oklch(0.16 0.04 40) 0 22px, oklch(0.12 0.03 38) 22px 44px, oklch(0.14 0.035 42) 44px 68px)", opacity:0.55, filter:"blur(6px)", maskImage:"linear-gradient(to top, black 0%, black 40%, transparent 100%)", WebkitMaskImage:"linear-gradient(to top, black 0%, black 40%, transparent 100%)" }} />
-      {/* Warm ambient bounce from above */}
-      <div className="pointer-events-none absolute inset-0" style={{ background:"radial-gradient(70% 40% at 50% -4%, oklch(0.92 0.17 76 / 40%) 0%, oklch(0.78 0.14 66 / 16%) 32%, transparent 62%)" }} />
-      {/* Deep room vignette to frame the table */}
-      <div className="pointer-events-none absolute inset-0" style={{ background:"radial-gradient(75% 65% at 50% 50%, transparent 45%, oklch(0 0 0 / 55%) 100%)" }} />
+      {/* French bistro environment — blurred bar, banquette and warm bokeh
+          fills the space AROUND the table but never touches it thanks to the
+          overlaid vignette and the table object rendered on top. */}
+      <img
+        src={bistrotRoom}
+        alt=""
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-0 h-full w-full object-cover"
+        style={{ filter: "blur(2px) brightness(0.55) saturate(0.9)" }}
+      />
+      <div className="pointer-events-none absolute inset-0" style={{ background:"radial-gradient(75% 60% at 50% 50%, oklch(0 0 0 / 15%) 0%, oklch(0 0 0 / 55%) 60%, oklch(0.03 0.01 40 / 90%) 100%)" }} />
+      <div className="pointer-events-none absolute inset-0" style={{ background:"radial-gradient(70% 40% at 50% -6%, oklch(0.92 0.17 76 / 28%) 0%, oklch(0.78 0.14 66 / 10%) 32%, transparent 62%)" }} />
 
 
       <div className="relative z-10 mx-auto flex min-h-screen w-full max-w-md flex-col px-4 pt-4 pb-4">
@@ -630,22 +634,22 @@ function GameTable() {
           <div
             ref={boxRef}
             className="relative aspect-square"
-            style={{ width: "min(90vw, calc(100dvh - 260px), 520px)" }}
+            style={{ width: "min(88vw, calc(100dvh - 240px), 540px)" }}
           >
-            {/* The wooden bistro table is the central UI object. The existing
-                artwork fills this bounded square exactly — no fullscreen
-                wallpaper. Everything else (avatars, decor) sits around it. */}
+            {/* Round wooden bistro table — a physical object floating in the
+                room. Transparent PNG so the environment stays visible around
+                its natural circular silhouette. */}
             <img
               src={bistrotTable}
               alt=""
-              width={1024}
-              height={1024}
-              className="pointer-events-none absolute inset-0 h-full w-full rounded-[6%] object-cover"
-              style={{ boxShadow: "0 30px 60px -20px oklch(0 0 0 / 85%), 0 12px 28px -12px oklch(0 0 0 / 70%)" }}
+              width={1280}
+              height={1280}
+              className="pointer-events-none absolute inset-0 h-full w-full object-contain"
+              style={{ filter: "drop-shadow(0 30px 40px oklch(0 0 0 / 75%)) drop-shadow(0 10px 18px oklch(0 0 0 / 55%))" }}
             />
-            {/* Soft central halo + subtle edge vignette on the felt. */}
-            <div className="pointer-events-none absolute inset-0 rounded-[6%]" style={{ background:"radial-gradient(38% 30% at 50% 50%, oklch(0.9 0.14 78 / 14%) 0%, oklch(0.85 0.12 72 / 6%) 45%, transparent 75%)" }} />
-            <div className="pointer-events-none absolute inset-0 rounded-[6%]" style={{ background:"radial-gradient(60% 55% at 50% 50%, transparent 0%, transparent 55%, oklch(0 0 0 / 32%) 100%)" }} />
+            {/* Warm key light on the felt — masked to a circle so it never spills onto the room. */}
+            <div className="pointer-events-none absolute inset-[8%] rounded-full" style={{ background:"radial-gradient(45% 38% at 50% 45%, oklch(0.92 0.15 78 / 22%) 0%, oklch(0.85 0.12 72 / 8%) 50%, transparent 78%)" }} />
+            <div className="pointer-events-none absolute inset-[8%] rounded-full" style={{ background:"radial-gradient(60% 55% at 50% 55%, transparent 0%, transparent 55%, oklch(0 0 0 / 32%) 100%)" }} />
 
 
 

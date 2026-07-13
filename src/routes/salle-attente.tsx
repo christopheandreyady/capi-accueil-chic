@@ -1,7 +1,8 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { Plus, ArrowLeft, Crown, Check, Copy, QrCode, Share2, UserPlus } from "lucide-react";
-import bistrotTable from "@/assets/capi-bistrot-table.jpg";
+import bistrotTable from "@/assets/capi-table-only.png";
+import bistrotRoom from "@/assets/capi-bistrot-room.jpg";
 import capiEmblem from "@/assets/capi-emblem.png";
 import { InviteModal } from "@/components/InviteModal";
 import { PremiumModal } from "@/components/PremiumModal";
@@ -214,12 +215,18 @@ function WaitingRoom() {
 
   return (
     <main className="relative min-h-screen w-full overflow-hidden bg-background">
-      {/* Dark bistro room backdrop — the wooden table is a bounded UI object,
-          not a fullscreen wallpaper. */}
-      <div className="pointer-events-none absolute inset-0" style={{ background:"radial-gradient(120% 90% at 50% 40%, oklch(0.14 0.03 40) 0%, oklch(0.07 0.02 40) 55%, oklch(0.03 0.01 40) 100%)" }} />
-      <div className="pointer-events-none absolute inset-x-0 bottom-0 h-[42%]" style={{ background:"repeating-linear-gradient(92deg, oklch(0.16 0.04 40) 0 22px, oklch(0.12 0.03 38) 22px 44px, oklch(0.14 0.035 42) 44px 68px)", opacity:0.55, filter:"blur(6px)", maskImage:"linear-gradient(to top, black 0%, black 40%, transparent 100%)", WebkitMaskImage:"linear-gradient(to top, black 0%, black 40%, transparent 100%)" }} />
-      <div className="pointer-events-none absolute inset-0" style={{ background:"radial-gradient(70% 40% at 50% -4%, oklch(0.92 0.17 76 / 40%) 0%, oklch(0.78 0.14 66 / 16%) 32%, transparent 62%)" }} />
-      <div className="pointer-events-none absolute inset-0" style={{ background:"radial-gradient(75% 65% at 50% 50%, transparent 45%, oklch(0 0 0 / 55%) 100%)" }} />
+      {/* French bistro environment — a blurred bar, banquette and warm bokeh
+          fill the space AROUND the wooden table. The table object is rendered
+          on top so the environment never covers the felt. */}
+      <img
+        src={bistrotRoom}
+        alt=""
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-0 h-full w-full object-cover"
+        style={{ filter: "blur(2px) brightness(0.55) saturate(0.9)" }}
+      />
+      <div className="pointer-events-none absolute inset-0" style={{ background:"radial-gradient(75% 60% at 50% 50%, oklch(0 0 0 / 15%) 0%, oklch(0 0 0 / 55%) 60%, oklch(0.03 0.01 40 / 90%) 100%)" }} />
+      <div className="pointer-events-none absolute inset-0" style={{ background:"radial-gradient(70% 40% at 50% -6%, oklch(0.92 0.17 76 / 28%) 0%, oklch(0.78 0.14 66 / 10%) 32%, transparent 62%)" }} />
 
 
       <div className="relative z-10 mx-auto flex min-h-screen w-full max-w-md flex-col px-5 pt-6 pb-8">
@@ -316,19 +323,19 @@ function WaitingRoom() {
         <section className="relative mx-auto my-auto flex w-full flex-1 items-center justify-center px-2 py-3">
           <div
             className="relative aspect-square"
-            style={{ width: "min(90vw, calc(100dvh - 260px), 520px)" }}
+            style={{ width: "min(88vw, calc(100dvh - 240px), 540px)" }}
           >
             <img
               src={bistrotTable}
               alt=""
-              width={1024}
-              height={1024}
-              className="pointer-events-none absolute inset-0 h-full w-full rounded-[6%] object-cover"
-              style={{ boxShadow: "0 30px 60px -20px oklch(0 0 0 / 85%), 0 12px 28px -12px oklch(0 0 0 / 70%)" }}
+              width={1280}
+              height={1280}
+              className="pointer-events-none absolute inset-0 h-full w-full object-contain"
+              style={{ filter: "drop-shadow(0 30px 40px oklch(0 0 0 / 75%)) drop-shadow(0 10px 18px oklch(0 0 0 / 55%))" }}
             />
-            {/* Warm central halo + soft focus vignette on the play area */}
-            <div className="pointer-events-none absolute inset-0 rounded-[6%]" style={{ background:"radial-gradient(38% 30% at 50% 50%, oklch(0.9 0.14 78 / 16%) 0%, oklch(0.85 0.12 72 / 6%) 45%, transparent 75%)" }} />
-            <div className="pointer-events-none absolute inset-0 rounded-[6%]" style={{ background:"radial-gradient(60% 55% at 50% 50%, transparent 0%, transparent 55%, oklch(0 0 0 / 32%) 100%)" }} />
+            {/* Warm key light on the felt — masked to the round felt area only. */}
+            <div className="pointer-events-none absolute inset-[8%] rounded-full" style={{ background:"radial-gradient(45% 38% at 50% 45%, oklch(0.92 0.15 78 / 22%) 0%, oklch(0.85 0.12 72 / 8%) 50%, transparent 78%)" }} />
+            <div className="pointer-events-none absolute inset-[8%] rounded-full" style={{ background:"radial-gradient(60% 55% at 50% 55%, transparent 0%, transparent 55%, oklch(0 0 0 / 32%) 100%)" }} />
 
             {/* Ambient decorations resting on the wood — corners only, never
                 obstruct the seats or the empty center of the table. */}
