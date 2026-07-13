@@ -41,6 +41,23 @@ export const Route = createFileRoute("/partie")({
 
 const POSITIONS: Position[] = CLOCKWISE;
 
+// Fixed display suit order (alternating colors for readability).
+const SUIT_DISPLAY_ORDER: Suit[] = ["♠", "♥", "♣", "♦"];
+// Trump order strongest → weakest for display.
+const TRUMP_DISPLAY_ORDER: Rank[] = ["V", "9", "A", "10", "R", "D", "8", "7"];
+// Plain order strongest → weakest for display.
+const PLAIN_DISPLAY_ORDER: Rank[] = ["A", "10", "R", "D", "V", "9", "8", "7"];
+
+function sortHand(cards: Card[], trump: Suit | null): Card[] {
+  return [...cards].sort((a, b) => {
+    const sa = SUIT_DISPLAY_ORDER.indexOf(a.suit);
+    const sb = SUIT_DISPLAY_ORDER.indexOf(b.suit);
+    if (sa !== sb) return sa - sb;
+    const order = trump && a.suit === trump ? TRUMP_DISPLAY_ORDER : PLAIN_DISPLAY_ORDER;
+    return order.indexOf(a.rank) - order.indexOf(b.rank);
+  });
+}
+
 type PlayerInfo = { name: string; level: number; photo: string };
 
 const PLAYERS: Record<Position, PlayerInfo> = {
