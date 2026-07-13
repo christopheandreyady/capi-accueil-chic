@@ -1130,9 +1130,20 @@ function contractChipBreakdown(contract: Contract): ChipBreakdown {
   return { largeBar, smallBar, rounds, capot: false };
 }
 
-function ContractChips({ contract }: { contract: Contract }) {
+function ContractChips({ contract, slideTo }: { contract: Contract; slideTo?: Team | null }) {
   const b = contractChipBreakdown(contract);
   const suitColor = isRedSuit(contract.suit) ? "oklch(0.72 0.2 25)" : "oklch(0.18 0.02 40)";
+
+  // Slide from center → team score zone.
+  // A (Nous) → bottom-center (top≈88%). B (Eux) → left-middle (left≈12%).
+  const slideStyle: React.CSSProperties = slideTo
+    ? {
+        top: slideTo === "A" ? "86%" : "50%",
+        left: slideTo === "A" ? "50%" : "12%",
+        transform: "translate(-50%, -50%) scale(0.62)",
+        opacity: 0.85,
+      }
+    : { top: "50%", left: "50%", transform: "translate(-50%, -50%)" };
 
   if (b.capot) {
     return (
