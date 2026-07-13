@@ -235,7 +235,7 @@ function GameTable() {
     setRecentBid({ seat: b.seat, bid: b });
     const id = window.setTimeout(() => {
       setRecentBid((cur) => (cur && cur.bid === b ? null : cur));
-    }, 2800);
+    }, 2000);
     return () => window.clearTimeout(id);
   }, [bids]);
 
@@ -430,8 +430,10 @@ function GameTable() {
       raf = requestAnimationFrame(tick);
     }, 1900);
     const t3 = window.setTimeout(() => {
-      if (contract) {
-        setStashes((s) => ({ ...s, [winner]: [...s[winner], contractChipBreakdown(contract)] }));
+      const winnerPts = winner === "A" ? roundScore.A : roundScore.B;
+      const rounded = Math.round(winnerPts / 10) * 10;
+      if (rounded > 0) {
+        setStashes((s) => ({ ...s, [winner]: [...s[winner], breakdownFromScore(rounded)] }));
       }
       setChipsVisible(false);
     }, 3900);
@@ -605,15 +607,26 @@ function GameTable() {
           <button type="button" onClick={nextRound} className="flex h-9 w-9 items-center justify-center rounded-full border transition active:scale-95" style={{ background:"oklch(0.2 0.03 40 / 60%)", borderColor:"oklch(0.82 0.14 82 / 30%)", backdropFilter:"blur(8px)", color:"oklch(0.9 0.1 85)" }} aria-label="Manche suivante"><RotateCcw className="h-4 w-4" /></button>
         </header>
 
-        {/* Scoreboard */}
-        <div className="mt-2 flex items-center justify-center gap-3 text-[11px]">
-          <ScorePill team="A" label="Nous" value={displayScores.A} highlight={contract ? TEAM_OF[contract.bidder] === "A" : false} />
-          <ScorePill team="B" label="Eux" value={displayScores.B} highlight={contract ? TEAM_OF[contract.bidder] === "B" : false} />
-          {contract && phase === "playing" && (
-            <div className="rounded-full border px-2.5 py-0.5" style={{ background:"oklch(0.18 0.03 40 / 80%)", borderColor:"oklch(0.82 0.14 82 / 40%)", color:"oklch(0.94 0.1 85)" }}>
-              {PLAYERS[contract.bidder].name.split(" ").slice(-1)} · {contract.points} {contract.suit}
-            </div>
-          )}
+        {/* Discreet top-left scoreboard */}
+        <div
+          className="pointer-events-none absolute left-3 top-3 z-30 flex flex-col gap-1 rounded-lg border px-2.5 py-1.5 font-serif text-[11px]"
+          style={{
+            background: "oklch(0.14 0.03 40 / 78%)",
+            borderColor: "oklch(0.82 0.14 82 / 35%)",
+            color: "oklch(0.94 0.1 85)",
+            backdropFilter: "blur(8px)",
+            boxShadow: "0 6px 14px -6px oklch(0 0 0 / 75%), inset 0 1px 0 oklch(1 0 0 / 10%)",
+            minWidth: 92,
+          }}
+        >
+          <div className="flex items-center justify-between gap-2">
+            <span className="uppercase tracking-[0.2em]" style={{ fontSize: 9, color: "oklch(0.85 0.08 82)" }}>Nous</span>
+            <span className="font-semibold tabular-nums" style={{ fontSize: 13 }}>{displayScores.A}</span>
+          </div>
+          <div className="flex items-center justify-between gap-2">
+            <span className="uppercase tracking-[0.2em]" style={{ fontSize: 9, color: "oklch(0.75 0.06 240)" }}>Eux</span>
+            <span className="font-semibold tabular-nums" style={{ fontSize: 13 }}>{displayScores.B}</span>
+          </div>
         </div>
 
         <div ref={boxRef} className="relative mx-auto mt-3 w-full max-w-[420px] flex-1">
@@ -664,10 +677,6 @@ function GameTable() {
                 À {PLAYERS[cutter].name} de couper le paquet
               </div>
             )}
-
-            {/* Team score zones anchored to the table */}
-            <TableScoreBadge team="A" label="Nous" value={displayScores.A} pulse={chipsSlideTo === "A"} />
-            <TableScoreBadge team="B" label="Eux" value={displayScores.B} pulse={chipsSlideTo === "B"} />
 
             <TeamStash team="A" stash={stashes.A} />
             <TeamStash team="B" stash={stashes.B} />
@@ -1136,22 +1145,22 @@ function AnnouncementBubble({ bid, position }: { bid: Bid; position: Position })
       style={{
         ...placement,
         zIndex: 40,
-        padding: "6px 12px",
-        borderRadius: 10,
+        padding: "8px 14px",
+        borderRadius: 12,
         background: isPass
-          ? "linear-gradient(180deg, oklch(0.22 0.03 40 / 96%) 0%, oklch(0.15 0.03 40 / 96%) 100%)"
-          : "linear-gradient(180deg, oklch(0.98 0.02 88) 0%, oklch(0.88 0.03 82) 100%)",
+          ? "linear-gradient(180deg, oklch(0.20 0.03 40 / 98%) 0%, oklch(0.12 0.03 40 / 98%) 100%)"
+          : "linear-gradient(180deg, oklch(0.995 0.01 88) 0%, oklch(0.9 0.03 82) 100%)",
         border: isPass
-          ? "1px solid oklch(0.82 0.14 82 / 55%)"
-          : "1.5px solid oklch(0.65 0.16 72)",
+          ? "1.5px solid oklch(0.85 0.16 82 / 75%)"
+          : "2px solid oklch(0.6 0.17 68)",
         boxShadow:
-          "0 10px 22px -6px oklch(0 0 0 / 75%), 0 2px 0 oklch(1 0 0 / 25%) inset, 0 0 0 1px oklch(0 0 0 / 40%)",
-        color: isPass ? "oklch(0.94 0.1 85)" : "oklch(0.2 0.05 40)",
+          "0 14px 28px -8px oklch(0 0 0 / 85%), 0 2px 0 oklch(1 0 0 / 30%) inset, 0 0 0 1px oklch(0 0 0 / 50%)",
+        color: isPass ? "oklch(0.96 0.12 85)" : "oklch(0.14 0.05 40)",
       }}
     >
-      <span className="inline-flex items-center gap-1.5 font-serif font-bold" style={{ fontSize: 18, lineHeight: 1, letterSpacing: "0.02em" }}>
+      <span className="inline-flex items-center gap-2 font-serif font-black" style={{ fontSize: 22, lineHeight: 1, letterSpacing: "0.02em" }}>
         <span>{label}</span>
-        {suit && <SuitBadge suit={suit} size={16} />}
+        {suit && <SuitBadge suit={suit} size={22} />}
       </span>
     </div>
   );
@@ -1196,6 +1205,18 @@ function CardBack() {
 
 // --- Contract chips visualization ------------------------------------------
 type ChipBreakdown = { largeBar: number; smallBar: number; rounds: number; capot: boolean };
+
+// Breakdown from an arbitrary rounded score (multiples of 10).
+// 100 = grande barrette, 50 = petite barrette, 10 = jeton rond.
+function breakdownFromScore(score: number): ChipBreakdown {
+  const s = Math.max(0, Math.round(score / 10) * 10);
+  const largeBar = Math.floor(s / 100);
+  let rem = s - largeBar * 100;
+  const smallBar = rem >= 50 ? 1 : 0;
+  rem -= smallBar * 50;
+  const rounds = Math.round(rem / 10);
+  return { largeBar, smallBar, rounds, capot: false };
+}
 
 function contractChipBreakdown(contract: Contract): ChipBreakdown {
   if (contract.isCapot) return { largeBar: 0, smallBar: 0, rounds: 0, capot: true };
