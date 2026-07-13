@@ -329,7 +329,7 @@ function GameTable() {
               textShadow: "0 1px 0 oklch(0 0 0 / 40%)",
             }}
           >
-            {phase === "cut" ? "Coupe" : "Distribution"}
+            {phase === "mode" ? "Mode de distribution" : phase === "cut" ? "Coupe" : "Distribution"}
           </h1>
           <button
             type="button"
