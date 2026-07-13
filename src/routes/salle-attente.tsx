@@ -221,29 +221,10 @@ function WaitingRoom() {
         height={1536}
         className="pointer-events-none absolute inset-0 h-full w-full object-cover"
       />
-      {/* Warm overhead light */}
-      <div
-        className="pointer-events-none absolute inset-0"
-        style={{
-          background:
-            "radial-gradient(60% 35% at 50% 0%, oklch(0.85 0.14 75 / 34%) 0%, oklch(0.7 0.12 65 / 12%) 40%, transparent 70%)",
-        }}
-      />
-      {/* Vignette */}
-      <div
-        className="pointer-events-none absolute inset-0"
-        style={{
-          background:
-            "radial-gradient(120% 80% at 50% 50%, transparent 0%, oklch(0 0 0 / 42%) 60%, oklch(0.08 0.02 40 / 92%) 100%)",
-        }}
-      />
-      <div
-        className="pointer-events-none absolute inset-0"
-        style={{
-          background:
-            "linear-gradient(180deg, oklch(0.12 0.03 40 / 72%) 0%, transparent 20%, transparent 55%, oklch(0.08 0.02 40 / 92%) 100%)",
-        }}
-      />
+      {/* Same lighting stack as /partie: warm bistro key light + vignette. */}
+      <div className="pointer-events-none absolute inset-0" style={{ background:"radial-gradient(70% 42% at 50% -4%, oklch(0.9 0.16 78 / 44%) 0%, oklch(0.78 0.14 68 / 22%) 30%, transparent 62%)" }} />
+      <div className="pointer-events-none absolute inset-0" style={{ background:"radial-gradient(130% 90% at 50% 55%, transparent 0%, oklch(0 0 0 / 55%) 62%, oklch(0.06 0.02 40 / 96%) 100%)" }} />
+      <div className="pointer-events-none absolute inset-0" style={{ background:"linear-gradient(180deg, oklch(0.10 0.03 40 / 78%) 0%, transparent 20%, transparent 58%, oklch(0.06 0.02 40 / 94%) 100%)" }} />
 
       <div className="relative z-10 mx-auto flex min-h-screen w-full max-w-md flex-col px-5 pt-6 pb-8">
         {/* Header */}
