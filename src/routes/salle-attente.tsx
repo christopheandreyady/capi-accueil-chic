@@ -460,9 +460,10 @@ function WaitingRoom() {
           </div>
         </section>
 
-        {/* Bottom actions */}
-        <div className="mt-6 flex flex-col gap-3">
-          {!allReady && (
+        {/* Bottom actions — always above the table; lobby chrome hidden once 4 players are seated */}
+        <div className="relative z-30 mt-10 flex flex-col gap-3">
+          {playersCount < total && (
+
             <button
               type="button"
               onClick={() => setInviteOpen(true)}
@@ -551,16 +552,15 @@ function WaitingRoom() {
               {allReady ? "Commencer la partie" : "En attente des joueurs…"}
             </span>
           </button>
-          {!allReady && (
+          {playersCount < total && (
             <p
               className="text-center text-[11px] uppercase tracking-[0.22em] animate-fade-in"
               style={{ color: "oklch(0.75 0.05 82 / 65%)" }}
             >
-              {playersCount < total
-                ? `${total - playersCount} place${total - playersCount > 1 ? "s" : ""} libre${total - playersCount > 1 ? "s" : ""}`
-                : `${total - readyCount} joueur${total - readyCount > 1 ? "s" : ""} pas encore prêt${total - readyCount > 1 ? "s" : ""}`}
+              {`${total - playersCount} place${total - playersCount > 1 ? "s" : ""} libre${total - playersCount > 1 ? "s" : ""}`}
             </p>
           )}
+
         </div>
 
       </div>
