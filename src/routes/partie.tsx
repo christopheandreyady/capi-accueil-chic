@@ -326,6 +326,12 @@ function GameTable() {
           nextRound();
         } else {
           setContract(c);
+          setHands((h) => ({
+            bottom: sortHand(h.bottom, c.suit),
+            left: sortHand(h.left, c.suit),
+            top: sortHand(h.top, c.suit),
+            right: sortHand(h.right, c.suit),
+          }));
           setCurrentTrick({ leader: nextSeat(dealer), plays: [] });
           setCurrentTurn(nextSeat(dealer));
           setPhase("playing");
