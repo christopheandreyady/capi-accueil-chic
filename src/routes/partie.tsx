@@ -583,6 +583,11 @@ function GameTable() {
               </div>
             )}
 
+            {/* Contract chips at center of table */}
+            {(phase === "bidding" || phase === "playing" || phase === "scoring") && currentContract(bids) && (
+              <ContractChips contract={currentContract(bids)!} />
+            )}
+
             {phase === "shuffling" && size.w > 0 && <ShuffleAnimation deckPos={deckBase} />}
 
             {phase === "shuffle" && size.w > 0 && (
