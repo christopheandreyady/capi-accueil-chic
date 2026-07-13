@@ -1149,7 +1149,7 @@ function ScorePill({ team, label, value, highlight }: { team: Team; label: strin
 
 function DeckStack({ deckPos, cutStep, remaining }: { deckPos: { x: number; y: number; angle: number }; cutStep: 0 | 1 | 2; remaining: number }) {
   if (remaining <= 0) return null;
-  const w = 46, h = 66;
+  const w = CARD_W_DECK, h = CARD_H_DECK;
   const splitOffset = cutStep === 1 ? 52 : 0;
   const topZ = cutStep === 2 ? 1 : 3;
   const bottomZ = cutStep === 2 ? 3 : 1;
