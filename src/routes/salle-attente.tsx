@@ -268,88 +268,118 @@ function WaitingRoom() {
         {/* Table area */}
         <section className="relative mt-6 flex-1">
           <div className="relative mx-auto aspect-square w-full max-w-[400px]">
-            {/* Wooden table */}
+            {/* Wooden table (round) */}
             <div
               className="absolute inset-0 rounded-full"
               style={{
                 background:
-                  "radial-gradient(circle at 50% 25%, oklch(0.45 0.10 45) 0%, oklch(0.32 0.08 42) 55%, oklch(0.18 0.05 35) 100%)",
+                  "radial-gradient(circle at 50% 22%, oklch(0.48 0.10 45) 0%, oklch(0.34 0.09 42) 55%, oklch(0.18 0.05 35) 100%)",
                 boxShadow:
-                  "0 30px 60px -20px oklch(0 0 0 / 80%), inset 0 2px 0 oklch(1 0 0 / 10%), inset 0 -12px 22px oklch(0 0 0 / 60%)",
+                  "0 30px 60px -20px oklch(0 0 0 / 80%), inset 0 2px 0 oklch(1 0 0 / 10%), inset 0 -14px 24px oklch(0 0 0 / 62%)",
               }}
             >
               {/* Wood grain */}
               <div
-                className="pointer-events-none absolute inset-0 rounded-full opacity-45 mix-blend-overlay"
+                className="pointer-events-none absolute inset-0 rounded-full opacity-55 mix-blend-overlay"
                 style={{
                   backgroundImage:
-                    "repeating-conic-gradient(from 0deg at 50% 50%, oklch(1 0 0 / 4%) 0deg 3deg, oklch(0 0 0 / 8%) 3deg 6deg), radial-gradient(ellipse at 30% 40%, oklch(1 0 0 / 6%), transparent 60%)",
+                    "repeating-conic-gradient(from 0deg at 50% 50%, oklch(1 0 0 / 5%) 0deg 2.5deg, oklch(0 0 0 / 9%) 2.5deg 5deg), radial-gradient(ellipse at 30% 40%, oklch(1 0 0 / 7%), transparent 60%), repeating-linear-gradient(92deg, oklch(0 0 0 / 6%) 0 3px, transparent 3px 9px)",
                 }}
               />
-              {/* Wood inner ring / bevel */}
+              {/* Inner darker ring for depth under the mat */}
               <div
-                className="pointer-events-none absolute inset-[16%] rounded-full"
+                className="pointer-events-none absolute inset-[10%] rounded-full"
                 style={{
                   boxShadow:
-                    "inset 0 0 0 1px oklch(0 0 0 / 55%), inset 0 2px 4px oklch(0 0 0 / 55%), 0 2px 0 oklch(1 0 0 / 6%)",
+                    "inset 0 0 0 1px oklch(0 0 0 / 45%), inset 0 3px 8px oklch(0 0 0 / 55%)",
                 }}
               />
             </div>
 
-            {/* Felt mat — a real cloth laid on top of the wood */}
+            {/* Fabric mat — a real removable Contrée mat laid on the wood */}
             <div
-              className="absolute inset-[19%] rounded-full"
+              className="absolute"
               style={{
+                left: "12%",
+                right: "12%",
+                top: "12%",
+                bottom: "12%",
+                transform: "rotate(-2.4deg)",
+                borderRadius: "14%",
                 background:
-                  "radial-gradient(circle at 50% 32%, oklch(0.42 0.11 152) 0%, oklch(0.28 0.09 152) 60%, oklch(0.16 0.06 150) 100%)",
+                  "linear-gradient(160deg, oklch(0.36 0.10 152) 0%, oklch(0.28 0.09 152) 45%, oklch(0.22 0.08 150) 100%)",
                 boxShadow:
-                  "0 10px 22px -6px oklch(0 0 0 / 75%), 0 3px 0 oklch(0 0 0 / 45%), inset 0 0 90px oklch(0 0 0 / 55%), inset 0 2px 0 oklch(1 0 0 / 8%), inset 0 -6px 14px oklch(0 0 0 / 45%)",
+                  // shadow of the cloth on the wood
+                  "0 14px 22px -10px oklch(0 0 0 / 75%), 0 6px 10px -6px oklch(0 0 0 / 55%), 0 2px 0 oklch(0 0 0 / 35%), " +
+                  // felt depth
+                  "inset 0 0 70px oklch(0 0 0 / 50%), inset 0 2px 0 oklch(1 0 0 / 7%), inset 0 -8px 18px oklch(0 0 0 / 40%)",
               }}
             >
               {/* Fabric weave */}
               <div
-                className="pointer-events-none absolute inset-0 rounded-full opacity-55 mix-blend-overlay"
+                className="pointer-events-none absolute inset-0 opacity-70 mix-blend-overlay"
                 style={{
+                  borderRadius: "inherit",
                   backgroundImage:
-                    "repeating-linear-gradient(45deg, oklch(1 0 0 / 6%) 0 1px, transparent 1px 2px), repeating-linear-gradient(-45deg, oklch(0 0 0 / 10%) 0 1px, transparent 1px 2px), radial-gradient(oklch(1 0 0 / 8%) 1px, transparent 1px)",
+                    "repeating-linear-gradient(45deg, oklch(1 0 0 / 6%) 0 1px, transparent 1px 2px), repeating-linear-gradient(-45deg, oklch(0 0 0 / 12%) 0 1px, transparent 1px 2px), radial-gradient(oklch(1 0 0 / 7%) 1px, transparent 1px)",
                   backgroundSize: "auto, auto, 3px 3px",
                 }}
               />
-              {/* Subtle gold hairline */}
+
+              {/* Soft natural folds / lighting on the cloth */}
               <div
-                className="pointer-events-none absolute inset-[6%] rounded-full"
+                className="pointer-events-none absolute inset-0 opacity-70"
                 style={{
-                  border: "1px solid oklch(0.82 0.14 82 / 22%)",
-                  boxShadow: "inset 0 0 20px oklch(0.82 0.14 82 / 8%)",
+                  borderRadius: "inherit",
+                  background:
+                    "linear-gradient(115deg, transparent 20%, oklch(1 0 0 / 5%) 32%, transparent 44%), linear-gradient(70deg, transparent 55%, oklch(0 0 0 / 18%) 72%, transparent 88%), radial-gradient(60% 40% at 30% 30%, oklch(1 0 0 / 6%), transparent 70%)",
                 }}
               />
 
-              {/* Four gold suit corners */}
-              <SuitMark symbol="♠" className="absolute" style={{ left: "10%", top: "12%", transform: "rotate(-18deg)" }} />
-              <SuitMark symbol="♥" className="absolute" style={{ right: "10%", top: "12%", transform: "rotate(16deg)" }} />
-              <SuitMark symbol="♦" className="absolute" style={{ left: "10%", bottom: "12%", transform: "rotate(14deg)" }} />
-              <SuitMark symbol="♣" className="absolute" style={{ right: "10%", bottom: "12%", transform: "rotate(-14deg)" }} />
+              {/* Stitched border (double) */}
+              <div
+                className="pointer-events-none absolute inset-[3%]"
+                style={{
+                  borderRadius: "12%",
+                  border: "1px dashed oklch(0.86 0.06 85 / 55%)",
+                  boxShadow:
+                    "inset 0 0 0 1px oklch(0 0 0 / 35%), 0 0 0 1px oklch(0 0 0 / 25%)",
+                }}
+              />
+              <div
+                className="pointer-events-none absolute inset-[5.5%]"
+                style={{
+                  borderRadius: "11%",
+                  border: "1px solid oklch(0.86 0.06 85 / 18%)",
+                }}
+              />
+
+              {/* Four discreet suit corners — black & red like a real mat */}
+              <SuitMark symbol="♠" color="black" style={{ position: "absolute", left: "7%", top: "7%" }} />
+              <SuitMark symbol="♥" color="red" style={{ position: "absolute", right: "7%", top: "7%" }} />
+              <SuitMark symbol="♦" color="red" style={{ position: "absolute", left: "7%", bottom: "7%" }} />
+              <SuitMark symbol="♣" color="black" style={{ position: "absolute", right: "7%", bottom: "7%" }} />
             </div>
 
-            {/* Score tokens — Team A set beside YOU (bottom-right) */}
-            <div className="absolute" style={{ right: "3%", bottom: "12%", width: 80, height: 70 }}>
-              <ScoreBarLong className="absolute" style={{ left: 0, top: 0, transform: "rotate(-8deg)" }} color="ivory" />
-              <ScoreBarLong className="absolute" style={{ left: 4, top: 10, transform: "rotate(-4deg)" }} color="red" />
-              <ScoreBarShort className="absolute" style={{ left: 2, top: 26, transform: "rotate(6deg)" }} color="blue" />
-              <ScoreBarShort className="absolute" style={{ left: 22, top: 30, transform: "rotate(-3deg)" }} color="red" />
-              <ScoreRound className="absolute" style={{ left: 46, top: 8, transform: "rotate(0deg)" }} color="ivory" />
-              <ScoreRound className="absolute" style={{ left: 58, top: 22, transform: "rotate(0deg)" }} color="blue" />
-              <ScoreRound className="absolute" style={{ left: 42, top: 34, transform: "rotate(0deg)" }} color="red" />
+            {/* Score tokens — Team A set beside YOU (bottom-right, on the wood) */}
+            <div className="absolute" style={{ right: "2%", bottom: "10%", width: 84, height: 76 }}>
+              <ScoreBarLong className="absolute" style={{ left: 0, top: 0, transform: "rotate(-8deg)" }} color="white" />
+              <ScoreBarLong className="absolute" style={{ left: 4, top: 10, transform: "rotate(-3deg)" }} color="green" />
+              <ScoreBarMedium className="absolute" style={{ left: 2, top: 24, transform: "rotate(5deg)" }} color="blue" />
+              <ScoreBarMedium className="absolute" style={{ left: 26, top: 30, transform: "rotate(-4deg)" }} color="red" />
+              <ScoreRound className="absolute" style={{ left: 52, top: 8 }} color="yellow" />
+              <ScoreRound className="absolute" style={{ left: 64, top: 22 }} color="white" />
+              <ScoreRound className="absolute" style={{ left: 50, top: 36 }} color="red" />
             </div>
 
-            {/* Score tokens — Team B set beside Margaux (left seat) */}
-            <div className="absolute" style={{ left: "3%", top: "18%", width: 80, height: 70 }}>
-              <ScoreBarLong className="absolute" style={{ left: 0, top: 0, transform: "rotate(10deg)" }} color="ivory" />
-              <ScoreBarShort className="absolute" style={{ left: 4, top: 16, transform: "rotate(-6deg)" }} color="red" />
-              <ScoreBarShort className="absolute" style={{ left: 26, top: 20, transform: "rotate(4deg)" }} color="blue" />
-              <ScoreRound className="absolute" style={{ left: 50, top: 4, transform: "rotate(0deg)" }} color="red" />
-              <ScoreRound className="absolute" style={{ left: 60, top: 18, transform: "rotate(0deg)" }} color="ivory" />
-              <ScoreRound className="absolute" style={{ left: 48, top: 30, transform: "rotate(0deg)" }} color="blue" />
+            {/* Score tokens — Team B set beside Margaux (left-top, on the wood) */}
+            <div className="absolute" style={{ left: "2%", top: "14%", width: 84, height: 76 }}>
+              <ScoreBarLong className="absolute" style={{ left: 0, top: 0, transform: "rotate(9deg)" }} color="white" />
+              <ScoreBarMedium className="absolute" style={{ left: 4, top: 16, transform: "rotate(-5deg)" }} color="green" />
+              <ScoreBarMedium className="absolute" style={{ left: 28, top: 22, transform: "rotate(4deg)" }} color="yellow" />
+              <ScoreRound className="absolute" style={{ left: 54, top: 4 }} color="red" />
+              <ScoreRound className="absolute" style={{ left: 64, top: 18 }} color="blue" />
+              <ScoreRound className="absolute" style={{ left: 50, top: 32 }} color="white" />
             </div>
 
             {/* Seats */}
