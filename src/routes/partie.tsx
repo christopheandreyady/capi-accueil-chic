@@ -228,16 +228,12 @@ function GameTable() {
   const [chipsSlideTo, setChipsSlideTo] = useState<Team | null>(null);
   const [chipsVisible, setChipsVisible] = useState(true);
   const [stashes, setStashes] = useState<{ A: ChipBreakdown[]; B: ChipBreakdown[] }>({ A: [], B: [] });
-  const [recentBid, setRecentBid] = useState<{ seat: Position; bid: Bid } | null>(null);
-  useEffect(() => {
-    if (bids.length === 0) { setRecentBid(null); return; }
-    const b = bids[bids.length - 1];
-    setRecentBid({ seat: b.seat, bid: b });
-    const id = window.setTimeout(() => {
-      setRecentBid((cur) => (cur && cur.bid === b ? null : cur));
-    }, 2000);
-    return () => window.clearTimeout(id);
-  }, [bids]);
+  // Last announcement stays visible above its author until a newer one arrives
+  // or the bidding phase ends.
+  const lastBidRef = bids.length > 0 ? bids[bids.length - 1] : null;
+  const recentBid = phase === "bidding" && lastBidRef
+    ? { seat: lastBidRef.seat, bid: lastBidRef }
+    : null;
 
   const cutter = prevSeat(dealer);
 
@@ -601,33 +597,34 @@ function GameTable() {
       <div className="pointer-events-none absolute inset-0" style={{ background:"linear-gradient(180deg, oklch(0.12 0.03 40 / 72%) 0%, transparent 22%, transparent 55%, oklch(0.08 0.02 40 / 92%) 100%)" }} />
 
       <div className="relative z-10 mx-auto flex min-h-screen w-full max-w-md flex-col px-4 pt-4 pb-4">
-        <header className="flex items-center justify-between">
-          <Link to="/salle-attente" className="flex h-9 w-9 items-center justify-center rounded-full border transition active:scale-95" style={{ background:"oklch(0.2 0.03 40 / 60%)", borderColor:"oklch(0.82 0.14 82 / 30%)", backdropFilter:"blur(8px)", color:"oklch(0.9 0.1 85)" }} aria-label="Retour"><ArrowLeft className="h-4 w-4" /></Link>
-          <h1 className="font-serif text-lg font-semibold tracking-wide" style={{ background:"linear-gradient(180deg, oklch(0.95 0.1 88), oklch(0.72 0.14 78))", WebkitBackgroundClip:"text", backgroundClip:"text", color:"transparent", textShadow:"0 1px 0 oklch(0 0 0 / 40%)" }}>{phaseTitle}</h1>
-          <button type="button" onClick={nextRound} className="flex h-9 w-9 items-center justify-center rounded-full border transition active:scale-95" style={{ background:"oklch(0.2 0.03 40 / 60%)", borderColor:"oklch(0.82 0.14 82 / 30%)", backdropFilter:"blur(8px)", color:"oklch(0.9 0.1 85)" }} aria-label="Manche suivante"><RotateCcw className="h-4 w-4" /></button>
+        <header className="flex items-center justify-between gap-2">
+          <div className="flex items-center gap-2">
+            <Link to="/salle-attente" className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border transition active:scale-95" style={{ background:"oklch(0.2 0.03 40 / 60%)", borderColor:"oklch(0.82 0.14 82 / 30%)", backdropFilter:"blur(8px)", color:"oklch(0.9 0.1 85)" }} aria-label="Retour"><ArrowLeft className="h-4 w-4" /></Link>
+            <div
+              className="pointer-events-none flex items-center gap-2 rounded-full border px-2.5 py-1 font-serif"
+              style={{
+                background: "oklch(0.14 0.03 40 / 78%)",
+                borderColor: "oklch(0.82 0.14 82 / 35%)",
+                color: "oklch(0.94 0.1 85)",
+                backdropFilter: "blur(8px)",
+                boxShadow: "0 6px 14px -6px oklch(0 0 0 / 75%), inset 0 1px 0 oklch(1 0 0 / 10%)",
+              }}
+            >
+              <span className="flex items-center gap-1">
+                <span className="uppercase tracking-[0.18em]" style={{ fontSize: 9, color: "oklch(0.85 0.08 82)" }}>Nous</span>
+                <span className="font-semibold tabular-nums" style={{ fontSize: 12 }}>{displayScores.A}</span>
+              </span>
+              <span aria-hidden="true" style={{ color: "oklch(0.82 0.14 82 / 45%)", fontSize: 10 }}>|</span>
+              <span className="flex items-center gap-1">
+                <span className="uppercase tracking-[0.18em]" style={{ fontSize: 9, color: "oklch(0.75 0.06 240)" }}>Eux</span>
+                <span className="font-semibold tabular-nums" style={{ fontSize: 12 }}>{displayScores.B}</span>
+              </span>
+            </div>
+          </div>
+          <h1 className="hidden font-serif text-base font-semibold tracking-wide sm:block" style={{ background:"linear-gradient(180deg, oklch(0.95 0.1 88), oklch(0.72 0.14 78))", WebkitBackgroundClip:"text", backgroundClip:"text", color:"transparent", textShadow:"0 1px 0 oklch(0 0 0 / 40%)" }}>{phaseTitle}</h1>
+          <button type="button" onClick={nextRound} className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border transition active:scale-95" style={{ background:"oklch(0.2 0.03 40 / 60%)", borderColor:"oklch(0.82 0.14 82 / 30%)", backdropFilter:"blur(8px)", color:"oklch(0.9 0.1 85)" }} aria-label="Manche suivante"><RotateCcw className="h-4 w-4" /></button>
         </header>
 
-        {/* Discreet top-left scoreboard */}
-        <div
-          className="pointer-events-none absolute left-3 top-3 z-30 flex flex-col gap-1 rounded-lg border px-2.5 py-1.5 font-serif text-[11px]"
-          style={{
-            background: "oklch(0.14 0.03 40 / 78%)",
-            borderColor: "oklch(0.82 0.14 82 / 35%)",
-            color: "oklch(0.94 0.1 85)",
-            backdropFilter: "blur(8px)",
-            boxShadow: "0 6px 14px -6px oklch(0 0 0 / 75%), inset 0 1px 0 oklch(1 0 0 / 10%)",
-            minWidth: 92,
-          }}
-        >
-          <div className="flex items-center justify-between gap-2">
-            <span className="uppercase tracking-[0.2em]" style={{ fontSize: 9, color: "oklch(0.85 0.08 82)" }}>Nous</span>
-            <span className="font-semibold tabular-nums" style={{ fontSize: 13 }}>{displayScores.A}</span>
-          </div>
-          <div className="flex items-center justify-between gap-2">
-            <span className="uppercase tracking-[0.2em]" style={{ fontSize: 9, color: "oklch(0.75 0.06 240)" }}>Eux</span>
-            <span className="font-semibold tabular-nums" style={{ fontSize: 13 }}>{displayScores.B}</span>
-          </div>
-        </div>
 
         <div ref={boxRef} className="relative mx-auto mt-3 w-full max-w-[420px] flex-1">
           <div className="relative mx-auto aspect-square w-full">
@@ -969,30 +966,73 @@ function ChoicePanel({
 
 function BiddingPanel({ bids, onBid }: { bids: Bid[]; onBid: (b: Bid) => void }) {
   const level = currentBidLevel(bids);
-  const next = level === 0 ? 80 : Math.min(160, level + 10);
-  const canBidLevel = level < 160;
+  const [selectedLevel, setSelectedLevel] = useState<number | "capot">(
+    level < 80 ? 80 : Math.min(160, level + 10),
+  );
+  const min = level < 80 ? 80 : level + 10;
+  const levels: number[] = [];
+  for (let v = 80; v <= 160; v += 10) if (v >= min) levels.push(v);
+  const currentIsValid = selectedLevel === "capot"
+    ? true
+    : (selectedLevel as number) >= min && (selectedLevel as number) <= 160;
+  const effective: number | "capot" = currentIsValid ? selectedLevel : (levels[0] ?? "capot");
+
   return (
     <div className="mt-3 rounded-2xl border p-3 animate-fade-in" style={{ background:"oklch(0.16 0.03 40 / 90%)", borderColor:"oklch(0.82 0.14 82 / 40%)", backdropFilter:"blur(10px)" }}>
       <div className="mb-2 flex items-center justify-between">
         <span className="text-[11px] uppercase tracking-[0.2em]" style={{ color:"oklch(0.88 0.08 82)" }}>À vous d'annoncer</span>
         <span className="text-[11px]" style={{ color:"oklch(0.88 0.08 82 / 80%)" }}>Palier {level === 0 ? "—" : level}</span>
       </div>
+      <div className="mb-2 flex flex-wrap justify-center gap-1">
+        {levels.map((v) => {
+          const active = effective === v;
+          return (
+            <button key={v} type="button" onClick={() => setSelectedLevel(v)} className="rounded-lg border px-2.5 py-1 font-serif text-[13px] font-semibold tabular-nums transition active:scale-[0.95]"
+              style={{
+                background: active ? "linear-gradient(168deg, oklch(0.42 0.11 152) 0%, oklch(0.28 0.09 152) 100%)" : "linear-gradient(168deg, oklch(0.22 0.04 42) 0%, oklch(0.15 0.03 40) 100%)",
+                borderColor: active ? "oklch(0.85 0.14 82 / 75%)" : "oklch(0.82 0.14 82 / 30%)",
+                color: active ? "oklch(0.96 0.11 88)" : "oklch(0.88 0.08 82 / 85%)",
+                boxShadow: active ? "0 6px 14px -6px oklch(0 0 0 / 65%), inset 0 1px 0 oklch(1 0 0 / 12%)" : "inset 0 1px 0 oklch(1 0 0 / 6%)",
+              }}>
+              {v}
+            </button>
+          );
+        })}
+        <button type="button" onClick={() => setSelectedLevel("capot")} className="rounded-lg border px-2.5 py-1 font-serif text-[13px] font-semibold uppercase tracking-wider transition active:scale-[0.95]"
+          style={{
+            background: effective === "capot" ? "linear-gradient(168deg, oklch(0.45 0.16 25) 0%, oklch(0.28 0.13 25) 100%)" : "linear-gradient(168deg, oklch(0.22 0.04 42) 0%, oklch(0.15 0.03 40) 100%)",
+            borderColor: effective === "capot" ? "oklch(0.85 0.16 40 / 80%)" : "oklch(0.82 0.14 82 / 30%)",
+            color: "oklch(0.95 0.1 85)",
+          }}>
+          Capot
+        </button>
+      </div>
       <div className="flex flex-wrap items-center justify-center gap-1.5">
         <button type="button" onClick={() => onBid({ kind:"pass", seat:"bottom" })} className="rounded-xl border px-3 py-2 font-serif text-sm transition active:scale-[0.97]" style={{ background:"linear-gradient(168deg, oklch(0.24 0.04 42) 0%, oklch(0.16 0.03 40) 100%)", borderColor:"oklch(0.82 0.14 82 / 40%)", color:"oklch(0.94 0.1 85)" }}>Passer</button>
-        {canBidLevel && SUITS.map((s) => (
-          <button key={s} type="button" onClick={() => onBid({ kind:"bid", seat:"bottom", points: next, suit: s })} className="flex items-center gap-1.5 rounded-xl border px-3 py-2 font-serif text-sm transition active:scale-[0.97]" style={{ background:"linear-gradient(168deg, oklch(0.36 0.10 152) 0%, oklch(0.24 0.08 152) 100%)", borderColor:"oklch(0.82 0.14 82 / 45%)", color:"oklch(0.94 0.1 85)" }}>
-            {next} <SuitBadge suit={s} size={20} />
-          </button>
-        ))}
-        {SUITS.map((s) => (
-          <button key={"c"+s} type="button" onClick={() => onBid({ kind:"capot", seat:"bottom", suit: s })} className="flex items-center gap-1 rounded-xl border px-2.5 py-2 font-serif text-xs transition active:scale-[0.97]" style={{ background:"linear-gradient(168deg, oklch(0.35 0.13 55) 0%, oklch(0.22 0.10 45) 100%)", borderColor:"oklch(0.82 0.14 82 / 45%)", color:"oklch(0.94 0.1 85)" }}>
-            Capot <SuitBadge suit={s} size={18} />
-          </button>
-        ))}
+        {SUITS.map((s) => {
+          const isCapot = effective === "capot";
+          const bid: Bid = isCapot
+            ? { kind: "capot", seat: "bottom", suit: s }
+            : { kind: "bid", seat: "bottom", points: effective as number, suit: s };
+          return (
+            <button key={s} type="button" onClick={() => onBid(bid)} className="flex items-center gap-1.5 rounded-xl border px-3 py-2 font-serif text-sm font-semibold transition active:scale-[0.97]"
+              style={{
+                background: isCapot
+                  ? "linear-gradient(168deg, oklch(0.38 0.14 25) 0%, oklch(0.24 0.11 25) 100%)"
+                  : "linear-gradient(168deg, oklch(0.36 0.10 152) 0%, oklch(0.24 0.08 152) 100%)",
+                borderColor:"oklch(0.82 0.14 82 / 45%)",
+                color:"oklch(0.96 0.11 88)",
+                boxShadow:"0 8px 18px -10px oklch(0 0 0 / 65%), inset 0 1px 0 oklch(1 0 0 / 10%)",
+              }}>
+              {isCapot ? "Capot" : (effective as number)} <SuitBadge suit={s} size={20} />
+            </button>
+          );
+        })}
       </div>
     </div>
   );
 }
+
 
 function ScoringPanel({
   score, contract, cumulative, onNext,
