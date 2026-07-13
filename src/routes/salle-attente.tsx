@@ -584,27 +584,28 @@ function IconAction({
 
 function SuitMark({
   symbol,
+  color,
   className,
   style,
 }: {
   symbol: string;
+  color: "black" | "red";
   className?: string;
   style?: React.CSSProperties;
 }) {
+  const isRed = color === "red";
   return (
     <span
       className={className}
       style={{
         fontFamily: "ui-serif, Georgia, serif",
-        fontSize: 22,
+        fontSize: 20,
         lineHeight: 1,
-        background: "linear-gradient(180deg, oklch(0.92 0.14 88), oklch(0.62 0.14 72))",
-        WebkitBackgroundClip: "text",
-        backgroundClip: "text",
-        color: "transparent",
-        textShadow: "0 1px 0 oklch(0 0 0 / 55%)",
-        filter: "drop-shadow(0 2px 3px oklch(0 0 0 / 55%))",
-        opacity: 0.9,
+        color: isRed ? "oklch(0.48 0.18 25)" : "oklch(0.15 0.02 40)",
+        textShadow: isRed
+          ? "0 1px 0 oklch(0 0 0 / 25%), 0 0 6px oklch(0.5 0.2 25 / 25%)"
+          : "0 1px 0 oklch(1 0 0 / 8%), 0 0 4px oklch(0 0 0 / 40%)",
+        opacity: 0.85,
         ...style,
       }}
     >
@@ -613,21 +614,21 @@ function SuitMark({
   );
 }
 
-type TokenColor = "ivory" | "red" | "blue";
+type TokenColor = "white" | "red" | "blue" | "green" | "yellow";
 
 function tokenGradient(color: TokenColor) {
   switch (color) {
-    case "ivory":
-      return "linear-gradient(160deg, oklch(0.93 0.03 85) 0%, oklch(0.78 0.04 80) 100%)";
+    case "white":
+      return "linear-gradient(160deg, oklch(0.96 0.02 90) 0%, oklch(0.82 0.03 85) 100%)";
     case "red":
-      return "linear-gradient(160deg, oklch(0.55 0.19 25) 0%, oklch(0.36 0.14 25) 100%)";
+      return "linear-gradient(160deg, oklch(0.58 0.20 25) 0%, oklch(0.38 0.15 25) 100%)";
     case "blue":
-      return "linear-gradient(160deg, oklch(0.48 0.14 245) 0%, oklch(0.30 0.10 250) 100%)";
+      return "linear-gradient(160deg, oklch(0.50 0.15 245) 0%, oklch(0.32 0.11 250) 100%)";
+    case "green":
+      return "linear-gradient(160deg, oklch(0.55 0.15 152) 0%, oklch(0.36 0.11 152) 100%)";
+    case "yellow":
+      return "linear-gradient(160deg, oklch(0.86 0.16 95) 0%, oklch(0.66 0.15 82) 100%)";
   }
-}
-
-function tokenText(color: TokenColor) {
-  return color === "ivory" ? "oklch(0.28 0.05 40)" : "oklch(0.95 0.06 85)";
 }
 
 function ScoreRound({
@@ -656,7 +657,7 @@ function ScoreRound({
   );
 }
 
-function ScoreBarShort({
+function ScoreBarMedium({
   className,
   style,
   color,
@@ -669,7 +670,33 @@ function ScoreBarShort({
     <div
       className={className}
       style={{
-        width: 22,
+        width: 26,
+        height: 7,
+        borderRadius: 2,
+        background: tokenGradient(color),
+        border: "1px solid oklch(0 0 0 / 60%)",
+        boxShadow:
+          "0 2px 3px oklch(0 0 0 / 55%), inset 0 1px 0 oklch(1 0 0 / 30%), inset 0 -1px 0 oklch(0 0 0 / 30%)",
+        ...style,
+      }}
+    />
+  );
+}
+
+function ScoreBarLong({
+  className,
+  style,
+  color,
+}: {
+  className?: string;
+  style?: React.CSSProperties;
+  color: TokenColor;
+}) {
+  return (
+    <div
+      className={className}
+      style={{
+        width: 44,
         height: 7,
         borderRadius: 2,
         background: tokenGradient(color),
