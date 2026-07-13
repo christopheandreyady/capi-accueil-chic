@@ -2,6 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { ArrowLeft, RotateCcw, Shuffle, Check } from "lucide-react";
 import bistrotTable from "@/assets/capi-bistrot-table.jpg";
+import capiEmblem from "@/assets/capi-emblem.png";
 import { buildDeck, isRedSuit, shuffle, type Card, type Rank, type Suit } from "@/lib/deck";
 import {
   CLOCKWISE,
