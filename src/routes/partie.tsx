@@ -818,25 +818,20 @@ function trickTarget(
   const dx = a.x - cx;
   const dy = a.y - cy;
   const len = Math.hypot(dx, dy) || 1;
-  // Card is pushed further OUT of the center, near its player, so it clearly
-  // belongs to that seat. Slight tangential + radial jitter avoids the
-  // "four perfectly aligned cards" look and shows the play order via
-  // increasing offset.
   const nx = dx / len;
   const ny = dy / len;
-  // Perpendicular unit vector.
   const px = -ny;
   const py = nx;
-  // Cards gather at the center of the table and slightly overlap each other,
-  // like a real trick pile. Each new card is pushed a touch further from its
-  // player so play order stays readable, but they stay close enough to
-  // consistently overlap.
-  const radialOffset = 26 + orderIndex * 3;
-  const tangentOffset = seatJitter(seat, 0, 1) * 5 + (orderIndex - 1.5) * 2.5;
+  // Cards gather tightly in the middle, overlap each other, and never form
+  // a clean cross. Each play sits a touch off-center on a different axis.
+  const radialOffset = 14 + seatJitter(seat, orderIndex, 3) * 5;
+  const tangentOffset = seatJitter(seat, orderIndex, 1) * 10 + (orderIndex - 1.5) * 3.5;
+  const wobble = seatJitter(seat, orderIndex, 5) * 6;
   return {
-    x: cx + nx * radialOffset + px * tangentOffset,
-    y: cy + ny * radialOffset + py * tangentOffset,
-    rotate: a.angle + seatJitter(seat, 0, 2) * 8 + (orderIndex % 2 === 0 ? -2 : 2),
+    x: cx + nx * radialOffset + px * tangentOffset + seatJitter(seat, orderIndex, 7) * 3,
+    y: cy + ny * radialOffset + py * tangentOffset + seatJitter(seat, orderIndex, 9) * 3,
+    // Break the strict 0/90/180/270 seat rotation with a real per-play wobble.
+    rotate: a.angle + wobble + (orderIndex % 2 === 0 ? -4 : 5) + seatJitter(seat, orderIndex, 11) * 3,
   };
 }
 
