@@ -634,9 +634,13 @@ function GameTable() {
               </div>
             )}
 
+            {/* Team score zones anchored to the table */}
+            <TableScoreBadge team="A" label="Nous" value={displayScores.A} pulse={chipsSlideTo === "A"} />
+            <TableScoreBadge team="B" label="Eux" value={displayScores.B} pulse={chipsSlideTo === "B"} />
+
             {/* Contract chips at center of table */}
-            {(phase === "bidding" || phase === "playing" || phase === "scoring") && currentContract(bids) && (
-              <ContractChips contract={currentContract(bids)!} />
+            {(phase === "bidding" || phase === "playing" || phase === "scoring") && currentContract(bids) && chipsVisible && (
+              <ContractChips contract={currentContract(bids)!} slideTo={chipsSlideTo} />
             )}
 
             {phase === "shuffling" && size.w > 0 && <ShuffleAnimation deckPos={deckBase} />}
