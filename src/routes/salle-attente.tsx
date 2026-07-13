@@ -605,6 +605,34 @@ function IconAction({
   );
 }
 
+function IntegratedSuit({
+  symbol,
+  color,
+  style,
+}: {
+  symbol: string;
+  color: "black" | "red";
+  style?: React.CSSProperties;
+}) {
+  const isRed = color === "red";
+  return (
+    <span
+      style={{
+        position: "absolute",
+        fontFamily: "ui-serif, Georgia, serif",
+        lineHeight: 1,
+        color: isRed ? "oklch(0.42 0.18 25)" : "oklch(0.12 0.02 40)",
+        opacity: 0.22,
+        mixBlendMode: "multiply",
+        filter: "blur(0.3px)",
+        ...style,
+      }}
+    >
+      {symbol}
+    </span>
+  );
+}
+
 function SuitMark({
   symbol,
   color,
