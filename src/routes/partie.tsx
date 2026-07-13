@@ -1321,7 +1321,7 @@ function ContractChips({ contract, slideTo }: { contract: Contract; slideTo?: Te
         )}
         {b.smallBar > 0 && (
           <div className="animate-scale-in" style={{ animationDelay: "120ms" }}>
-            <ChipBar width={44} height={12} tone="small" value={50} tilt={6} />
+            <ChipBar width={30} height={12} tone="small" value={50} tilt={6} />
           </div>
         )}
         {b.rounds > 0 && (
