@@ -26,21 +26,29 @@ export function getWaitingRoomState<TPlayer extends WaitingRoomPlayer>(
   };
 }
 
-export function markSeatReady<TPlayer extends WaitingRoomPlayer>(
-  seats: WaitingRoomSeat<TPlayer>[],
+export function markSeatReady<
+  TPlayer extends WaitingRoomPlayer,
+  TSeat extends WaitingRoomSeat<TPlayer>,
+>(
+  seats: TSeat[],
   position: string,
-) {
+): TSeat[] {
   return seats.map((seat) =>
     seat.position === position && seat.player && !seat.player.ready
       ? { ...seat, player: { ...seat.player, ready: true } }
       : seat,
-  );
+  ) as TSeat[];
 }
 
-export function setSeatPlayer<TPlayer extends WaitingRoomPlayer>(
-  seats: WaitingRoomSeat<TPlayer>[],
+export function setSeatPlayer<
+  TPlayer extends WaitingRoomPlayer,
+  TSeat extends WaitingRoomSeat<TPlayer>,
+>(
+  seats: TSeat[],
   position: string,
   player: TPlayer | null,
-) {
-  return seats.map((seat) => (seat.position === position ? { ...seat, player } : seat));
+): TSeat[] {
+  return seats.map((seat) =>
+    seat.position === position ? { ...seat, player } : seat,
+  ) as TSeat[];
 }
