@@ -1502,39 +1502,45 @@ function SuitBadge({ suit, size = 20 }: { suit: Suit; size?: number }) {
 
 function TeamStash({ team, stash }: { team: Team; stash: ChipBreakdown[] }) {
   if (stash.length === 0) return null;
-  // Anchored where the sliding contract chip lands, so the handoff feels
-  // continuous. Stacks slightly offset per round, like a real pile of chips
-  // pushed to the side of the table.
+  // Chips sit ON THE FELT to the side of each team — well clear of the
+  // trick pile and the players' cards. Team A → bottom-right of the felt,
+  // Team B → top-left. Each round adds a small scattered pile, slightly
+  // rotated and offset like real chips pushed aside after a hand.
   const style: React.CSSProperties =
     team === "A"
-      ? { left: "50%", top: "82%", transform: "translate(-50%, -50%)", maxWidth: "78%" }
-      : { left: "14%", top: "50%", transform: "translate(-50%, -50%)", maxWidth: "22%" };
+      ? { right: "6%", bottom: "10%", width: "34%" }
+      : { left: "6%", top: "10%", width: "34%" };
   return (
     <div
-      className="pointer-events-none absolute z-[22] flex flex-wrap items-center justify-center gap-1.5"
-      style={style}
+      className="pointer-events-none absolute z-[22] flex flex-wrap gap-1.5"
+      style={{ ...style, justifyContent: team === "A" ? "flex-end" : "flex-start" }}
     >
       {stash.map((b, i) => {
-        const tilt = ((i * 53) % 13) - 6;
+        const tilt = ((i * 53) % 17) - 8;
+        const dx = seatJitter(team === "A" ? "bottom" : "top", i, 21) * 5;
+        const dy = seatJitter(team === "A" ? "bottom" : "top", i, 23) * 4 - (i % 3) * 2;
         return (
           <div
             key={i}
-            className="flex flex-col items-center gap-0.5"
+            className="flex flex-col items-center animate-scale-in"
             style={{
-              transform: `translateY(${(i % 3) * -2}px) rotate(${tilt}deg)`,
+              gap: 2,
+              transform: `translate(${dx}px, ${dy}px) rotate(${tilt}deg)`,
             }}
           >
             {b.capot && <CapotChip suit={"♠"} suitColor="oklch(0.94 0.14 82)" />}
             {!b.capot && b.largeBar > 0 && (
-              <ChipBar width={49} height={12} tone="large" value={100} tilt={-5} />
+              <ChipBar width={42} height={11} tone="large" value={100} tilt={-4 + seatJitter("top", i, 31) * 3} />
             )}
             {!b.capot && b.smallBar > 0 && (
-              <ChipBar width={24} height={10} tone="small" value={50} tilt={6} />
+              <ChipBar width={21} height={9} tone="small" value={50} tilt={5 + seatJitter("top", i, 33) * 3} />
             )}
             {!b.capot && b.rounds > 0 && (
-              <div className="flex items-center gap-[2px]">
+              <div className="flex items-center" style={{ gap: 2 }}>
                 {Array.from({ length: b.rounds }).map((_, j) => (
-                  <RoundChip key={j} index={j} />
+                  <div key={j} style={{ transform: `translateY(${seatJitter("top", j + i * 7, 37) * 2}px) rotate(${((j * 41) % 19) - 9}deg)` }}>
+                    <RoundChip index={j} />
+                  </div>
                 ))}
               </div>
             )}
