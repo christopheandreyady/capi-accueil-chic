@@ -1145,30 +1145,35 @@ function ContractChips({ contract, slideTo }: { contract: Contract; slideTo?: Te
       }
     : { top: "50%", left: "50%", transform: "translate(-50%, -50%)" };
 
+  const wrapperStyle: React.CSSProperties = {
+    position: "absolute",
+    ...slideStyle,
+    transition: "transform 1200ms cubic-bezier(0.32, 0.72, 0.28, 1), top 1200ms cubic-bezier(0.32, 0.72, 0.28, 1), left 1200ms cubic-bezier(0.32, 0.72, 0.28, 1), opacity 800ms ease",
+    zIndex: 30,
+    pointerEvents: "none",
+  };
+
   if (b.capot) {
     return (
-      <div className="pointer-events-none absolute left-1/2 top-1/2 z-30 -translate-x-1/2 -translate-y-1/2 animate-scale-in">
+      <div className="animate-scale-in" style={wrapperStyle}>
         <CapotChip suit={contract.suit} suitColor={suitColor} />
       </div>
     );
   }
 
   return (
-    <div className="pointer-events-none absolute left-1/2 top-1/2 z-30 -translate-x-1/2 -translate-y-1/2">
+    <div style={wrapperStyle}>
       <div className="flex flex-col items-center gap-1.5">
-        {/* Large bar */}
         {b.largeBar > 0 && (
           <div className="animate-scale-in" style={{ animationDelay: "40ms" }}>
             <ChipBar width={64} height={16} tone="large" />
           </div>
         )}
-        {/* Small bar */}
         {b.smallBar > 0 && (
           <div className="animate-scale-in" style={{ animationDelay: "120ms" }}>
             <ChipBar width={44} height={12} tone="small" />
           </div>
         )}
-        {/* Round chips */}
         {b.rounds > 0 && (
           <div className="flex items-center gap-1">
             {Array.from({ length: b.rounds }).map((_, i) => (
@@ -1178,22 +1183,52 @@ function ContractChips({ contract, slideTo }: { contract: Contract; slideTo?: Te
             ))}
           </div>
         )}
-        {/* Contract label */}
-        <div
-          className="mt-1 rounded-full px-2 py-0.5 text-[10px] font-semibold tracking-wider animate-fade-in"
-          style={{
-            background: "oklch(0.16 0.03 40 / 78%)",
-            color: "oklch(0.94 0.1 85)",
-            border: "1px solid oklch(0.72 0.14 82 / 45%)",
-            backdropFilter: "blur(6px)",
-          }}
-        >
-          {contract.points} <span style={{ color: suitColor }}>{contract.suit}</span>
-        </div>
+        {!slideTo && (
+          <div
+            className="mt-1 rounded-full px-2 py-0.5 text-[10px] font-semibold tracking-wider animate-fade-in"
+            style={{
+              background: "oklch(0.16 0.03 40 / 78%)",
+              color: "oklch(0.94 0.1 85)",
+              border: "1px solid oklch(0.72 0.14 82 / 45%)",
+              backdropFilter: "blur(6px)",
+            }}
+          >
+            {contract.points} <span style={{ color: suitColor }}>{contract.suit}</span>
+          </div>
+        )}
       </div>
     </div>
   );
 }
+
+function TableScoreBadge({ team, label, value, pulse }: { team: Team; label: string; value: number; pulse: boolean }) {
+  const color = team === "A" ? "oklch(0.72 0.16 55)" : "oklch(0.62 0.16 240)";
+  const style: React.CSSProperties =
+    team === "A"
+      ? { left: "50%", top: "88%", transform: "translate(-50%, -50%)" }
+      : { left: "8%", top: "50%", transform: "translate(-50%, -50%)" };
+  return (
+    <div
+      className="pointer-events-none absolute z-[25] flex items-center gap-1.5 rounded-full border px-2.5 py-1"
+      style={{
+        ...style,
+        background: "oklch(0.14 0.03 40 / 85%)",
+        borderColor: pulse ? "oklch(0.88 0.16 82 / 90%)" : "oklch(0.82 0.14 82 / 45%)",
+        boxShadow: pulse
+          ? "0 0 0 2px oklch(0.85 0.14 82 / 45%), 0 0 22px -2px oklch(0.85 0.14 82 / 75%), 0 6px 14px -6px oklch(0 0 0 / 75%)"
+          : "0 6px 14px -6px oklch(0 0 0 / 75%), inset 0 1px 0 oklch(1 0 0 / 10%)",
+        backdropFilter: "blur(8px)",
+        color: "oklch(0.94 0.1 85)",
+        transition: "box-shadow 400ms ease, border-color 400ms ease",
+      }}
+    >
+      <span className="h-1.5 w-1.5 rounded-full" style={{ background: color }} />
+      <span className="uppercase tracking-[0.18em]" style={{ fontSize: 9 }}>{label}</span>
+      <span className="font-serif text-sm font-semibold" style={{ minWidth: 22, textAlign: "right" }}>{value}</span>
+    </div>
+  );
+}
+
 
 function ChipBar({ width, height, tone }: { width: number; height: number; tone: "large" | "small" }) {
   const bg = tone === "large"
