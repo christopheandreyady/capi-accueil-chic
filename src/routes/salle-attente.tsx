@@ -6,6 +6,7 @@ import capiEmblem from "@/assets/capi-emblem.png";
 import { InviteModal } from "@/components/InviteModal";
 import { PremiumModal } from "@/components/PremiumModal";
 import { buildInviteLink, defaultTableConfig, loadTableConfig, type TableConfig } from "@/lib/table-config";
+import { getWaitingRoomState, markSeatReady } from "@/lib/waiting-room-state";
 
 export const Route = createFileRoute("/salle-attente")({
   head: () => ({
@@ -144,17 +145,19 @@ function WaitingRoom() {
   }, []);
 
   const inviteLink = useMemo(() => buildInviteLink(cfg.code), [cfg.code]);
-  const playersCount = seats.filter((s) => s.player).length;
   const total = 4;
-  const readyCount = seats.filter((s) => s.player?.ready).length;
-  const allReady = playersCount === total && readyCount === total;
-  const roomFull = playersCount === total;
+  const { playersCount, readyCount, allReady, roomFull } = getWaitingRoomState(seats, total);
   const localReady = seats.find((s) => s.position === "bottom")?.player?.ready ?? false;
 
   // Enter the starting state only when the room is complete and every
   // connected player is represented by the same ready flag used by the UI.
   useEffect(() => {
     setIsStarting(allReady);
+    if (allReady) {
+      setInviteOpen(false);
+      setQrOpen(false);
+      setCopied(false);
+    }
   }, [allReady]);
 
   // Re-check both invariants after the short transition. If a player leaves
@@ -173,13 +176,7 @@ function WaitingRoom() {
 
 
   function markReady(pos: Position) {
-    setSeats((s) =>
-      s.map((seat) =>
-        seat.position === pos && seat.player && !seat.player.ready
-          ? { ...seat, player: { ...seat.player, ready: true } }
-          : seat,
-      ),
-    );
+    setSeats((current) => markSeatReady(current, pos));
   }
 
   async function copyCode() {
