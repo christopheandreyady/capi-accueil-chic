@@ -1400,10 +1400,10 @@ function TeamStash({ team, stash }: { team: Team; stash: ChipBreakdown[] }) {
           >
             {b.capot && <CapotChip suit={"♠"} suitColor="oklch(0.94 0.14 82)" />}
             {!b.capot && b.largeBar > 0 && (
-              <ChipBar width={58} height={14} tone="large" value={100} tilt={-3} />
+              <ChipBar width={49} height={12} tone="large" value={100} tilt={-5} />
             )}
             {!b.capot && b.smallBar > 0 && (
-              <ChipBar width={42} height={12} tone="small" value={50} tilt={3} />
+              <ChipBar width={36} height={10} tone="small" value={50} tilt={6} />
             )}
             {!b.capot && b.rounds > 0 && (
               <div className="flex items-center gap-[2px]">
