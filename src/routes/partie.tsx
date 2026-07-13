@@ -2,6 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { ArrowLeft, RotateCcw, Shuffle, Check } from "lucide-react";
 import bistrotTable from "@/assets/capi-bistrot-table.jpg";
+import capiEmblem from "@/assets/capi-emblem.png";
 import { buildDeck, isRedSuit, shuffle, type Card, type Rank, type Suit } from "@/lib/deck";
 import {
   CLOCKWISE,
@@ -67,13 +68,14 @@ const PLAYERS: Record<Position, PlayerInfo> = {
   right: { name: "Bot Alex", level: 12, photo: "https://i.pravatar.cc/200?img=15" },
 };
 
-// Card sizes — camera pulled closer, hand + trick more imposing.
-const CARD_W_BIG = 108;
-const CARD_H_BIG = 158;
-const CARD_W_SMALL = 46;
-const CARD_H_SMALL = 68;
-const CARD_W_TRICK = 74;
-const CARD_H_TRICK = 110;
+// Card sizes — reduced ~30% so the felt stays visible and the table reads
+// as the hero of the screen.
+const CARD_W_BIG = 76;
+const CARD_H_BIG = 112;
+const CARD_W_SMALL = 36;
+const CARD_H_SMALL = 54;
+const CARD_W_TRICK = 54;
+const CARD_H_TRICK = 80;
 
 const FLIGHT_MS = 460;
 const CUT_MS = 2900;
@@ -472,15 +474,15 @@ function GameTable() {
   const anchors = useMemo(() => {
     const w = size.w || 1;
     const h = size.h || 1;
-    // Anchors are inset from the table edges so the hand fans / trick /
-    // chips sit on the FELT, not under the avatars now seated on the
-    // wooden rim (at ~3% inside each edge of the table container).
-    const inset = Math.min(w, h) * 0.14;
+    // The wooden rim is ~7-8% of the smaller dim. Cards must sit on the
+    // felt (well inside the wood), avatars sit on the rim.
+    const insetV = h * 0.19;
+    const insetH = w * 0.14;
     return {
-      bottom: { x: w * 0.5, y: h - inset, angle: 0 },
-      top: { x: w * 0.5, y: inset, angle: 180 },
-      left: { x: inset, y: h * 0.5, angle: 90 },
-      right: { x: w - inset, y: h * 0.5, angle: -90 },
+      bottom: { x: w * 0.5, y: h - insetV, angle: 0 },
+      top: { x: w * 0.5, y: insetV, angle: 180 },
+      left: { x: insetH, y: h * 0.5, angle: 90 },
+      right: { x: w - insetH, y: h * 0.5, angle: -90 },
     } as const;
   }, [size]);
 
@@ -616,7 +618,7 @@ function GameTable() {
 
 
 
-      <div className="relative z-10 mx-auto flex min-h-screen w-full max-w-md flex-col px-4 pt-4 pb-4">
+      <div className="relative z-10 mx-auto flex min-h-screen w-full max-w-3xl flex-col px-2 pt-4 pb-4">
         <header className="flex items-center justify-between gap-2">
           <div className="flex items-center gap-2">
             <Link to="/salle-attente" className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border transition active:scale-95" style={{ background:"oklch(0.2 0.03 40 / 60%)", borderColor:"oklch(0.82 0.14 82 / 30%)", backdropFilter:"blur(8px)", color:"oklch(0.9 0.1 85)" }} aria-label="Retour"><ArrowLeft className="h-4 w-4" /></Link>
@@ -646,11 +648,11 @@ function GameTable() {
         </header>
 
 
-        <div className="relative mx-auto my-auto flex w-full flex-1 items-center justify-center px-2 py-3">
+        <div className="relative mx-auto my-auto flex w-full flex-1 items-center justify-center px-1 py-2">
           <div
             ref={boxRef}
-            className="relative aspect-square"
-            style={{ width: "min(88vw, calc(100dvh - 240px), 540px)" }}
+            className="relative"
+            style={{ width: "min(98vw, calc((100dvh - 200px) * 1.5), 720px)", aspectRatio: "3 / 2" }}
           >
             {/* Round wooden bistro table — a physical object floating in the
                 room. Transparent PNG so the environment stays visible around
@@ -805,9 +807,9 @@ function handTarget(seat: Position, index: number, total: number, anchors: Ancho
   const a = anchors[seat];
   // Constant per-card angular step: the fan CLOSES as cards are played,
   // so the hand always stays visually compact with no gap where a card was.
-  const stepDeg = isBottom ? 12.5 : 2.2;
+  const stepDeg = isBottom ? 9 : 2.2;
   const localAngle = total > 1 ? -((total - 1) / 2) * stepDeg + stepDeg * index : 0;
-  const radius = isBottom ? 82 : 70;
+  const radius = isBottom ? 110 : 62;
   const rad = (localAngle * Math.PI) / 180;
   const lx = Math.sin(rad) * radius;
   const ly = -Math.cos(rad) * radius;
@@ -1296,16 +1298,24 @@ function CardBack() {
       {/* subtle vintage wear: soft light noise + edge darkening, never dirty */}
       <div className="pointer-events-none absolute inset-0 opacity-25 mix-blend-overlay" style={{ backgroundImage:"radial-gradient(oklch(1 0 0 / 22%) 0.5px, transparent 0.6px), radial-gradient(oklch(0 0 0 / 30%) 0.5px, transparent 0.6px)", backgroundSize:"3px 3px, 5px 5px", backgroundPosition:"0 0, 1px 2px" }} />
       <div className="pointer-events-none absolute inset-0" style={{ boxShadow:"inset 0 0 14px oklch(0 0 0 / 55%)" }} />
-      {/* CAPI monogram — larger, metallic gold */}
+      {/* CAPI emblem — centered medallion printed into the back design */}
       <div className="absolute inset-0 flex items-center justify-center">
-        <span className="font-serif font-black tracking-[0.22em]" style={{
-          fontSize: "clamp(15px, 22%, 26px)",
-          background: "linear-gradient(180deg, oklch(0.98 0.11 88) 0%, oklch(0.82 0.14 82) 45%, oklch(0.58 0.12 62) 100%)",
-          WebkitBackgroundClip: "text",
-          backgroundClip: "text",
-          color: "transparent",
-          filter: "drop-shadow(0 1px 0 oklch(0 0 0 / 70%)) drop-shadow(0 0 6px oklch(0.82 0.14 82 / 45%))",
-        }}>CAPI</span>
+        <img
+          src={capiEmblem}
+          alt=""
+          width={512}
+          height={512}
+          className="pointer-events-none"
+          style={{
+            width: "58%",
+            height: "58%",
+            objectFit: "contain",
+            filter:
+              "drop-shadow(0 1px 0 oklch(0 0 0 / 70%)) drop-shadow(0 0 5px oklch(0.82 0.14 82 / 55%))",
+            mixBlendMode: "screen",
+            opacity: 0.95,
+          }}
+        />
       </div>
     </div>
   );
@@ -1556,8 +1566,8 @@ function TeamStash({ team, stash }: { team: Team; stash: ChipBreakdown[] }) {
   // rotated and offset like real chips pushed aside after a hand.
   const style: React.CSSProperties =
     team === "A"
-      ? { right: "6%", bottom: "10%", width: "34%" }
-      : { left: "6%", top: "10%", width: "34%" };
+      ? { right: "2%", bottom: "3%", width: "30%" }
+      : { left: "2%", top: "3%", width: "30%" };
   return (
     <div
       className="pointer-events-none absolute z-[22] flex flex-wrap gap-1.5"
