@@ -217,8 +217,9 @@ function Home() {
               >
                 {label}
               </span>
-            </button>
-          ))}
+            </Comp>
+          );
+          })}
         </nav>
 
         <p
