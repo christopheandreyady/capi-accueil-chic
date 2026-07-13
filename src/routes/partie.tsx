@@ -1199,28 +1199,37 @@ function TableScoreBadge({ team, label, value, pulse }: { team: Team; label: str
 }
 
 
-function ChipBar({ width, height, tone }: { width: number; height: number; tone: "large" | "small" }) {
+function ChipBar({ width, height, tone, value }: { width: number; height: number; tone: "large" | "small"; value: number }) {
   const bg = tone === "large"
-    ? "linear-gradient(180deg, oklch(0.55 0.18 28) 0%, oklch(0.42 0.16 28) 55%, oklch(0.32 0.13 28) 100%)"
-    : "linear-gradient(180deg, oklch(0.72 0.16 240) 0%, oklch(0.55 0.15 240) 55%, oklch(0.4 0.13 240) 100%)";
+    ? "linear-gradient(180deg, oklch(0.58 0.19 28) 0%, oklch(0.44 0.17 28) 50%, oklch(0.3 0.13 28) 100%)"
+    : "linear-gradient(180deg, oklch(0.72 0.16 240) 0%, oklch(0.55 0.15 240) 50%, oklch(0.38 0.13 240) 100%)";
+  // Rectangular with tiny chamfered corners (bevel), flat top.
+  const bevel = Math.max(2, Math.round(height * 0.18));
+  const clip = `polygon(${bevel}px 0, calc(100% - ${bevel}px) 0, 100% ${bevel}px, 100% calc(100% - ${bevel}px), calc(100% - ${bevel}px) 100%, ${bevel}px 100%, 0 calc(100% - ${bevel}px), 0 ${bevel}px)`;
   return (
     <div
-      className="relative"
+      className="relative flex items-center justify-center"
       style={{
         width, height,
-        borderRadius: height / 2,
         background: bg,
-        border: "1px solid oklch(0.85 0.14 82 / 65%)",
-        boxShadow: "0 4px 8px -3px oklch(0 0 0 / 55%), 0 1px 0 oklch(1 0 0 / 25%) inset, 0 -1px 0 oklch(0 0 0 / 35%) inset",
+        clipPath: clip,
+        boxShadow: "0 4px 8px -3px oklch(0 0 0 / 55%), 0 1px 0 oklch(1 0 0 / 22%) inset, 0 -1px 0 oklch(0 0 0 / 40%) inset",
       }}
     >
-      <div
-        className="absolute inset-y-0.5 left-1 right-1 rounded-full"
+      {/* engraved number */}
+      <span
+        className="font-serif font-bold select-none"
         style={{
-          borderTop: "1px dashed oklch(0.9 0.14 82 / 55%)",
-          borderBottom: "1px dashed oklch(0.9 0.14 82 / 40%)",
+          fontSize: Math.round(height * 0.62),
+          lineHeight: 1,
+          letterSpacing: "0.04em",
+          color: "oklch(0.18 0.05 30 / 85%)",
+          textShadow:
+            "0 1px 0 oklch(1 0 0 / 22%), 0 -1px 0 oklch(0 0 0 / 55%)",
         }}
-      />
+      >
+        {value}
+      </span>
     </div>
   );
 }
