@@ -787,11 +787,12 @@ function GameTable() {
               const x = isDealt ? target.x : deckPos.x;
               const y = isDealt ? target.y : deckPos.y;
               const rotate = isDealt ? target.rotate : deckPos.angle + (i%2===0?-1.5:1.5);
-              const w = target.w, h = target.h;
+              const w = isDealt ? target.w : CARD_W_DECK;
+              const h = isDealt ? target.h : CARD_H_DECK;
               const showFace = isDealt && d.seat === "bottom";
               const z = isDealt ? 100 + d.indexInHand + (d.seat==="bottom"?50:0) : 20 + (32-i);
               return (
-                <div key={d.card.id} className="absolute left-0 top-0" style={{ width:w, height:h, transform:`translate3d(${x-w/2}px, ${y-h/2}px, 0) rotate(${rotate}deg)`, transition:`transform ${FLIGHT_MS}ms cubic-bezier(0.22, 0.7, 0.25, 1)`, zIndex:z, willChange:"transform" }}>
+                <div key={d.card.id} className="absolute left-0 top-0" style={{ width:w, height:h, transform:`translate3d(${x-w/2}px, ${y-h/2}px, 0) rotate(${rotate}deg)`, transition:`transform ${FLIGHT_MS}ms cubic-bezier(0.22, 0.7, 0.25, 1), width ${FLIGHT_MS}ms ease, height ${FLIGHT_MS}ms ease`, zIndex:z, willChange:"transform" }}>
                   {showFace ? <CardFace card={d.card} /> : <CardBack />}
                 </div>
               );
