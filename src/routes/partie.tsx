@@ -808,12 +808,16 @@ function trickTarget(
   // Perpendicular unit vector.
   const px = -ny;
   const py = nx;
-  const radialOffset = 62 + orderIndex * 3;
-  const tangentOffset = seatJitter(seat, 0, 1) * 10 + (orderIndex - 1.5) * 4;
+  // Cards gather at the center of the table and slightly overlap each other,
+  // like a real trick pile. Each new card is pushed a touch further from its
+  // player so play order stays readable, but they stay close enough to
+  // consistently overlap.
+  const radialOffset = 26 + orderIndex * 3;
+  const tangentOffset = seatJitter(seat, 0, 1) * 5 + (orderIndex - 1.5) * 2.5;
   return {
     x: cx + nx * radialOffset + px * tangentOffset,
     y: cy + ny * radialOffset + py * tangentOffset,
-    rotate: a.angle + seatJitter(seat, 0, 2) * 12 + (orderIndex % 2 === 0 ? -3 : 3),
+    rotate: a.angle + seatJitter(seat, 0, 2) * 8 + (orderIndex % 2 === 0 ? -2 : 2),
   };
 }
 
