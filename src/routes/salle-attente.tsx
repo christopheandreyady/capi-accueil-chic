@@ -709,35 +709,7 @@ function ScoreBarLong({
   );
 }
 
-function ScoreBarLong({
-  className,
-  style,
-  color,
-}: {
-  className?: string;
-  style?: React.CSSProperties;
-  color: TokenColor;
-}) {
-  return (
-    <div
-      className={className}
-      style={{
-        width: 40,
-        height: 7,
-        borderRadius: 2,
-        background: tokenGradient(color),
-        border: "1px solid oklch(0 0 0 / 60%)",
-        boxShadow:
-          "0 2px 3px oklch(0 0 0 / 55%), inset 0 1px 0 oklch(1 0 0 / 30%), inset 0 -1px 0 oklch(0 0 0 / 30%)",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        color: tokenText(color),
-        ...style,
-      }}
-    />
-  );
-}
+
 
 function SeatSlot({
   seat,
