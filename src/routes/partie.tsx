@@ -207,6 +207,9 @@ function GameTable() {
   const [roundScore, setRoundScore] = useState<RoundScore | null>(null);
   const [cumulative, setCumulative] = useState<{ A: number; B: number }>({ A: 0, B: 0 });
   const [selectedCardId, setSelectedCardId] = useState<string | null>(null);
+  const [displayScores, setDisplayScores] = useState<{ A: number; B: number }>({ A: 0, B: 0 });
+  const [chipsSlideTo, setChipsSlideTo] = useState<Team | null>(null);
+  const [chipsVisible, setChipsVisible] = useState(true);
 
   const cutter = prevSeat(dealer);
 
@@ -336,11 +339,10 @@ function GameTable() {
         const done = tricks.length + 1;
         setTricks((prev) => [...prev, currentTrick]);
         if (done >= 8) {
-          // Finalize round
+          // Finalize round — cumulative gets updated later, via animated counter
           const allTricks = [...tricks, currentTrick];
           const rs = scoreRound(contract, allTricks);
           setRoundScore(rs);
-          setCumulative((c) => ({ A: c.A + rs.A, B: c.B + rs.B }));
           setCurrentTrick(null);
           setPhase("scoring");
         } else {
@@ -359,6 +361,55 @@ function GameTable() {
     return () => clearTimeout(timer);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [phase, contract, currentTrick, currentTurn, hands, tricks]);
+
+  // --- Scoring animation: slide chips → winning team, then count up ------
+  useEffect(() => {
+    if (phase !== "scoring" || !roundScore) return;
+    setChipsVisible(true);
+    setChipsSlideTo(null);
+    const winner: Team =
+      roundScore.A > roundScore.B
+        ? "A"
+        : roundScore.B > roundScore.A
+          ? "B"
+          : roundScore.bidTeam;
+    const from = { A: cumulative.A, B: cumulative.B };
+    const to = { A: cumulative.A + roundScore.A, B: cumulative.B + roundScore.B };
+    setDisplayScores(from);
+
+    const t1 = window.setTimeout(() => setChipsSlideTo(winner), 700);
+    let raf = 0;
+    const t2 = window.setTimeout(() => {
+      const start = performance.now();
+      const dur = 1500;
+      const tick = () => {
+        const p = Math.min(1, (performance.now() - start) / dur);
+        const e = 1 - Math.pow(1 - p, 3);
+        setDisplayScores({
+          A: Math.round(from.A + (to.A - from.A) * e),
+          B: Math.round(from.B + (to.B - from.B) * e),
+        });
+        if (p < 1) raf = requestAnimationFrame(tick);
+        else setCumulative(to);
+      };
+      raf = requestAnimationFrame(tick);
+    }, 1900);
+    const t3 = window.setTimeout(() => setChipsVisible(false), 3900);
+    return () => {
+      clearTimeout(t1);
+      clearTimeout(t2);
+      clearTimeout(t3);
+      if (raf) cancelAnimationFrame(raf);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [phase, roundScore]);
+
+  // Keep displayScores synced outside scoring
+  useEffect(() => {
+    if (phase !== "scoring") setDisplayScores(cumulative);
+  }, [cumulative, phase]);
+
+
 
   const playCardBy = (seat: Position, card: Card) => {
     setHands((h) => ({ ...h, [seat]: h[seat].filter((c) => c.id !== card.id) }));
@@ -520,8 +571,8 @@ function GameTable() {
 
         {/* Scoreboard */}
         <div className="mt-2 flex items-center justify-center gap-3 text-[11px]">
-          <ScorePill team="A" label="Nous" value={cumulative.A} highlight={contract ? TEAM_OF[contract.bidder] === "A" : false} />
-          <ScorePill team="B" label="Eux" value={cumulative.B} highlight={contract ? TEAM_OF[contract.bidder] === "B" : false} />
+          <ScorePill team="A" label="Nous" value={displayScores.A} highlight={contract ? TEAM_OF[contract.bidder] === "A" : false} />
+          <ScorePill team="B" label="Eux" value={displayScores.B} highlight={contract ? TEAM_OF[contract.bidder] === "B" : false} />
           {contract && phase === "playing" && (
             <div className="rounded-full border px-2.5 py-0.5" style={{ background:"oklch(0.18 0.03 40 / 80%)", borderColor:"oklch(0.82 0.14 82 / 40%)", color:"oklch(0.94 0.1 85)" }}>
               {PLAYERS[contract.bidder].name.split(" ").slice(-1)} · {contract.points} {contract.suit}
@@ -583,9 +634,13 @@ function GameTable() {
               </div>
             )}
 
+            {/* Team score zones anchored to the table */}
+            <TableScoreBadge team="A" label="Nous" value={displayScores.A} pulse={chipsSlideTo === "A"} />
+            <TableScoreBadge team="B" label="Eux" value={displayScores.B} pulse={chipsSlideTo === "B"} />
+
             {/* Contract chips at center of table */}
-            {(phase === "bidding" || phase === "playing" || phase === "scoring") && currentContract(bids) && (
-              <ContractChips contract={currentContract(bids)!} />
+            {(phase === "bidding" || phase === "playing" || phase === "scoring") && currentContract(bids) && chipsVisible && (
+              <ContractChips contract={currentContract(bids)!} slideTo={chipsSlideTo} />
             )}
 
             {phase === "shuffling" && size.w > 0 && <ShuffleAnimation deckPos={deckBase} />}
@@ -1075,34 +1130,50 @@ function contractChipBreakdown(contract: Contract): ChipBreakdown {
   return { largeBar, smallBar, rounds, capot: false };
 }
 
-function ContractChips({ contract }: { contract: Contract }) {
+function ContractChips({ contract, slideTo }: { contract: Contract; slideTo?: Team | null }) {
   const b = contractChipBreakdown(contract);
   const suitColor = isRedSuit(contract.suit) ? "oklch(0.72 0.2 25)" : "oklch(0.18 0.02 40)";
 
+  // Slide from center → team score zone.
+  // A (Nous) → bottom-center (top≈88%). B (Eux) → left-middle (left≈12%).
+  const slideStyle: React.CSSProperties = slideTo
+    ? {
+        top: slideTo === "A" ? "86%" : "50%",
+        left: slideTo === "A" ? "50%" : "12%",
+        transform: "translate(-50%, -50%) scale(0.62)",
+        opacity: 0.85,
+      }
+    : { top: "50%", left: "50%", transform: "translate(-50%, -50%)" };
+
+  const wrapperStyle: React.CSSProperties = {
+    position: "absolute",
+    ...slideStyle,
+    transition: "transform 1200ms cubic-bezier(0.32, 0.72, 0.28, 1), top 1200ms cubic-bezier(0.32, 0.72, 0.28, 1), left 1200ms cubic-bezier(0.32, 0.72, 0.28, 1), opacity 800ms ease",
+    zIndex: 30,
+    pointerEvents: "none",
+  };
+
   if (b.capot) {
     return (
-      <div className="pointer-events-none absolute left-1/2 top-1/2 z-30 -translate-x-1/2 -translate-y-1/2 animate-scale-in">
+      <div className="animate-scale-in" style={wrapperStyle}>
         <CapotChip suit={contract.suit} suitColor={suitColor} />
       </div>
     );
   }
 
   return (
-    <div className="pointer-events-none absolute left-1/2 top-1/2 z-30 -translate-x-1/2 -translate-y-1/2">
+    <div style={wrapperStyle}>
       <div className="flex flex-col items-center gap-1.5">
-        {/* Large bar */}
         {b.largeBar > 0 && (
           <div className="animate-scale-in" style={{ animationDelay: "40ms" }}>
             <ChipBar width={64} height={16} tone="large" />
           </div>
         )}
-        {/* Small bar */}
         {b.smallBar > 0 && (
           <div className="animate-scale-in" style={{ animationDelay: "120ms" }}>
             <ChipBar width={44} height={12} tone="small" />
           </div>
         )}
-        {/* Round chips */}
         {b.rounds > 0 && (
           <div className="flex items-center gap-1">
             {Array.from({ length: b.rounds }).map((_, i) => (
@@ -1112,22 +1183,52 @@ function ContractChips({ contract }: { contract: Contract }) {
             ))}
           </div>
         )}
-        {/* Contract label */}
-        <div
-          className="mt-1 rounded-full px-2 py-0.5 text-[10px] font-semibold tracking-wider animate-fade-in"
-          style={{
-            background: "oklch(0.16 0.03 40 / 78%)",
-            color: "oklch(0.94 0.1 85)",
-            border: "1px solid oklch(0.72 0.14 82 / 45%)",
-            backdropFilter: "blur(6px)",
-          }}
-        >
-          {contract.points} <span style={{ color: suitColor }}>{contract.suit}</span>
-        </div>
+        {!slideTo && (
+          <div
+            className="mt-1 rounded-full px-2 py-0.5 text-[10px] font-semibold tracking-wider animate-fade-in"
+            style={{
+              background: "oklch(0.16 0.03 40 / 78%)",
+              color: "oklch(0.94 0.1 85)",
+              border: "1px solid oklch(0.72 0.14 82 / 45%)",
+              backdropFilter: "blur(6px)",
+            }}
+          >
+            {contract.points} <span style={{ color: suitColor }}>{contract.suit}</span>
+          </div>
+        )}
       </div>
     </div>
   );
 }
+
+function TableScoreBadge({ team, label, value, pulse }: { team: Team; label: string; value: number; pulse: boolean }) {
+  const color = team === "A" ? "oklch(0.72 0.16 55)" : "oklch(0.62 0.16 240)";
+  const style: React.CSSProperties =
+    team === "A"
+      ? { left: "50%", top: "88%", transform: "translate(-50%, -50%)" }
+      : { left: "8%", top: "50%", transform: "translate(-50%, -50%)" };
+  return (
+    <div
+      className="pointer-events-none absolute z-[25] flex items-center gap-1.5 rounded-full border px-2.5 py-1"
+      style={{
+        ...style,
+        background: "oklch(0.14 0.03 40 / 85%)",
+        borderColor: pulse ? "oklch(0.88 0.16 82 / 90%)" : "oklch(0.82 0.14 82 / 45%)",
+        boxShadow: pulse
+          ? "0 0 0 2px oklch(0.85 0.14 82 / 45%), 0 0 22px -2px oklch(0.85 0.14 82 / 75%), 0 6px 14px -6px oklch(0 0 0 / 75%)"
+          : "0 6px 14px -6px oklch(0 0 0 / 75%), inset 0 1px 0 oklch(1 0 0 / 10%)",
+        backdropFilter: "blur(8px)",
+        color: "oklch(0.94 0.1 85)",
+        transition: "box-shadow 400ms ease, border-color 400ms ease",
+      }}
+    >
+      <span className="h-1.5 w-1.5 rounded-full" style={{ background: color }} />
+      <span className="uppercase tracking-[0.18em]" style={{ fontSize: 9 }}>{label}</span>
+      <span className="font-serif text-sm font-semibold" style={{ minWidth: 22, textAlign: "right" }}>{value}</span>
+    </div>
+  );
+}
+
 
 function ChipBar({ width, height, tone }: { width: number; height: number; tone: "large" | "small" }) {
   const bg = tone === "large"
