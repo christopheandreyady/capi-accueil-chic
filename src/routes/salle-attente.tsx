@@ -691,28 +691,18 @@ function ScoreBarLong({
 
 function SeatSlot({
   seat,
-  className,
+  style,
   isLocal,
   delay = 0,
   onInvite,
 }: {
   seat: Seat;
-  className?: string;
+  style?: React.CSSProperties;
   isLocal?: boolean;
   delay?: number;
   onInvite: () => void;
 }) {
   const p = seat.player;
-  const pos = seat.position;
-
-  const seatTransform =
-    pos === "top"
-      ? "translate(-50%, -50%)"
-      : pos === "bottom"
-        ? "translate(-50%, 50%)"
-        : pos === "left"
-          ? "translate(-50%, -50%)"
-          : "translate(50%, -50%)";
 
   const teamRing =
     seat.team === "A"
@@ -721,13 +711,13 @@ function SeatSlot({
 
   return (
     <div
-      className={`flex flex-col items-center gap-1.5 ${className ?? ""}`}
+      className="pointer-events-auto absolute z-20 flex flex-col items-center gap-1.5"
       style={{
-        // @ts-expect-error CSS var
-        "--seat-transform": seatTransform,
+        ...style,
         animation: `capi-seat-in 520ms ${delay}ms cubic-bezier(.2,.8,.25,1) both`,
       }}
     >
+
       {p ? (
         <>
           <div className="relative">
