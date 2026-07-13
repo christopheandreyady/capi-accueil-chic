@@ -571,8 +571,8 @@ function GameTable() {
 
         {/* Scoreboard */}
         <div className="mt-2 flex items-center justify-center gap-3 text-[11px]">
-          <ScorePill team="A" label="Nous" value={cumulative.A} highlight={contract ? TEAM_OF[contract.bidder] === "A" : false} />
-          <ScorePill team="B" label="Eux" value={cumulative.B} highlight={contract ? TEAM_OF[contract.bidder] === "B" : false} />
+          <ScorePill team="A" label="Nous" value={displayScores.A} highlight={contract ? TEAM_OF[contract.bidder] === "A" : false} />
+          <ScorePill team="B" label="Eux" value={displayScores.B} highlight={contract ? TEAM_OF[contract.bidder] === "B" : false} />
           {contract && phase === "playing" && (
             <div className="rounded-full border px-2.5 py-0.5" style={{ background:"oklch(0.18 0.03 40 / 80%)", borderColor:"oklch(0.82 0.14 82 / 40%)", color:"oklch(0.94 0.1 85)" }}>
               {PLAYERS[contract.bidder].name.split(" ").slice(-1)} · {contract.points} {contract.suit}
