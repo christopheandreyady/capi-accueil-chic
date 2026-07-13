@@ -1372,38 +1372,45 @@ function SuitBadge({ suit, size = 20 }: { suit: Suit; size?: number }) {
 
 function TeamStash({ team, stash }: { team: Team; stash: ChipBreakdown[] }) {
   if (stash.length === 0) return null;
-  // Position: A near bottom-center (below score badge), B near left-middle (right of score badge).
+  // Anchored where the sliding contract chip lands, so the handoff feels
+  // continuous. Stacks slightly offset per round, like a real pile of chips
+  // pushed to the side of the table.
   const style: React.CSSProperties =
     team === "A"
-      ? { left: "50%", top: "80%", transform: "translate(-50%, -50%)", maxWidth: "70%" }
-      : { left: "18%", top: "50%", transform: "translate(-50%, -50%)", maxWidth: "22%" };
+      ? { left: "50%", top: "82%", transform: "translate(-50%, -50%)", maxWidth: "78%" }
+      : { left: "14%", top: "50%", transform: "translate(-50%, -50%)", maxWidth: "22%" };
   return (
     <div
-      className="pointer-events-none absolute z-[22] flex flex-wrap items-center justify-center gap-1 animate-fade-in"
+      className="pointer-events-none absolute z-[22] flex flex-wrap items-center justify-center gap-1.5"
       style={style}
     >
-      {stash.map((b, i) => (
-        <div key={i} className="flex items-center gap-0.5" style={{ transform: `rotate(${((i * 37) % 11) - 5}deg)` }}>
-          {b.capot && <CapotChip suit={"♠"} suitColor="oklch(0.94 0.14 82)" />}
-          {!b.capot && b.largeBar > 0 && <ChipBar width={34} height={10} tone="large" value={100} tilt={-3} />}
-          {!b.capot && b.smallBar > 0 && <ChipBar width={26} height={9} tone="small" value={50} tilt={3} />}
-          {!b.capot && b.rounds > 0 && (
-            <div className="flex items-center gap-[1px]">
-              {Array.from({ length: b.rounds }).map((_, j) => (
-                <div
-                  key={j}
-                  style={{
-                    width: 9, height: 9, borderRadius: "50%",
-                    background: "linear-gradient(180deg, oklch(0.94 0.02 90) 0%, oklch(0.7 0.02 90) 100%)",
-                    border: "1px solid oklch(0.82 0.14 82 / 70%)",
-                    boxShadow: "0 1px 2px oklch(0 0 0 / 45%)",
-                  }}
-                />
-              ))}
-            </div>
-          )}
-        </div>
-      ))}
+      {stash.map((b, i) => {
+        const tilt = ((i * 53) % 13) - 6;
+        return (
+          <div
+            key={i}
+            className="flex flex-col items-center gap-0.5"
+            style={{
+              transform: `translateY(${(i % 3) * -2}px) rotate(${tilt}deg)`,
+            }}
+          >
+            {b.capot && <CapotChip suit={"♠"} suitColor="oklch(0.94 0.14 82)" />}
+            {!b.capot && b.largeBar > 0 && (
+              <ChipBar width={58} height={14} tone="large" value={100} tilt={-3} />
+            )}
+            {!b.capot && b.smallBar > 0 && (
+              <ChipBar width={42} height={12} tone="small" value={50} tilt={3} />
+            )}
+            {!b.capot && b.rounds > 0 && (
+              <div className="flex items-center gap-[2px]">
+                {Array.from({ length: b.rounds }).map((_, j) => (
+                  <RoundChip key={j} index={j} />
+                ))}
+              </div>
+            )}
+          </div>
+        );
+      })}
     </div>
   );
 }
