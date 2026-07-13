@@ -220,12 +220,12 @@ function WaitingRoom() {
         width={1024}
         height={1536}
         className="pointer-events-none absolute inset-0 h-full w-full object-cover"
-        style={{ transform: "scale(0.9)", transformOrigin: "50% 46%" }}
+        style={{ transform: "scale(0.78)", transformOrigin: "50% 48%" }}
       />
       {/* Same lighting stack as /partie: warm bistro key light + vignette. */}
-      <div className="pointer-events-none absolute inset-0" style={{ background:"radial-gradient(70% 42% at 50% -4%, oklch(0.9 0.16 78 / 44%) 0%, oklch(0.78 0.14 68 / 22%) 30%, transparent 62%)" }} />
-      <div className="pointer-events-none absolute inset-0" style={{ background:"radial-gradient(130% 90% at 50% 55%, transparent 0%, oklch(0 0 0 / 55%) 62%, oklch(0.06 0.02 40 / 96%) 100%)" }} />
-      <div className="pointer-events-none absolute inset-0" style={{ background:"linear-gradient(180deg, oklch(0.10 0.03 40 / 78%) 0%, transparent 20%, transparent 58%, oklch(0.06 0.02 40 / 94%) 100%)" }} />
+      <div className="pointer-events-none absolute inset-0" style={{ background:"radial-gradient(72% 44% at 50% -6%, oklch(0.92 0.17 76 / 50%) 0%, oklch(0.78 0.14 66 / 24%) 32%, transparent 64%)" }} />
+      <div className="pointer-events-none absolute inset-0" style={{ background:"radial-gradient(130% 92% at 50% 56%, transparent 0%, oklch(0 0 0 / 60%) 62%, oklch(0.05 0.02 40 / 98%) 100%)" }} />
+      <div className="pointer-events-none absolute inset-0" style={{ background:"linear-gradient(180deg, oklch(0.08 0.03 40 / 82%) 0%, transparent 22%, transparent 58%, oklch(0.05 0.02 40 / 96%) 100%)" }} />
 
       <div className="relative z-10 mx-auto flex min-h-screen w-full max-w-md flex-col px-5 pt-6 pb-8">
         {/* Header */}
