@@ -1,7 +1,11 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Plus, ArrowLeft, Play } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { Plus, ArrowLeft, Play, Crown, Check, Copy, QrCode, Share2, UserPlus } from "lucide-react";
 import bistrotTable from "@/assets/capi-bistrot-table.jpg";
 import capiEmblem from "@/assets/capi-emblem.png";
+import { InviteModal } from "@/components/InviteModal";
+import { PremiumModal } from "@/components/PremiumModal";
+import { buildInviteLink, defaultTableConfig, loadTableConfig, type TableConfig } from "@/lib/table-config";
 
 export const Route = createFileRoute("/salle-attente")({
   head: () => ({
@@ -21,53 +25,123 @@ export const Route = createFileRoute("/salle-attente")({
   component: WaitingRoom,
 });
 
+type Position = "bottom" | "top" | "left" | "right";
+type Team = "A" | "B";
+
 type Player = {
   name: string;
   level: number;
   photo: string;
   online: boolean;
+  ready: boolean;
+  host?: boolean;
 };
 
 type Seat = {
-  position: "bottom" | "top" | "left" | "right";
+  position: Position;
+  team: Team;
   player: Player | null;
 };
 
-const seats: Seat[] = [
-  {
-    position: "top",
-    player: {
-      name: "Jean-Luc",
-      level: 27,
-      photo: "https://i.pravatar.cc/200?img=68",
-      online: true,
-    },
-  },
-  {
-    position: "left",
-    player: {
-      name: "Margaux",
-      level: 14,
-      photo: "https://i.pravatar.cc/200?img=47",
-      online: true,
-    },
-  },
-  { position: "right", player: null },
+// Teams: bottom + top = A, left + right = B (partner is across the table)
+const initialSeats: Seat[] = [
   {
     position: "bottom",
+    team: "A",
     player: {
       name: "Vous",
       level: 22,
       photo: "https://i.pravatar.cc/200?img=12",
       online: true,
+      ready: false,
+      host: true,
     },
   },
+  {
+    position: "top",
+    team: "A",
+    player: {
+      name: "Jean-Luc",
+      level: 27,
+      photo: "https://i.pravatar.cc/200?img=68",
+      online: true,
+      ready: true,
+    },
+  },
+  {
+    position: "left",
+    team: "B",
+    player: {
+      name: "Margaux",
+      level: 14,
+      photo: "https://i.pravatar.cc/200?img=47",
+      online: true,
+      ready: false,
+    },
+  },
+  { position: "right", team: "B", player: null },
 ];
 
 function WaitingRoom() {
-  const players = seats.filter((s) => s.player).length;
+  const [cfg, setCfg] = useState<TableConfig>(() => defaultTableConfig());
+  const [seats, setSeats] = useState<Seat[]>(initialSeats);
+  const [inviteOpen, setInviteOpen] = useState(false);
+  const [qrOpen, setQrOpen] = useState(false);
+  const [copied, setCopied] = useState(false);
+
+  useEffect(() => {
+    const stored = loadTableConfig();
+    if (stored) setCfg(stored);
+  }, []);
+
+  const inviteLink = useMemo(() => buildInviteLink(cfg.code), [cfg.code]);
+  const playersCount = seats.filter((s) => s.player).length;
   const total = 4;
-  const allReady = players === total;
+  const readyCount = seats.filter((s) => s.player?.ready).length;
+  const allReady = playersCount === total && readyCount === total;
+
+  function toggleReady(pos: Position) {
+    setSeats((s) =>
+      s.map((seat) =>
+        seat.position === pos && seat.player
+          ? { ...seat, player: { ...seat.player, ready: !seat.player.ready } }
+          : seat,
+      ),
+    );
+  }
+
+  async function copyCode() {
+    try {
+      await navigator.clipboard.writeText(cfg.code);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1400);
+    } catch {
+      /* noop */
+    }
+  }
+
+  async function share() {
+    const data = {
+      title: "Rejoignez ma table CAPI",
+      text: `Rejoignez ma table de Contrée avec le code ${cfg.code}`,
+      url: inviteLink,
+    };
+    if (typeof navigator !== "undefined" && "share" in navigator) {
+      try {
+        await navigator.share(data);
+        return;
+      } catch {
+        /* fallthrough */
+      }
+    }
+    try {
+      await navigator.clipboard.writeText(inviteLink);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1400);
+    } catch {
+      /* noop */
+    }
+  }
 
   return (
     <main className="relative min-h-screen w-full overflow-hidden bg-background">
@@ -83,7 +157,7 @@ function WaitingRoom() {
         className="pointer-events-none absolute inset-0"
         style={{
           background:
-            "radial-gradient(60% 35% at 50% 0%, oklch(0.85 0.14 75 / 32%) 0%, oklch(0.7 0.12 65 / 12%) 40%, transparent 70%)",
+            "radial-gradient(60% 35% at 50% 0%, oklch(0.85 0.14 75 / 34%) 0%, oklch(0.7 0.12 65 / 12%) 40%, transparent 70%)",
         }}
       />
       {/* Vignette */}
@@ -91,14 +165,14 @@ function WaitingRoom() {
         className="pointer-events-none absolute inset-0"
         style={{
           background:
-            "radial-gradient(120% 80% at 50% 50%, transparent 0%, oklch(0 0 0 / 40%) 60%, oklch(0.08 0.02 40 / 92%) 100%)",
+            "radial-gradient(120% 80% at 50% 50%, transparent 0%, oklch(0 0 0 / 42%) 60%, oklch(0.08 0.02 40 / 92%) 100%)",
         }}
       />
       <div
         className="pointer-events-none absolute inset-0"
         style={{
           background:
-            "linear-gradient(180deg, oklch(0.12 0.03 40 / 70%) 0%, transparent 20%, transparent 55%, oklch(0.08 0.02 40 / 90%) 100%)",
+            "linear-gradient(180deg, oklch(0.12 0.03 40 / 72%) 0%, transparent 20%, transparent 55%, oklch(0.08 0.02 40 / 92%) 100%)",
         }}
       />
 
@@ -130,13 +204,13 @@ function WaitingRoom() {
                 textShadow: "0 1px 0 oklch(0 0 0 / 40%)",
               }}
             >
-              Table du Bistrot
+              {cfg.name}
             </h1>
             <span
               className="mt-0.5 text-[11px] uppercase tracking-[0.25em]"
               style={{ color: "oklch(0.8 0.08 82 / 75%)" }}
             >
-              {players}/{total} joueurs
+              {playersCount}/{total} joueurs · {readyCount} prêts
             </span>
           </div>
 
@@ -146,14 +220,55 @@ function WaitingRoom() {
             width={1024}
             height={1024}
             className="h-10 w-10"
-            style={{ filter: "drop-shadow(0 4px 8px oklch(0 0 0 / 60%))" }}
+            style={{
+              filter:
+                "drop-shadow(0 4px 8px oklch(0 0 0 / 60%)) drop-shadow(0 0 8px oklch(0.82 0.14 82 / 25%))",
+            }}
           />
         </header>
 
+        {/* Invite code bar */}
+        <div
+          className="mt-4 flex items-center gap-2 rounded-2xl border px-3 py-2"
+          style={{
+            background: "oklch(0.16 0.03 40 / 70%)",
+            borderColor: "oklch(0.82 0.14 82 / 25%)",
+            backdropFilter: "blur(10px)",
+            boxShadow: "0 10px 24px -18px oklch(0 0 0 / 70%)",
+          }}
+        >
+          <span
+            className="text-[10px] uppercase tracking-[0.22em]"
+            style={{ color: "oklch(0.8 0.08 82 / 75%)" }}
+          >
+            Code
+          </span>
+          <span
+            className="font-serif text-base font-bold tracking-[0.25em]"
+            style={{
+              color: "oklch(0.94 0.11 88)",
+              textShadow: "0 1px 0 oklch(0 0 0 / 50%)",
+            }}
+          >
+            {cfg.code}
+          </span>
+          <div className="ml-auto flex items-center gap-1.5">
+            <IconAction label="Copier" onClick={copyCode}>
+              {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
+            </IconAction>
+            <IconAction label="QR Code" onClick={() => setQrOpen(true)}>
+              <QrCode className="h-4 w-4" />
+            </IconAction>
+            <IconAction label="Partager" onClick={share}>
+              <Share2 className="h-4 w-4" />
+            </IconAction>
+          </div>
+        </div>
+
         {/* Table area */}
-        <section className="relative mt-8 flex-1">
+        <section className="relative mt-6 flex-1">
           <div className="relative mx-auto aspect-square w-full max-w-[400px]">
-            {/* Wooden rim + felt (rim = the outer ring where avatars sit) */}
+            {/* Wooden rim + felt */}
             <div
               className="absolute inset-0 rounded-full"
               style={{
@@ -163,7 +278,6 @@ function WaitingRoom() {
                   "0 30px 60px -20px oklch(0 0 0 / 80%), inset 0 2px 0 oklch(1 0 0 / 10%), inset 0 -10px 20px oklch(0 0 0 / 60%)",
               }}
             >
-              {/* Wood grain */}
               <div
                 className="pointer-events-none absolute inset-0 rounded-full opacity-40 mix-blend-overlay"
                 style={{
@@ -171,7 +285,6 @@ function WaitingRoom() {
                     "repeating-radial-gradient(circle at 50% 50%, oklch(0 0 0 / 25%) 0 2px, transparent 2px 6px), repeating-conic-gradient(from 0deg, oklch(1 0 0 / 4%) 0deg 8deg, transparent 8deg 16deg)",
                 }}
               />
-              {/* Gold inlay */}
               <div
                 className="pointer-events-none absolute inset-[10%] rounded-full"
                 style={{
@@ -182,7 +295,7 @@ function WaitingRoom() {
               />
             </div>
 
-            {/* Felt table */}
+            {/* Felt */}
             <div
               className="absolute inset-[13%] rounded-full"
               style={{
@@ -192,7 +305,6 @@ function WaitingRoom() {
                   "inset 0 0 100px oklch(0 0 0 / 60%), inset 0 20px 40px oklch(1 0 0 / 5%), 0 0 0 2px oklch(0.15 0.04 35)",
               }}
             >
-              {/* Felt texture */}
               <div
                 className="pointer-events-none absolute inset-0 rounded-full opacity-40 mix-blend-overlay"
                 style={{
@@ -204,84 +316,68 @@ function WaitingRoom() {
               />
             </div>
 
-            {/* Jetons scattered on wooden rim (outside felt, inside wood) */}
-            {/* Top-left area */}
-            <RoundChip
-              className="absolute"
-              style={{ left: "10%", top: "18%", transform: "rotate(-12deg)" }}
-              color="oklch(0.55 0.19 25)"
-            />
-            <BarChip
-              className="absolute"
-              style={{ left: "18%", top: "8%", transform: "rotate(24deg)" }}
-              value={100}
-            />
-            <RoundChip
-              className="absolute"
-              style={{ left: "6%", top: "42%", transform: "rotate(8deg)" }}
-              color="oklch(0.5 0.15 260)"
-            />
-            {/* Top-right area */}
-            <BarChip
-              className="absolute"
-              style={{ right: "10%", top: "12%", transform: "rotate(-18deg)" }}
-              value={50}
-            />
-            <RoundChip
-              className="absolute"
-              style={{ right: "8%", top: "38%", transform: "rotate(-5deg)" }}
-              color="oklch(0.62 0.14 82)"
-            />
-            {/* Bottom-left */}
-            <BarChip
-              className="absolute"
-              style={{ left: "12%", bottom: "14%", transform: "rotate(14deg)" }}
-              value={50}
-            />
-            <RoundChip
-              className="absolute"
-              style={{ left: "22%", bottom: "8%", transform: "rotate(-6deg)" }}
-              color="oklch(0.55 0.19 25)"
-            />
-            {/* Bottom-right */}
-            <RoundChip
-              className="absolute"
-              style={{ right: "14%", bottom: "10%", transform: "rotate(18deg)" }}
-              color="oklch(0.5 0.15 260)"
-            />
-            <BarChip
-              className="absolute"
-              style={{ right: "18%", bottom: "18%", transform: "rotate(-22deg)" }}
-              value={100}
-            />
+            {/* Jetons */}
+            <RoundChip className="absolute" style={{ left: "10%", top: "18%", transform: "rotate(-12deg)" }} color="oklch(0.55 0.19 25)" />
+            <BarChip className="absolute" style={{ left: "18%", top: "8%", transform: "rotate(24deg)" }} value={100} />
+            <RoundChip className="absolute" style={{ left: "6%", top: "42%", transform: "rotate(8deg)" }} color="oklch(0.5 0.15 260)" />
+            <BarChip className="absolute" style={{ right: "10%", top: "12%", transform: "rotate(-18deg)" }} value={50} />
+            <RoundChip className="absolute" style={{ right: "8%", top: "38%", transform: "rotate(-5deg)" }} color="oklch(0.62 0.14 82)" />
+            <BarChip className="absolute" style={{ left: "12%", bottom: "14%", transform: "rotate(14deg)" }} value={50} />
+            <RoundChip className="absolute" style={{ left: "22%", bottom: "8%", transform: "rotate(-6deg)" }} color="oklch(0.55 0.19 25)" />
+            <RoundChip className="absolute" style={{ right: "14%", bottom: "10%", transform: "rotate(18deg)" }} color="oklch(0.5 0.15 260)" />
+            <BarChip className="absolute" style={{ right: "18%", bottom: "18%", transform: "rotate(-22deg)" }} value={100} />
 
-            {/* Seats — placed ON the outer rim, at 90° angles */}
+            {/* Seats */}
             <SeatSlot
               seat={seats.find((s) => s.position === "top")!}
               className="absolute left-1/2 top-0 -translate-x-1/2 -translate-y-1/2"
               delay={80}
+              onToggleReady={toggleReady}
+              onInvite={() => setInviteOpen(true)}
             />
             <SeatSlot
               seat={seats.find((s) => s.position === "left")!}
               className="absolute left-0 top-1/2 -translate-x-1/2 -translate-y-1/2"
               delay={180}
+              onToggleReady={toggleReady}
+              onInvite={() => setInviteOpen(true)}
             />
             <SeatSlot
               seat={seats.find((s) => s.position === "right")!}
               className="absolute right-0 top-1/2 translate-x-1/2 -translate-y-1/2"
               delay={260}
+              onToggleReady={toggleReady}
+              onInvite={() => setInviteOpen(true)}
             />
             <SeatSlot
               seat={seats.find((s) => s.position === "bottom")!}
               className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2"
               isLocal
               delay={0}
+              onToggleReady={toggleReady}
+              onInvite={() => setInviteOpen(true)}
             />
           </div>
         </section>
 
-        {/* Start button — thinner & more elegant */}
-        <div className="mt-8">
+        {/* Bottom actions */}
+        <div className="mt-6 flex flex-col gap-3">
+          <button
+            type="button"
+            onClick={() => setInviteOpen(true)}
+            className="flex w-full items-center justify-center gap-2 rounded-2xl border py-2.5 text-sm font-semibold transition active:scale-[0.98]"
+            style={{
+              background: "oklch(0.18 0.03 40 / 70%)",
+              borderColor: "oklch(0.82 0.14 82 / 30%)",
+              color: "oklch(0.92 0.11 85)",
+              backdropFilter: "blur(8px)",
+              boxShadow: "inset 0 1px 0 oklch(1 0 0 / 6%)",
+            }}
+          >
+            <UserPlus className="h-4 w-4" />
+            Inviter des joueurs
+          </button>
+
           <button
             type="button"
             disabled={!allReady}
@@ -342,8 +438,45 @@ function WaitingRoom() {
               {allReady ? "Commencer la partie" : "En attente des joueurs…"}
             </span>
           </button>
+          <p
+            className="text-center text-[11px] uppercase tracking-[0.22em]"
+            style={{ color: "oklch(0.75 0.05 82 / 65%)" }}
+          >
+            {allReady
+              ? "Tout le monde est prêt"
+              : playersCount < total
+                ? `${total - playersCount} place${total - playersCount > 1 ? "s" : ""} libre${total - playersCount > 1 ? "s" : ""}`
+                : `${total - readyCount} joueur${total - readyCount > 1 ? "s" : ""} pas encore prêt${total - readyCount > 1 ? "s" : ""}`}
+          </p>
         </div>
       </div>
+
+      <InviteModal open={inviteOpen} onClose={() => setInviteOpen(false)} code={cfg.code} />
+
+      <PremiumModal open={qrOpen} onClose={() => setQrOpen(false)} title="QR Code" subtitle="Scannez pour rejoindre">
+        <div className="flex flex-col items-center gap-4">
+          <img
+            src={`https://api.qrserver.com/v1/create-qr-code/?size=280x280&margin=10&color=F0D68C&bgcolor=1B140E&data=${encodeURIComponent(inviteLink)}`}
+            alt="QR code d'invitation"
+            width={240}
+            height={240}
+            className="rounded-2xl"
+            style={{
+              border: "1px solid oklch(0.82 0.14 82 / 35%)",
+              boxShadow: "0 12px 30px -12px oklch(0 0 0 / 75%)",
+            }}
+          />
+          <span
+            className="font-serif text-2xl font-bold tracking-[0.3em]"
+            style={{
+              color: "oklch(0.94 0.11 88)",
+              textShadow: "0 1px 0 oklch(0 0 0 / 60%)",
+            }}
+          >
+            {cfg.code}
+          </span>
+        </div>
+      </PremiumModal>
 
       <style>{`
         @keyframes capi-seat-in {
@@ -365,6 +498,32 @@ function WaitingRoom() {
         }
       `}</style>
     </main>
+  );
+}
+
+function IconAction({
+  onClick,
+  label,
+  children,
+}: {
+  onClick: () => void;
+  label: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-label={label}
+      className="flex h-8 w-8 items-center justify-center rounded-full transition active:scale-90"
+      style={{
+        background: "oklch(0.14 0.02 40 / 80%)",
+        border: "1px solid oklch(0.82 0.14 82 / 30%)",
+        color: "oklch(0.9 0.11 85)",
+      }}
+    >
+      {children}
+    </button>
   );
 }
 
@@ -390,7 +549,7 @@ function RoundChip({
           "0 3px 5px oklch(0 0 0 / 60%), inset 0 -2px 0 oklch(0 0 0 / 40%), inset 0 1px 0 oklch(1 0 0 / 30%)",
         backgroundImage: `
           repeating-conic-gradient(from 0deg, oklch(1 0 0 / 15%) 0deg 15deg, transparent 15deg 30deg),
-          radial-gradient(ellipse at 40% 30%, oklch(1 0 0 / 25%), transparent 60%)
+          radial-gradient(ellipse at 40% 30%, oklch(1 0 0 / 35%), transparent 60%)
         `,
         ...style,
       }}
@@ -460,16 +619,19 @@ function SeatSlot({
   className,
   isLocal,
   delay = 0,
+  onToggleReady,
+  onInvite,
 }: {
   seat: Seat;
   className?: string;
   isLocal?: boolean;
   delay?: number;
+  onToggleReady: (pos: Position) => void;
+  onInvite: () => void;
 }) {
   const p = seat.player;
   const pos = seat.position;
 
-  // Match the translate used in className so animation keyframes preserve position
   const seatTransform =
     pos === "top"
       ? "translate(-50%, -50%)"
@@ -478,6 +640,11 @@ function SeatSlot({
         : pos === "left"
           ? "translate(-50%, -50%)"
           : "translate(50%, -50%)";
+
+  const teamRing =
+    seat.team === "A"
+      ? "oklch(0.72 0.16 55 / 85%)" /* warm gold-orange for team A */
+      : "oklch(0.62 0.16 240 / 85%)"; /* cool blue for team B */
 
   return (
     <div
@@ -496,12 +663,12 @@ function SeatSlot({
               style={{
                 width: 76,
                 height: 76,
-                borderColor: isLocal ? "oklch(0.82 0.14 82 / 95%)" : "oklch(0.82 0.14 82 / 65%)",
+                borderColor: teamRing,
                 background:
                   "linear-gradient(160deg, oklch(0.38 0.05 40), oklch(0.24 0.04 40))",
                 boxShadow: isLocal
-                  ? "0 6px 16px -6px oklch(0 0 0 / 75%), 0 0 0 3px oklch(0.82 0.14 82 / 25%), 0 0 14px -2px oklch(0.82 0.14 82 / 45%)"
-                  : "0 6px 14px -6px oklch(0 0 0 / 70%), 0 0 0 2px oklch(0 0 0 / 45%)",
+                  ? `0 6px 16px -6px oklch(0 0 0 / 75%), 0 0 0 3px ${teamRing.replace("85%", "30%")}, 0 0 14px -2px ${teamRing.replace("85%", "45%")}`
+                  : `0 6px 14px -6px oklch(0 0 0 / 70%), 0 0 0 2px oklch(0 0 0 / 45%), 0 0 10px -3px ${teamRing.replace("85%", "35%")}`,
               }}
             >
               <img
@@ -514,6 +681,7 @@ function SeatSlot({
                 loading="lazy"
               />
             </div>
+
             {/* Online dot */}
             <span
               className="absolute -bottom-0.5 -right-0.5 h-4 w-4 rounded-full border-2"
@@ -526,7 +694,46 @@ function SeatSlot({
               }}
               aria-label={p.online ? "Connecté" : "Hors ligne"}
             />
+
+            {/* Host crown */}
+            {p.host && (
+              <span
+                className="absolute -left-1 -top-2 flex h-6 w-6 items-center justify-center rounded-full"
+                style={{
+                  background:
+                    "linear-gradient(160deg, oklch(0.85 0.16 82), oklch(0.62 0.16 65))",
+                  border: "1px solid oklch(0.35 0.06 45)",
+                  boxShadow:
+                    "0 2px 6px oklch(0 0 0 / 60%), 0 0 8px oklch(0.82 0.14 82 / 50%)",
+                }}
+                aria-label="Hôte"
+              >
+                <Crown
+                  className="h-3 w-3"
+                  strokeWidth={2.6}
+                  style={{ color: "oklch(0.2 0.04 40)" }}
+                />
+              </span>
+            )}
+
+            {/* Ready badge (pill) */}
+            <span
+              className="absolute -top-2 right-0 flex items-center gap-0.5 rounded-full px-1.5 py-0.5 text-[9px] font-bold uppercase"
+              style={{
+                background: p.ready
+                  ? "linear-gradient(160deg, oklch(0.5 0.15 155), oklch(0.32 0.10 155))"
+                  : "oklch(0.2 0.02 40 / 85%)",
+                border: `1px solid ${p.ready ? "oklch(0.62 0.15 155 / 60%)" : "oklch(0.82 0.14 82 / 25%)"}`,
+                color: p.ready ? "oklch(0.95 0.1 88)" : "oklch(0.8 0.05 82 / 80%)",
+                letterSpacing: "0.08em",
+                boxShadow: "0 2px 4px oklch(0 0 0 / 50%)",
+              }}
+            >
+              {p.ready ? <Check className="h-2.5 w-2.5" /> : null}
+              {p.ready ? "Prêt" : "…"}
+            </span>
           </div>
+
           <div className="text-center leading-tight">
             <p
               className="font-serif text-sm font-semibold"
@@ -541,10 +748,28 @@ function SeatSlot({
               Niv. {p.level}
             </p>
           </div>
+
+          {/* Ready toggle button per player (only local is directly actionable; others too for demo) */}
+          <button
+            type="button"
+            onClick={() => onToggleReady(pos)}
+            className="rounded-full px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-[0.14em] transition active:scale-95"
+            style={{
+              background: p.ready
+                ? "oklch(0.2 0.02 40 / 70%)"
+                : "linear-gradient(160deg, oklch(0.5 0.15 155), oklch(0.32 0.10 155))",
+              border: `1px solid ${p.ready ? "oklch(0.82 0.14 82 / 25%)" : "oklch(0.62 0.15 155 / 60%)"}`,
+              color: p.ready ? "oklch(0.85 0.05 82 / 85%)" : "oklch(0.95 0.1 88)",
+              boxShadow: "0 2px 6px oklch(0 0 0 / 45%), inset 0 1px 0 oklch(1 0 0 / 10%)",
+            }}
+          >
+            {p.ready ? "Annuler" : "Je suis prêt"}
+          </button>
         </>
       ) : (
         <button
           type="button"
+          onClick={onInvite}
           className="group flex flex-col items-center gap-1.5 transition-transform duration-150 active:scale-95"
           aria-label="Inviter un joueur"
         >
@@ -560,7 +785,6 @@ function SeatSlot({
                 "0 6px 16px -6px oklch(0 0 0 / 75%), 0 0 0 3px oklch(0.82 0.14 82 / 18%), inset 0 1px 0 oklch(1 0 0 / 15%), inset 0 -8px 14px oklch(0 0 0 / 55%)",
             }}
           >
-            {/* Wood/leather grain */}
             <span
               className="pointer-events-none absolute inset-0 opacity-40 mix-blend-overlay"
               style={{
