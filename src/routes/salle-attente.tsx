@@ -240,7 +240,7 @@ function WaitingRoom() {
 
 
 
-      <div className="relative z-10 mx-auto flex min-h-screen w-full max-w-3xl flex-col px-2 pt-4 pb-4">
+      <div className="relative z-10 mx-auto flex min-h-screen w-full max-w-none flex-col px-2 pt-4 pb-4">
         {/* Header */}
         <header className="flex items-center justify-between">
           <Link
@@ -283,10 +283,10 @@ function WaitingRoom() {
             alt="CAPI"
             width={1024}
             height={1024}
-            className="h-16 w-16"
+            className="h-20 w-20"
             style={{
               filter:
-                "drop-shadow(0 8px 14px oklch(0 0 0 / 75%)) drop-shadow(0 0 16px oklch(0.85 0.15 82 / 55%)) contrast(1.18) saturate(1.18) brightness(1.14)",
+                "drop-shadow(0 10px 18px oklch(0 0 0 / 78%)) drop-shadow(0 0 22px oklch(0.9 0.16 82 / 70%)) drop-shadow(0 0 10px oklch(0.95 0.14 85 / 55%)) contrast(1.22) saturate(1.22) brightness(1.18)",
             }}
           />
 
@@ -361,9 +361,9 @@ function WaitingRoom() {
               style={{
                 width: "26%",
                 height: "auto",
-                opacity: 0.44,
+                opacity: 0.52,
                 mixBlendMode: "overlay",
-                filter: "drop-shadow(0 1px 0 oklch(0 0 0 / 70%)) drop-shadow(0 -1px 0 oklch(1 0 0 / 18%)) contrast(1.15)",
+                filter: "drop-shadow(0 1px 0 oklch(0 0 0 / 75%)) drop-shadow(0 -1px 0 oklch(1 0 0 / 22%)) contrast(1.32)",
               }}
             />
 

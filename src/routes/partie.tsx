@@ -68,14 +68,15 @@ const PLAYERS: Record<Position, PlayerInfo> = {
   right: { name: "Bot Alex", level: 12, photo: "https://i.pravatar.cc/200?img=15" },
 };
 
-// Card sizes — reduced ~30% so the felt stays visible and the table reads
-// as the hero of the screen.
-const CARD_W_BIG = 76;
-const CARD_H_BIG = 112;
-const CARD_W_SMALL = 36;
-const CARD_H_SMALL = 54;
-const CARD_W_TRICK = 54;
-const CARD_H_TRICK = 80;
+// Card sizes — reduced ~20% so the felt / center emblem stay visible.
+const CARD_W_BIG = 62;
+const CARD_H_BIG = 92;
+const CARD_W_SMALL = 32;
+const CARD_H_SMALL = 48;
+const CARD_W_TRICK = 46;
+const CARD_H_TRICK = 68;
+const CARD_W_DECK = 42;
+const CARD_H_DECK = 60;
 
 const FLIGHT_MS = 460;
 const CUT_MS = 2900;
@@ -475,12 +476,14 @@ function GameTable() {
     const w = size.w || 1;
     const h = size.h || 1;
     // The wooden rim is ~7-8% of the smaller dim. Cards must sit on the
-    // felt (well inside the wood), avatars sit on the rim.
-    const insetV = h * 0.19;
+    // felt (well inside the wood), avatars sit on the rim. Bottom hand
+    // sits lower on the felt so the center emblem stays visible.
+    const insetTop = h * 0.19;
+    const insetBottom = h * 0.11;
     const insetH = w * 0.14;
     return {
-      bottom: { x: w * 0.5, y: h - insetV, angle: 0 },
-      top: { x: w * 0.5, y: insetV, angle: 180 },
+      bottom: { x: w * 0.5, y: h - insetBottom, angle: 0 },
+      top: { x: w * 0.5, y: insetTop, angle: 180 },
       left: { x: insetH, y: h * 0.5, angle: 90 },
       right: { x: w - insetH, y: h * 0.5, angle: -90 },
     } as const;
@@ -649,10 +652,10 @@ function GameTable() {
               alt="CAPI"
               width={1024}
               height={1024}
-              className="h-16 w-16"
+              className="h-20 w-20"
               style={{
                 filter:
-                  "drop-shadow(0 8px 14px oklch(0 0 0 / 75%)) drop-shadow(0 0 16px oklch(0.85 0.15 82 / 55%)) contrast(1.18) saturate(1.18) brightness(1.14)",
+                  "drop-shadow(0 10px 18px oklch(0 0 0 / 78%)) drop-shadow(0 0 22px oklch(0.9 0.16 82 / 70%)) drop-shadow(0 0 10px oklch(0.95 0.14 85 / 55%)) contrast(1.22) saturate(1.22) brightness(1.18)",
               }}
             />
 
@@ -694,9 +697,9 @@ function GameTable() {
               style={{
                 width: "26%",
                 height: "auto",
-                opacity: 0.44,
+                opacity: 0.52,
                 mixBlendMode: "overlay",
-                filter: "drop-shadow(0 1px 0 oklch(0 0 0 / 70%)) drop-shadow(0 -1px 0 oklch(1 0 0 / 18%)) contrast(1.15)",
+                filter: "drop-shadow(0 1px 0 oklch(0 0 0 / 75%)) drop-shadow(0 -1px 0 oklch(1 0 0 / 22%)) contrast(1.32)",
               }}
             />
 
@@ -784,11 +787,12 @@ function GameTable() {
               const x = isDealt ? target.x : deckPos.x;
               const y = isDealt ? target.y : deckPos.y;
               const rotate = isDealt ? target.rotate : deckPos.angle + (i%2===0?-1.5:1.5);
-              const w = target.w, h = target.h;
+              const w = isDealt ? target.w : CARD_W_DECK;
+              const h = isDealt ? target.h : CARD_H_DECK;
               const showFace = isDealt && d.seat === "bottom";
               const z = isDealt ? 100 + d.indexInHand + (d.seat==="bottom"?50:0) : 20 + (32-i);
               return (
-                <div key={d.card.id} className="absolute left-0 top-0" style={{ width:w, height:h, transform:`translate3d(${x-w/2}px, ${y-h/2}px, 0) rotate(${rotate}deg)`, transition:`transform ${FLIGHT_MS}ms cubic-bezier(0.22, 0.7, 0.25, 1)`, zIndex:z, willChange:"transform" }}>
+                <div key={d.card.id} className="absolute left-0 top-0" style={{ width:w, height:h, transform:`translate3d(${x-w/2}px, ${y-h/2}px, 0) rotate(${rotate}deg)`, transition:`transform ${FLIGHT_MS}ms cubic-bezier(0.22, 0.7, 0.25, 1), width ${FLIGHT_MS}ms ease, height ${FLIGHT_MS}ms ease`, zIndex:z, willChange:"transform" }}>
                   {showFace ? <CardFace card={d.card} /> : <CardBack />}
                 </div>
               );
@@ -839,9 +843,9 @@ function handTarget(seat: Position, index: number, total: number, anchors: Ancho
   const a = anchors[seat];
   // Constant per-card angular step: the fan CLOSES as cards are played,
   // so the hand always stays visually compact with no gap where a card was.
-  const stepDeg = isBottom ? 9 : 2.2;
+  const stepDeg = isBottom ? 8 : 2.2;
   const localAngle = total > 1 ? -((total - 1) / 2) * stepDeg + stepDeg * index : 0;
-  const radius = isBottom ? 110 : 62;
+  const radius = isBottom ? 88 : 56;
   const rad = (localAngle * Math.PI) / 180;
   const lx = Math.sin(rad) * radius;
   const ly = -Math.cos(rad) * radius;
@@ -982,7 +986,7 @@ function GameCards({
 // --- Sub components --------------------------------------------------------
 
 function ShuffleAnimation({ deckPos }: { deckPos: { x: number; y: number; angle: number } }) {
-  const w = 46, h = 66, layers = 8;
+  const w = CARD_W_DECK, h = CARD_H_DECK, layers = 8;
   return (
     <div className="pointer-events-none absolute left-0 top-0" style={{ transform:`translate3d(${deckPos.x-w/2}px, ${deckPos.y-h/2}px, 0) rotate(${deckPos.angle}deg)`, zIndex:60, width:w, height:h }}>
       <div style={{ position:"absolute", inset:0, animation:"capi-riffle 900ms cubic-bezier(0.4, 0.1, 0.3, 1) 3" }}>
@@ -1145,7 +1149,7 @@ function ScorePill({ team, label, value, highlight }: { team: Team; label: strin
 
 function DeckStack({ deckPos, cutStep, remaining }: { deckPos: { x: number; y: number; angle: number }; cutStep: 0 | 1 | 2; remaining: number }) {
   if (remaining <= 0) return null;
-  const w = 46, h = 66;
+  const w = CARD_W_DECK, h = CARD_H_DECK;
   const splitOffset = cutStep === 1 ? 52 : 0;
   const topZ = cutStep === 2 ? 1 : 3;
   const bottomZ = cutStep === 2 ? 3 : 1;
