@@ -342,34 +342,39 @@ function GameTable() {
     setDealSeed((s) => s + 1);
   };
 
-  const doShuffle = (really: boolean) => {
-    if (!really) {
-      setPhase("cut");
-      setCutStep(0);
-      const t0 = window.setTimeout(() => {
-        setCutStep(1);
-        playCutSound();
-      }, 550);
-      const t1 = window.setTimeout(() => setCutStep(2), 550 + 800);
-      const t2 = window.setTimeout(() => setPhase("mode"), CUT_MS);
-      return () => [t0, t1, t2].forEach(clearTimeout);
-    }
-    setPhase("shuffling");
-    // Multiple riffle bursts throughout the animation
-    playRiffleBurst();
-    const s1 = window.setTimeout(() => playRiffleBurst(), 850);
-    const s2 = window.setTimeout(() => playRiffleBurst(), 1700);
-    window.setTimeout(() => {
-      setPhase("cut");
-      setCutStep(0);
+  // Cut sequence: deck flies to cutter, splits, reassembles, flies back to dealer.
+  const runCutSequence = () => {
+    setPhase("cut");
+    setCutStep(0);
+    setDeckHolder(cutter);
+    const timers: number[] = [];
+    // Give the deck 500ms to slide to the cutter, then split
+    timers.push(
       window.setTimeout(() => {
         setCutStep(1);
         playCutSound();
-      }, 550);
-      window.setTimeout(() => setCutStep(2), 550 + 800);
-      window.setTimeout(() => setPhase("mode"), CUT_MS);
-    }, SHUFFLE_MS);
-    return () => [s1, s2].forEach(clearTimeout);
+      }, 650),
+    );
+    // Reassemble reversed halves
+    timers.push(window.setTimeout(() => setCutStep(2), 650 + 750));
+    // Slide back to dealer
+    timers.push(window.setTimeout(() => setDeckHolder(null), 650 + 750 + 400));
+    // Move on
+    timers.push(window.setTimeout(() => setPhase("mode"), CUT_MS));
+    return () => timers.forEach(clearTimeout);
+  };
+
+  const doShuffle = (really: boolean) => {
+    if (!really) {
+      runCutSequence();
+      return;
+    }
+    setPhase("shuffling");
+    playRiffleBurst();
+    const s1 = window.setTimeout(() => playRiffleBurst(), 850);
+    const s2 = window.setTimeout(() => playRiffleBurst(), 1700);
+    const s3 = window.setTimeout(() => runCutSequence(), SHUFFLE_MS);
+    return () => [s1, s2, s3].forEach(clearTimeout);
   };
 
   const chooseMode = (m: DealMode) => {
