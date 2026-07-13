@@ -32,15 +32,15 @@ const PLAYERS: Record<Position, PlayerInfo> = {
   right: { name: "Bot Alex", level: 12, photo: "https://i.pravatar.cc/200?img=15" },
 };
 
-// Bigger, more readable cards
-const CARD_W_BIG = 82;
-const CARD_H_BIG = 120;
+// Bigger, more readable cards (+15%)
+const CARD_W_BIG = 94;
+const CARD_H_BIG = 138;
 const CARD_W_SMALL = 44;
 const CARD_H_SMALL = 64;
 
-const FLIGHT_MS = 420;
-const CUT_MS = 2100;
-const SHUFFLE_MS = 2600;
+const FLIGHT_MS = 460;
+const CUT_MS = 2900;
+const SHUFFLE_MS = 2700;
 
 type DealMode = "3-2-3" | "2-3-3" | "3-3-2";
 type Phase = "shuffle" | "shuffling" | "cut" | "mode" | "dealing" | "done";
@@ -195,6 +195,7 @@ function GameTable() {
   const [dealer, setDealer] = useState<Position>("bottom");
   const [phase, setPhase] = useState<Phase>("shuffle");
   const [cutStep, setCutStep] = useState<0 | 1 | 2>(0);
+  const [deckHolder, setDeckHolder] = useState<Position | null>(null);
   const [dealMode, setDealMode] = useState<DealMode | null>(null);
   const [selectedCardId, setSelectedCardId] = useState<string | null>(null);
 
@@ -236,6 +237,7 @@ function GameTable() {
   useEffect(() => {
     setPhase("shuffle");
     setCutStep(0);
+    setDeckHolder(null);
     setDealtCount(0);
     setDealMode(null);
     setSelectedCardId(null);
@@ -252,7 +254,7 @@ function GameTable() {
       const batchChanged = !prev || prev.batchIndex !== cur.batchIndex;
       // Within a packet: fast successive slides (~110-160ms).
       // Between packets (seat change): ~380ms wrist reset.
-      const step = k === 0 ? 260 : batchChanged ? 380 + Math.random() * 90 : 115 + Math.random() * 55;
+      const step = k === 0 ? 320 : batchChanged ? 460 + Math.random() * 110 : 155 + Math.random() * 70;
       cumulative += step;
       const stepIdx = k + 1;
       timers.push(
@@ -270,23 +272,25 @@ function GameTable() {
     const w = size.w || 1;
     const h = size.h || 1;
     return {
-      bottom: { x: w * 0.5, y: h - 28, angle: 0 },
+      bottom: { x: w * 0.5, y: h + 30, angle: 0 },
       top: { x: w * 0.5, y: 28, angle: 180 },
       left: { x: 22, y: h * 0.5, angle: 90 },
       right: { x: w - 22, y: h * 0.5, angle: -90 },
     } as const;
   }, [size]);
 
+  // The deck sits in front of whoever currently holds it (dealer, except during cut).
   const deckBase = useMemo(() => {
-    const a = anchors[dealer];
+    const holder = deckHolder ?? dealer;
+    const a = anchors[holder];
     const cx = (size.w || 0) / 2;
     const cy = (size.h || 0) / 2;
     const dx = cx - a.x;
     const dy = cy - a.y;
     const len = Math.hypot(dx, dy) || 1;
-    const inset = dealer === "bottom" || dealer === "top" ? 128 : 112;
+    const inset = holder === "bottom" || holder === "top" ? 128 : 112;
     return { x: a.x + (dx / len) * inset, y: a.y + (dy / len) * inset, angle: a.angle };
-  }, [anchors, dealer, size]);
+  }, [anchors, dealer, deckHolder, size]);
 
   const deckPos = useMemo(() => {
     if (phase !== "dealing" || dealtCount === 0 || dealtCount > dealOrder.length) return deckBase;
@@ -305,12 +309,13 @@ function GameTable() {
     const cardH = isBottom ? CARD_H_BIG : CARD_H_SMALL;
     const a = anchors[d.seat];
     const n = 8;
-    // Wider, more readable fan for the local player
-    const spread = isBottom ? 62 : 26;
+    // Much wider fan for the local player (+40%); tight packet for opponents.
+    const spread = isBottom ? 88 : 14;
     const step = spread / (n - 1);
     const localAngle = -spread / 2 + step * d.indexInHand;
-    // Fan sits close to each seated player.
-    const radius = isBottom ? 100 : 46;
+    // Bottom fan sits low, right in front of the player.
+    // Opponent packets are pulled inward so they sit CENTERED in front of each seat.
+    const radius = isBottom ? 82 : 70;
     const rad = (localAngle * Math.PI) / 180;
     const lx = Math.sin(rad) * radius;
     const ly = -Math.cos(rad) * radius;
@@ -320,7 +325,7 @@ function GameTable() {
     return {
       x: a.x + rx,
       y: a.y + ry,
-      rotate: localAngle + a.angle + (Math.random() < 0.5 ? -1 : 1) * (isBottom ? 0.5 : 2),
+      rotate: localAngle + a.angle + (Math.random() < 0.5 ? -1 : 1) * (isBottom ? 0.5 : 1.5),
       w: cardW,
       h: cardH,
       localAngle,
@@ -338,34 +343,39 @@ function GameTable() {
     setDealSeed((s) => s + 1);
   };
 
-  const doShuffle = (really: boolean) => {
-    if (!really) {
-      setPhase("cut");
-      setCutStep(0);
-      const t0 = window.setTimeout(() => {
-        setCutStep(1);
-        playCutSound();
-      }, 550);
-      const t1 = window.setTimeout(() => setCutStep(2), 550 + 800);
-      const t2 = window.setTimeout(() => setPhase("mode"), CUT_MS);
-      return () => [t0, t1, t2].forEach(clearTimeout);
-    }
-    setPhase("shuffling");
-    // Multiple riffle bursts throughout the animation
-    playRiffleBurst();
-    const s1 = window.setTimeout(() => playRiffleBurst(), 850);
-    const s2 = window.setTimeout(() => playRiffleBurst(), 1700);
-    window.setTimeout(() => {
-      setPhase("cut");
-      setCutStep(0);
+  // Cut sequence: deck flies to cutter, splits, reassembles, flies back to dealer.
+  const runCutSequence = () => {
+    setPhase("cut");
+    setCutStep(0);
+    setDeckHolder(cutter);
+    const timers: number[] = [];
+    // Give the deck 500ms to slide to the cutter, then split
+    timers.push(
       window.setTimeout(() => {
         setCutStep(1);
         playCutSound();
-      }, 550);
-      window.setTimeout(() => setCutStep(2), 550 + 800);
-      window.setTimeout(() => setPhase("mode"), CUT_MS);
-    }, SHUFFLE_MS);
-    return () => [s1, s2].forEach(clearTimeout);
+      }, 650),
+    );
+    // Reassemble reversed halves
+    timers.push(window.setTimeout(() => setCutStep(2), 650 + 750));
+    // Slide back to dealer
+    timers.push(window.setTimeout(() => setDeckHolder(null), 650 + 750 + 400));
+    // Move on
+    timers.push(window.setTimeout(() => setPhase("mode"), CUT_MS));
+    return () => timers.forEach(clearTimeout);
+  };
+
+  const doShuffle = (really: boolean) => {
+    if (!really) {
+      runCutSequence();
+      return;
+    }
+    setPhase("shuffling");
+    playRiffleBurst();
+    const s1 = window.setTimeout(() => playRiffleBurst(), 850);
+    const s2 = window.setTimeout(() => playRiffleBurst(), 1700);
+    const s3 = window.setTimeout(() => runCutSequence(), SHUFFLE_MS);
+    return () => [s1, s2, s3].forEach(clearTimeout);
   };
 
   const chooseMode = (m: DealMode) => {
