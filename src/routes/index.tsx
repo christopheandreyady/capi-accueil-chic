@@ -226,7 +226,7 @@ function Home() {
           className="mt-6 text-center text-[11px] uppercase tracking-[0.3em]"
           style={{ color: "oklch(0.75 0.08 82 / 70%)" }}
         >
-          · Belote · Coinche · Contrée ·
+          · Belote · Contrer · Contrée ·
         </p>
       </div>
     </main>
