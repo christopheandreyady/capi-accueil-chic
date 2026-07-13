@@ -621,13 +621,24 @@ function GameTable() {
         </header>
 
 
-        <div ref={boxRef} className="relative mx-auto mt-2 w-full max-w-[480px] flex-1">
+        <div ref={boxRef} className="relative mx-auto my-auto w-full max-w-[400px]">
           <div className="relative mx-auto aspect-square w-full">
-            {/* Table surface is provided by the background artwork (bistrotTable).
-                No wooden/felt overlay is drawn here — game elements sit directly
-                on the photographed table. Soft central halo + vignette. */}
-            <div className="pointer-events-none absolute inset-0" style={{ background:"radial-gradient(38% 30% at 50% 50%, oklch(0.9 0.14 78 / 14%) 0%, oklch(0.85 0.12 72 / 6%) 45%, transparent 75%)" }} />
-            <div className="pointer-events-none absolute inset-0" style={{ background:"radial-gradient(60% 55% at 50% 50%, transparent 0%, transparent 55%, oklch(0 0 0 / 32%) 100%)" }} />
+            {/* The wooden bistro table is the central UI object. The existing
+                artwork fills this bounded square exactly — no fullscreen
+                wallpaper. Everything else (avatars, decor) sits around it. */}
+            <img
+              src={bistrotTable}
+              alt=""
+              width={1024}
+              height={1024}
+              className="pointer-events-none absolute inset-0 h-full w-full rounded-[6%] object-cover"
+              style={{ boxShadow: "0 30px 60px -20px oklch(0 0 0 / 85%), 0 12px 28px -12px oklch(0 0 0 / 70%)" }}
+            />
+            {/* Soft central halo + subtle edge vignette on the felt. */}
+            <div className="pointer-events-none absolute inset-0 rounded-[6%]" style={{ background:"radial-gradient(38% 30% at 50% 50%, oklch(0.9 0.14 78 / 14%) 0%, oklch(0.85 0.12 72 / 6%) 45%, transparent 75%)" }} />
+            <div className="pointer-events-none absolute inset-0 rounded-[6%]" style={{ background:"radial-gradient(60% 55% at 50% 50%, transparent 0%, transparent 55%, oklch(0 0 0 / 32%) 100%)" }} />
+
+
 
 
             {/* Player badges */}
