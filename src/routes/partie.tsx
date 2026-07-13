@@ -32,15 +32,15 @@ const PLAYERS: Record<Position, PlayerInfo> = {
   right: { name: "Bot Alex", level: 12, photo: "https://i.pravatar.cc/200?img=15" },
 };
 
-// Bigger, more readable cards
-const CARD_W_BIG = 82;
-const CARD_H_BIG = 120;
+// Bigger, more readable cards (+15%)
+const CARD_W_BIG = 94;
+const CARD_H_BIG = 138;
 const CARD_W_SMALL = 44;
 const CARD_H_SMALL = 64;
 
-const FLIGHT_MS = 420;
-const CUT_MS = 2100;
-const SHUFFLE_MS = 2600;
+const FLIGHT_MS = 460;
+const CUT_MS = 2900;
+const SHUFFLE_MS = 2700;
 
 type DealMode = "3-2-3" | "2-3-3" | "3-3-2";
 type Phase = "shuffle" | "shuffling" | "cut" | "mode" | "dealing" | "done";
