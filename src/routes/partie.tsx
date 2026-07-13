@@ -1249,9 +1249,25 @@ function CardFace({ card }: { card: Card }) {
 
 function CardBack() {
   return (
-    <div className="relative h-full w-full overflow-hidden" style={{ borderRadius:7, background:"linear-gradient(160deg, oklch(0.30 0.10 25) 0%, oklch(0.18 0.06 25) 100%)", border:"1px solid oklch(0.55 0.14 78 / 60%)", boxShadow:"0 8px 14px -5px oklch(0 0 0 / 75%), 0 2px 4px oklch(0 0 0 / 55%), inset 0 1px 0 oklch(1 0 0 / 18%)" }}>
-      <div className="absolute inset-1 rounded-[4px]" style={{ border:"1px solid oklch(0.72 0.14 82 / 55%)", backgroundImage:"repeating-linear-gradient(45deg, oklch(0.72 0.14 82 / 18%) 0 2px, transparent 2px 6px), repeating-linear-gradient(-45deg, oklch(0.72 0.14 82 / 12%) 0 2px, transparent 2px 6px)" }} />
-      <div className="absolute inset-0 flex items-center justify-center font-serif text-[13px] font-bold tracking-widest" style={{ color:"oklch(0.85 0.14 82)", textShadow:"0 1px 0 oklch(0 0 0 / 65%)" }}>CAPI</div>
+    <div className="relative h-full w-full overflow-hidden" style={{ borderRadius:7, background:"linear-gradient(160deg, oklch(0.32 0.11 25) 0%, oklch(0.18 0.06 25) 100%)", border:"1px solid oklch(0.55 0.14 78 / 60%)", boxShadow:"0 8px 14px -5px oklch(0 0 0 / 75%), 0 2px 4px oklch(0 0 0 / 55%), inset 0 1px 0 oklch(1 0 0 / 18%), inset 0 0 22px oklch(0 0 0 / 55%)" }}>
+      {/* diamond guilloché weave */}
+      <div className="absolute inset-1 rounded-[4px]" style={{ border:"1px solid oklch(0.72 0.14 82 / 55%)", backgroundImage:"repeating-linear-gradient(45deg, oklch(0.72 0.14 82 / 20%) 0 2px, transparent 2px 7px), repeating-linear-gradient(-45deg, oklch(0.72 0.14 82 / 14%) 0 2px, transparent 2px 7px)" }} />
+      {/* inner gold hairline frame */}
+      <div className="pointer-events-none absolute inset-[6px] rounded-[3px]" style={{ border:"1px solid oklch(0.82 0.14 82 / 45%)", boxShadow:"inset 0 0 0 1px oklch(0 0 0 / 35%)" }} />
+      {/* subtle vintage wear: soft light noise + edge darkening, never dirty */}
+      <div className="pointer-events-none absolute inset-0 opacity-25 mix-blend-overlay" style={{ backgroundImage:"radial-gradient(oklch(1 0 0 / 22%) 0.5px, transparent 0.6px), radial-gradient(oklch(0 0 0 / 30%) 0.5px, transparent 0.6px)", backgroundSize:"3px 3px, 5px 5px", backgroundPosition:"0 0, 1px 2px" }} />
+      <div className="pointer-events-none absolute inset-0" style={{ boxShadow:"inset 0 0 14px oklch(0 0 0 / 55%)" }} />
+      {/* CAPI monogram — larger, metallic gold */}
+      <div className="absolute inset-0 flex items-center justify-center">
+        <span className="font-serif font-black tracking-[0.22em]" style={{
+          fontSize: "clamp(15px, 22%, 26px)",
+          background: "linear-gradient(180deg, oklch(0.98 0.11 88) 0%, oklch(0.82 0.14 82) 45%, oklch(0.58 0.12 62) 100%)",
+          WebkitBackgroundClip: "text",
+          backgroundClip: "text",
+          color: "transparent",
+          filter: "drop-shadow(0 1px 0 oklch(0 0 0 / 70%)) drop-shadow(0 0 6px oklch(0.82 0.14 82 / 45%))",
+        }}>CAPI</span>
+      </div>
     </div>
   );
 }
