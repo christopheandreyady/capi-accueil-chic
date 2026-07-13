@@ -591,6 +591,7 @@ function GameTable() {
         width={1024}
         height={1536}
         className="pointer-events-none absolute inset-0 h-full w-full object-cover"
+        style={{ transform: "scale(0.9)", transformOrigin: "50% 46%" }}
       />
       {/* Warm bistro key light from above, then a deep vignette that pulls
           the eye toward the table. */}
