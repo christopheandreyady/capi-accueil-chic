@@ -1125,10 +1125,10 @@ function DeckSlab({ count }: { count: number }) {
 }
 
 function PlayerBadge({
-  position, info, isDealer, isLocal, isActive, isThinking, announcement,
+  position, info, isDealer, isLocal, isActive, isThinking, announcement, announcementIsTaker,
 }: {
   position: Position; info: PlayerInfo; isDealer: boolean; isLocal: boolean;
-  isActive?: boolean; isThinking?: boolean; announcement?: Bid | null;
+  isActive?: boolean; isThinking?: boolean; announcement?: Bid | null; announcementIsTaker?: boolean;
 }) {
   const style: React.CSSProperties =
     position === "bottom" ? { left:"50%", bottom:0, transform:"translate(-50%, 55%)" }
