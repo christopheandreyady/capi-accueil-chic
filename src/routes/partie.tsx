@@ -67,13 +67,13 @@ const PLAYERS: Record<Position, PlayerInfo> = {
   right: { name: "Bot Alex", level: 12, photo: "https://i.pravatar.cc/200?img=15" },
 };
 
-// Card sizes
-const CARD_W_BIG = 94;
-const CARD_H_BIG = 138;
-const CARD_W_SMALL = 44;
-const CARD_H_SMALL = 64;
-const CARD_W_TRICK = 62;
-const CARD_H_TRICK = 92;
+// Card sizes — camera pulled closer, hand + trick more imposing.
+const CARD_W_BIG = 108;
+const CARD_H_BIG = 158;
+const CARD_W_SMALL = 46;
+const CARD_H_SMALL = 68;
+const CARD_W_TRICK = 74;
+const CARD_H_TRICK = 110;
 
 const FLIGHT_MS = 460;
 const CUT_MS = 2900;
