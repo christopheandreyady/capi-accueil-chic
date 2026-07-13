@@ -844,9 +844,9 @@ function GameCards({
   const trickTargets = useMemo(() => {
     const map: Record<string, ReturnType<typeof trickTarget>> = {};
     if (!trick) return map;
-    for (const p of trick.plays) {
-      map[p.card.id] = trickTarget(p.seat, anchors, sz);
-    }
+    trick.plays.forEach((p, i) => {
+      map[p.card.id] = trickTarget(p.seat, anchors, sz, i);
+    });
     return map;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [trick, anchors, sz]);
@@ -874,7 +874,7 @@ function GameCards({
               style={{
                 width: t.w, height: t.h,
                 transform: `translate3d(${t.x - t.w/2}px, ${t.y - t.h/2}px, 0) rotate(${t.rotate}deg)`,
-                transition: `transform 320ms cubic-bezier(0.22, 0.7, 0.25, 1)`,
+                transition: `transform 380ms cubic-bezier(0.22, 0.7, 0.25, 1)`,
                 zIndex: 100 + index + (isBottom ? 50 : 0),
                 opacity: 1,
               }}
@@ -886,14 +886,14 @@ function GameCards({
       })}
 
       {/* Trick */}
-      {trick && trick.plays.map((p) => {
-        const t = trickTargets[p.card.id] ?? trickTarget(p.seat, anchors, sz);
+      {trick && trick.plays.map((p, i) => {
+        const t = trickTargets[p.card.id] ?? trickTarget(p.seat, anchors, sz, i);
         return (
           <div key={"trick-" + p.card.id} className="absolute left-0 top-0" style={{
             width: CARD_W_TRICK, height: CARD_H_TRICK,
             transform: `translate3d(${t.x - CARD_W_TRICK/2}px, ${t.y - CARD_H_TRICK/2}px, 0) rotate(${t.rotate}deg)`,
             transition: `transform 340ms cubic-bezier(0.22, 0.7, 0.25, 1)`,
-            zIndex: 300,
+            zIndex: 300 + i,
           }}>
             <CardFace card={p.card} />
           </div>
