@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { Plus, ArrowLeft, Play, Crown, Check, Copy, QrCode, Share2, UserPlus } from "lucide-react";
 import bistrotTable from "@/assets/capi-bistrot-table.jpg";
@@ -83,6 +83,7 @@ const initialSeats: Seat[] = [
 ];
 
 function WaitingRoom() {
+  const navigate = useNavigate();
   const [cfg, setCfg] = useState<TableConfig>(() => defaultTableConfig());
   const [seats, setSeats] = useState<Seat[]>(initialSeats);
   const [inviteOpen, setInviteOpen] = useState(false);
@@ -440,6 +441,7 @@ function WaitingRoom() {
           <button
             type="button"
             disabled={!allReady}
+            onClick={() => allReady && navigate({ to: "/partie" })}
             className="group relative flex w-full items-center justify-center gap-3 overflow-hidden px-6 py-3 transition-all duration-200 ease-out active:scale-[0.98] disabled:cursor-not-allowed disabled:active:scale-100"
             style={{
               borderRadius: "0.9rem",

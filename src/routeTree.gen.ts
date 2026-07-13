@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as SoloRouteImport } from './routes/solo'
 import { Route as SalleAttenteRouteImport } from './routes/salle-attente'
 import { Route as RejoindreTableRouteImport } from './routes/rejoindre-table'
+import { Route as PartieRouteImport } from './routes/partie'
 import { Route as JouerRouteImport } from './routes/jouer'
 import { Route as EnLigneRouteImport } from './routes/en-ligne'
 import { Route as CreerTableRouteImport } from './routes/creer-table'
@@ -31,6 +32,11 @@ const SalleAttenteRoute = SalleAttenteRouteImport.update({
 const RejoindreTableRoute = RejoindreTableRouteImport.update({
   id: '/rejoindre-table',
   path: '/rejoindre-table',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PartieRoute = PartieRouteImport.update({
+  id: '/partie',
+  path: '/partie',
   getParentRoute: () => rootRouteImport,
 } as any)
 const JouerRoute = JouerRouteImport.update({
@@ -65,6 +71,7 @@ export interface FileRoutesByFullPath {
   '/creer-table': typeof CreerTableRoute
   '/en-ligne': typeof EnLigneRoute
   '/jouer': typeof JouerRoute
+  '/partie': typeof PartieRoute
   '/rejoindre-table': typeof RejoindreTableRoute
   '/salle-attente': typeof SalleAttenteRoute
   '/solo': typeof SoloRoute
@@ -75,6 +82,7 @@ export interface FileRoutesByTo {
   '/creer-table': typeof CreerTableRoute
   '/en-ligne': typeof EnLigneRoute
   '/jouer': typeof JouerRoute
+  '/partie': typeof PartieRoute
   '/rejoindre-table': typeof RejoindreTableRoute
   '/salle-attente': typeof SalleAttenteRoute
   '/solo': typeof SoloRoute
@@ -86,6 +94,7 @@ export interface FileRoutesById {
   '/creer-table': typeof CreerTableRoute
   '/en-ligne': typeof EnLigneRoute
   '/jouer': typeof JouerRoute
+  '/partie': typeof PartieRoute
   '/rejoindre-table': typeof RejoindreTableRoute
   '/salle-attente': typeof SalleAttenteRoute
   '/solo': typeof SoloRoute
@@ -98,6 +107,7 @@ export interface FileRouteTypes {
     | '/creer-table'
     | '/en-ligne'
     | '/jouer'
+    | '/partie'
     | '/rejoindre-table'
     | '/salle-attente'
     | '/solo'
@@ -108,6 +118,7 @@ export interface FileRouteTypes {
     | '/creer-table'
     | '/en-ligne'
     | '/jouer'
+    | '/partie'
     | '/rejoindre-table'
     | '/salle-attente'
     | '/solo'
@@ -118,6 +129,7 @@ export interface FileRouteTypes {
     | '/creer-table'
     | '/en-ligne'
     | '/jouer'
+    | '/partie'
     | '/rejoindre-table'
     | '/salle-attente'
     | '/solo'
@@ -129,6 +141,7 @@ export interface RootRouteChildren {
   CreerTableRoute: typeof CreerTableRoute
   EnLigneRoute: typeof EnLigneRoute
   JouerRoute: typeof JouerRoute
+  PartieRoute: typeof PartieRoute
   RejoindreTableRoute: typeof RejoindreTableRoute
   SalleAttenteRoute: typeof SalleAttenteRoute
   SoloRoute: typeof SoloRoute
@@ -155,6 +168,13 @@ declare module '@tanstack/react-router' {
       path: '/rejoindre-table'
       fullPath: '/rejoindre-table'
       preLoaderRoute: typeof RejoindreTableRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/partie': {
+      id: '/partie'
+      path: '/partie'
+      fullPath: '/partie'
+      preLoaderRoute: typeof PartieRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/jouer': {
@@ -201,6 +221,7 @@ const rootRouteChildren: RootRouteChildren = {
   CreerTableRoute: CreerTableRoute,
   EnLigneRoute: EnLigneRoute,
   JouerRoute: JouerRoute,
+  PartieRoute: PartieRoute,
   RejoindreTableRoute: RejoindreTableRoute,
   SalleAttenteRoute: SalleAttenteRoute,
   SoloRoute: SoloRoute,
