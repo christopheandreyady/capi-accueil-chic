@@ -21,7 +21,6 @@ export const Route = createFileRoute("/partie")({
 
 type Position = "bottom" | "left" | "top" | "right";
 
-// Clockwise seating order used for turn / deal rotation.
 const POSITIONS: Position[] = ["bottom", "left", "top", "right"];
 
 type PlayerInfo = { name: string; level: number; photo: string };
@@ -33,17 +32,17 @@ const PLAYERS: Record<Position, PlayerInfo> = {
   right: { name: "Bot Alex", level: 12, photo: "https://i.pravatar.cc/200?img=15" },
 };
 
-// Larger, more readable cards (+~30%)
-const CARD_W_BIG = 74;
-const CARD_H_BIG = 108;
+// Bigger, more readable cards
+const CARD_W_BIG = 82;
+const CARD_H_BIG = 120;
 const CARD_W_SMALL = 44;
 const CARD_H_SMALL = 64;
 
-const FLIGHT_MS = 460;
-const CUT_MS = 1900;
-const SHUFFLE_MS = 1400;
+const FLIGHT_MS = 420;
+const CUT_MS = 2100;
+const SHUFFLE_MS = 2600;
 
-type DealMode = "3-2-3" | "3-3-2" | "2-3-3";
+type DealMode = "3-2-3" | "2-3-3" | "3-3-2";
 type Phase = "shuffle" | "shuffling" | "cut" | "mode" | "dealing" | "done";
 
 type Dealt = {
@@ -60,8 +59,9 @@ function prevClockwise(p: Position): Position {
   return POSITIONS[(POSITIONS.indexOf(p) + 3) % 4];
 }
 
-// Realistic felted card sliding sound: paper hiss + soft thud.
-function playCardSound() {
+// --- Audio -----------------------------------------------------------------
+
+function getCtx(): AudioContext | null {
   try {
     const w = window as unknown as {
       __capiAudioCtx?: AudioContext;
@@ -69,52 +69,123 @@ function playCardSound() {
       webkitAudioContext?: typeof AudioContext;
     };
     const Ctor = w.AudioContext ?? w.webkitAudioContext;
-    if (!Ctor) return;
+    if (!Ctor) return null;
     if (!w.__capiAudioCtx) w.__capiAudioCtx = new Ctor();
-    const ctx = w.__capiAudioCtx!;
-    const now = ctx.currentTime;
-
-    // Long, feathered slide (noise through bandpass)
-    const dur = 0.16 + Math.random() * 0.05;
-    const buffer = ctx.createBuffer(1, Math.floor(ctx.sampleRate * dur), ctx.sampleRate);
-    const data = buffer.getChannelData(0);
-    for (let i = 0; i < data.length; i++) {
-      const t = i / data.length;
-      // slow attack, longer decay — resembles a card gliding
-      const env = Math.pow(Math.sin(Math.PI * t), 1.4) * Math.pow(1 - t, 0.6);
-      data[i] = (Math.random() * 2 - 1) * env;
-    }
-    const src = ctx.createBufferSource();
-    src.buffer = buffer;
-    const bp = ctx.createBiquadFilter();
-    bp.type = "bandpass";
-    bp.frequency.value = 2400 + Math.random() * 600;
-    bp.Q.value = 0.7;
-    const hp = ctx.createBiquadFilter();
-    hp.type = "highpass";
-    hp.frequency.value = 700;
-    const hissGain = ctx.createGain();
-    hissGain.gain.setValueAtTime(0.11 + Math.random() * 0.03, now);
-    hissGain.gain.exponentialRampToValueAtTime(0.0005, now + dur);
-    src.connect(bp).connect(hp).connect(hissGain).connect(ctx.destination);
-    src.start(now);
-    src.stop(now + dur);
-
-    // Soft landing thud
-    const osc = ctx.createOscillator();
-    osc.type = "sine";
-    osc.frequency.setValueAtTime(160, now + dur * 0.75);
-    osc.frequency.exponentialRampToValueAtTime(80, now + dur + 0.05);
-    const oGain = ctx.createGain();
-    oGain.gain.setValueAtTime(0.045, now + dur * 0.75);
-    oGain.gain.exponentialRampToValueAtTime(0.0005, now + dur + 0.06);
-    osc.connect(oGain).connect(ctx.destination);
-    osc.start(now + dur * 0.75);
-    osc.stop(now + dur + 0.08);
+    return w.__capiAudioCtx!;
   } catch {
-    /* silent */
+    return null;
   }
 }
+
+function playCardSound() {
+  const ctx = getCtx();
+  if (!ctx) return;
+  const now = ctx.currentTime;
+  const dur = 0.16 + Math.random() * 0.05;
+  const buffer = ctx.createBuffer(1, Math.floor(ctx.sampleRate * dur), ctx.sampleRate);
+  const data = buffer.getChannelData(0);
+  for (let i = 0; i < data.length; i++) {
+    const t = i / data.length;
+    const env = Math.pow(Math.sin(Math.PI * t), 1.4) * Math.pow(1 - t, 0.6);
+    data[i] = (Math.random() * 2 - 1) * env;
+  }
+  const src = ctx.createBufferSource();
+  src.buffer = buffer;
+  const bp = ctx.createBiquadFilter();
+  bp.type = "bandpass";
+  bp.frequency.value = 2400 + Math.random() * 600;
+  bp.Q.value = 0.7;
+  const hp = ctx.createBiquadFilter();
+  hp.type = "highpass";
+  hp.frequency.value = 700;
+  const g = ctx.createGain();
+  g.gain.setValueAtTime(0.11 + Math.random() * 0.03, now);
+  g.gain.exponentialRampToValueAtTime(0.0005, now + dur);
+  src.connect(bp).connect(hp).connect(g).connect(ctx.destination);
+  src.start(now);
+  src.stop(now + dur);
+
+  const osc = ctx.createOscillator();
+  osc.type = "sine";
+  osc.frequency.setValueAtTime(160, now + dur * 0.75);
+  osc.frequency.exponentialRampToValueAtTime(80, now + dur + 0.05);
+  const oGain = ctx.createGain();
+  oGain.gain.setValueAtTime(0.045, now + dur * 0.75);
+  oGain.gain.exponentialRampToValueAtTime(0.0005, now + dur + 0.06);
+  osc.connect(oGain).connect(ctx.destination);
+  osc.start(now + dur * 0.75);
+  osc.stop(now + dur + 0.08);
+}
+
+// Burst of paper riffle — many short high-frequency ticks
+function playRiffleBurst() {
+  const ctx = getCtx();
+  if (!ctx) return;
+  const now = ctx.currentTime;
+  const dur = 0.55;
+  const buffer = ctx.createBuffer(1, Math.floor(ctx.sampleRate * dur), ctx.sampleRate);
+  const data = buffer.getChannelData(0);
+  for (let i = 0; i < data.length; i++) {
+    const t = i / data.length;
+    // Multiple ticks along the duration
+    const tickPhase = (t * 30) % 1;
+    const tick = tickPhase < 0.08 ? 1 - tickPhase / 0.08 : 0;
+    const env = Math.pow(Math.sin(Math.PI * t), 0.8);
+    data[i] = (Math.random() * 2 - 1) * env * (0.4 + tick * 0.6);
+  }
+  const src = ctx.createBufferSource();
+  src.buffer = buffer;
+  const bp = ctx.createBiquadFilter();
+  bp.type = "bandpass";
+  bp.frequency.value = 3200;
+  bp.Q.value = 0.9;
+  const g = ctx.createGain();
+  g.gain.setValueAtTime(0.14, now);
+  g.gain.exponentialRampToValueAtTime(0.0005, now + dur);
+  src.connect(bp).connect(g).connect(ctx.destination);
+  src.start(now);
+  src.stop(now + dur);
+}
+
+function playCutSound() {
+  const ctx = getCtx();
+  if (!ctx) return;
+  const now = ctx.currentTime;
+  const dur = 0.22;
+  const buffer = ctx.createBuffer(1, Math.floor(ctx.sampleRate * dur), ctx.sampleRate);
+  const data = buffer.getChannelData(0);
+  for (let i = 0; i < data.length; i++) {
+    const t = i / data.length;
+    const env = Math.pow(Math.sin(Math.PI * t), 0.9) * Math.pow(1 - t, 0.4);
+    data[i] = (Math.random() * 2 - 1) * env;
+  }
+  const src = ctx.createBufferSource();
+  src.buffer = buffer;
+  const bp = ctx.createBiquadFilter();
+  bp.type = "bandpass";
+  bp.frequency.value = 1600;
+  bp.Q.value = 0.6;
+  const g = ctx.createGain();
+  g.gain.setValueAtTime(0.22, now);
+  g.gain.exponentialRampToValueAtTime(0.0005, now + dur);
+  src.connect(bp).connect(g).connect(ctx.destination);
+  src.start(now);
+  src.stop(now + dur);
+
+  // Thud
+  const osc = ctx.createOscillator();
+  osc.type = "sine";
+  osc.frequency.setValueAtTime(110, now + 0.08);
+  osc.frequency.exponentialRampToValueAtTime(55, now + 0.24);
+  const oG = ctx.createGain();
+  oG.gain.setValueAtTime(0.09, now + 0.08);
+  oG.gain.exponentialRampToValueAtTime(0.0005, now + 0.26);
+  osc.connect(oG).connect(ctx.destination);
+  osc.start(now + 0.08);
+  osc.stop(now + 0.28);
+}
+
+// --- Component -------------------------------------------------------------
 
 function GameTable() {
   const boxRef = useRef<HTMLDivElement>(null);
@@ -125,6 +196,7 @@ function GameTable() {
   const [phase, setPhase] = useState<Phase>("shuffle");
   const [cutStep, setCutStep] = useState<0 | 1 | 2>(0);
   const [dealMode, setDealMode] = useState<DealMode | null>(null);
+  const [selectedCardId, setSelectedCardId] = useState<string | null>(null);
 
   const cutter = prevClockwise(dealer);
 
@@ -161,28 +233,27 @@ function GameTable() {
     return () => ro.disconnect();
   }, []);
 
-  // Reset lifecycle each new round.
   useEffect(() => {
     setPhase("shuffle");
     setCutStep(0);
     setDealtCount(0);
     setDealMode(null);
+    setSelectedCardId(null);
   }, [dealSeed, dealer]);
 
-  // Cut → mode → deal lifecycle. Starts once user picks shuffle option and mode.
+  // Dealing loop — batch-aware timing (packets)
   useEffect(() => {
     if (size.w === 0 || phase !== "dealing" || !dealMode) return;
     const timers: number[] = [];
-    // Slower, more natural rhythm: 320-440ms per card, batch pauses ~280ms.
     let cumulative = 0;
     for (let k = 0; k < dealOrder.length; k++) {
       const prev = dealOrder[k - 1];
       const cur = dealOrder[k];
-      const seatChanged = !prev || prev.seat !== cur.seat;
       const batchChanged = !prev || prev.batchIndex !== cur.batchIndex;
-      const base = 330 + Math.random() * 110;
-      const extra = seatChanged ? (batchChanged ? 280 : 90) : 0;
-      cumulative += k === 0 ? 320 : base + extra;
+      // Within a packet: fast successive slides (~110-160ms).
+      // Between packets (seat change): ~380ms wrist reset.
+      const step = k === 0 ? 260 : batchChanged ? 380 + Math.random() * 90 : 115 + Math.random() * 55;
+      cumulative += step;
       const stepIdx = k + 1;
       timers.push(
         window.setTimeout(() => {
@@ -195,7 +266,6 @@ function GameTable() {
     return () => timers.forEach(clearTimeout);
   }, [phase, dealMode, dealOrder, size.w]);
 
-  // Seat anchor points — closer to each player.
   const anchors = useMemo(() => {
     const w = size.w || 1;
     const h = size.h || 1;
@@ -207,7 +277,6 @@ function GameTable() {
     } as const;
   }, [size]);
 
-  // Deck sits just in front of dealer.
   const deckBase = useMemo(() => {
     const a = anchors[dealer];
     const cx = (size.w || 0) / 2;
@@ -219,7 +288,6 @@ function GameTable() {
     return { x: a.x + (dx / len) * inset, y: a.y + (dy / len) * inset, angle: a.angle };
   }, [anchors, dealer, size]);
 
-  // Deck pivots subtly toward the current recipient (wrist tilt).
   const deckPos = useMemo(() => {
     if (phase !== "dealing" || dealtCount === 0 || dealtCount > dealOrder.length) return deckBase;
     const cur = dealOrder[Math.min(dealtCount, dealOrder.length - 1)] ?? dealOrder[dealtCount - 1];
@@ -237,11 +305,12 @@ function GameTable() {
     const cardH = isBottom ? CARD_H_BIG : CARD_H_SMALL;
     const a = anchors[d.seat];
     const n = 8;
-    const spread = isBottom ? 38 : 26;
+    // Wider, more readable fan for the local player
+    const spread = isBottom ? 62 : 26;
     const step = spread / (n - 1);
     const localAngle = -spread / 2 + step * d.indexInHand;
-    // Fan sits VERY close to each seated player.
-    const radius = isBottom ? 78 : 46;
+    // Fan sits close to each seated player.
+    const radius = isBottom ? 100 : 46;
     const rad = (localAngle * Math.PI) / 180;
     const lx = Math.sin(rad) * radius;
     const ly = -Math.cos(rad) * radius;
@@ -251,9 +320,11 @@ function GameTable() {
     return {
       x: a.x + rx,
       y: a.y + ry,
-      rotate: localAngle + a.angle + (Math.random() < 0.5 ? -1 : 1) * (2 + Math.random() * 3),
+      rotate: localAngle + a.angle + (Math.random() < 0.5 ? -1 : 1) * (isBottom ? 0.5 : 2),
       w: cardW,
       h: cardH,
+      localAngle,
+      seatAngle: a.angle,
     };
   };
 
@@ -271,19 +342,30 @@ function GameTable() {
     if (!really) {
       setPhase("cut");
       setCutStep(0);
-      const t1 = window.setTimeout(() => setCutStep(1), 550);
-      const t2 = window.setTimeout(() => setCutStep(2), 550 + 700);
-      const t3 = window.setTimeout(() => setPhase("mode"), CUT_MS);
-      return () => [t1, t2, t3].forEach(clearTimeout);
+      const t0 = window.setTimeout(() => {
+        setCutStep(1);
+        playCutSound();
+      }, 550);
+      const t1 = window.setTimeout(() => setCutStep(2), 550 + 800);
+      const t2 = window.setTimeout(() => setPhase("mode"), CUT_MS);
+      return () => [t0, t1, t2].forEach(clearTimeout);
     }
     setPhase("shuffling");
+    // Multiple riffle bursts throughout the animation
+    playRiffleBurst();
+    const s1 = window.setTimeout(() => playRiffleBurst(), 850);
+    const s2 = window.setTimeout(() => playRiffleBurst(), 1700);
     window.setTimeout(() => {
       setPhase("cut");
       setCutStep(0);
-      window.setTimeout(() => setCutStep(1), 550);
-      window.setTimeout(() => setCutStep(2), 550 + 700);
+      window.setTimeout(() => {
+        setCutStep(1);
+        playCutSound();
+      }, 550);
+      window.setTimeout(() => setCutStep(2), 550 + 800);
       window.setTimeout(() => setPhase("mode"), CUT_MS);
     }, SHUFFLE_MS);
+    return () => [s1, s2].forEach(clearTimeout);
   };
 
   const chooseMode = (m: DealMode) => {
@@ -301,8 +383,40 @@ function GameTable() {
           ? "Vous distribuez"
           : "Distribution";
 
+  const handleCardClick = (cardId: string, seat: Position) => {
+    if (phase !== "done" || seat !== "bottom") return;
+    setSelectedCardId((prev) => (prev === cardId ? null : cardId));
+  };
+
   return (
     <main className="relative min-h-screen w-full overflow-hidden bg-background">
+      {/* Inline keyframes for shuffle */}
+      <style>{`
+        @keyframes capi-riffle {
+          0%   { transform: translate(-42px, 0) rotate(-6deg); }
+          18%  { transform: translate(-42px, -8px) rotate(-6deg); }
+          32%  { transform: translate(-6px, -2px) rotate(-1deg); }
+          50%  { transform: translate(2px, 0) rotate(0deg); }
+          62%  { transform: translate(-38px, -6px) rotate(-4deg); }
+          78%  { transform: translate(-4px, -1px) rotate(-0.5deg); }
+          100% { transform: translate(0, 0) rotate(0deg); }
+        }
+        @keyframes capi-riffle-r {
+          0%   { transform: translate(42px, 0) rotate(6deg); }
+          18%  { transform: translate(42px, -8px) rotate(6deg); }
+          32%  { transform: translate(6px, -2px) rotate(1deg); }
+          50%  { transform: translate(-2px, 0) rotate(0deg); }
+          62%  { transform: translate(38px, -6px) rotate(4deg); }
+          78%  { transform: translate(4px, -1px) rotate(0.5deg); }
+          100% { transform: translate(0, 0) rotate(0deg); }
+        }
+        @keyframes capi-riffle-tick {
+          0%, 30%, 60% { transform: translateY(0) rotate(0deg); }
+          10%, 40%, 70% { transform: translateY(-4px) rotate(-1.5deg); }
+          20%, 50%, 80% { transform: translateY(0) rotate(0deg); }
+        }
+      `}</style>
+
       <img
         src={bistrotTable}
         alt=""
@@ -310,7 +424,6 @@ function GameTable() {
         height={1536}
         className="pointer-events-none absolute inset-0 h-full w-full object-cover"
       />
-      {/* Warm overhead light */}
       <div
         className="pointer-events-none absolute inset-0"
         style={{
@@ -318,7 +431,6 @@ function GameTable() {
             "radial-gradient(60% 35% at 50% 0%, oklch(0.85 0.14 75 / 32%) 0%, oklch(0.7 0.12 65 / 12%) 40%, transparent 70%)",
         }}
       />
-      {/* Vignette */}
       <div
         className="pointer-events-none absolute inset-0"
         style={{
@@ -378,7 +490,6 @@ function GameTable() {
         </header>
 
         <div ref={boxRef} className="relative mx-auto mt-3 w-full max-w-[420px] flex-1">
-          {/* Bistro wooden table (same identity as salle d'attente) */}
           <div className="relative mx-auto aspect-square w-full">
             <div
               className="absolute inset-[4%] overflow-hidden"
@@ -413,7 +524,6 @@ function GameTable() {
               />
             </div>
 
-            {/* Green felt mat */}
             <div
               className="absolute overflow-hidden"
               style={{
@@ -444,7 +554,6 @@ function GameTable() {
               />
             </div>
 
-            {/* Permanent player badges (avatar + pseudo + level + dealer D) */}
             {POSITIONS.map((p) => (
               <PlayerBadge
                 key={p}
@@ -471,20 +580,9 @@ function GameTable() {
               </div>
             )}
 
-            {/* Shuffling label */}
-            {phase === "shuffling" && (
-              <div
-                className="pointer-events-none absolute left-1/2 top-1/2 z-40 -translate-x-1/2 -translate-y-1/2 flex items-center gap-2 rounded-full border px-4 py-2 text-[12px] font-medium animate-fade-in"
-                style={{
-                  background: "oklch(0.18 0.03 40 / 88%)",
-                  borderColor: "oklch(0.82 0.14 82 / 40%)",
-                  color: "oklch(0.94 0.1 85)",
-                  backdropFilter: "blur(8px)",
-                }}
-              >
-                <Shuffle className="h-3.5 w-3.5" />
-                Mélange en cours…
-              </div>
+            {/* Shuffle animation — visible packet riffling */}
+            {phase === "shuffling" && size.w > 0 && (
+              <ShuffleAnimation deckPos={deckBase} />
             )}
 
             {/* Shuffle choice */}
@@ -499,12 +597,12 @@ function GameTable() {
               />
             )}
 
-            {/* Mode choice — 3 options */}
+            {/* Mode choice — 3 options in canonical order */}
             {phase === "mode" && size.w > 0 && (
               <ChoicePanel
                 title="Vous distribuez"
                 subtitle="Choisissez la distribution"
-                options={(["3-2-3", "3-3-2", "2-3-3"] as DealMode[]).map((m) => ({
+                options={(["3-2-3", "2-3-3", "3-3-2"] as DealMode[]).map((m) => ({
                   key: m,
                   label: m,
                   onClick: () => chooseMode(m),
@@ -513,7 +611,6 @@ function GameTable() {
               />
             )}
 
-            {/* Deck (in front of dealer) — split during cut */}
             {(phase === "cut" || phase === "dealing") && (
               <DeckStack
                 deckPos={deckPos}
@@ -529,26 +626,46 @@ function GameTable() {
                 targetsRef.current[d.card.id] = computeTarget(d);
               }
               const target = targetsRef.current[d.card.id];
-              const x = isDealt ? target.x : deckPos.x;
-              const y = isDealt ? target.y : deckPos.y;
+              const isSelected = selectedCardId === d.card.id;
+              // Lift the selected card perpendicular to its own local direction
+              let liftX = 0;
+              let liftY = 0;
+              if (isSelected) {
+                const seatRad = (target.seatAngle * Math.PI) / 180;
+                // "up" in seat local frame = -Y
+                liftX = Math.sin(seatRad) * 0 - -1 * Math.sin(seatRad + Math.PI) * 0; // no-op guard
+                const upX = -Math.sin(seatRad + Math.PI);
+                const upY = Math.cos(seatRad + Math.PI);
+                liftX = upX * 22;
+                liftY = upY * 22;
+              }
+              const x = isDealt ? target.x + liftX : deckPos.x;
+              const y = isDealt ? target.y + liftY : deckPos.y;
               const rotate = isDealt ? target.rotate : deckPos.angle + (i % 2 === 0 ? -1.5 : 1.5);
               const w = target.w;
               const h = target.h;
               const showFace = isDealt && d.seat === "bottom";
-              const z = isDealt ? 100 + d.indexInHand + (d.seat === "bottom" ? 50 : 0) : 20 + (32 - i);
+              const z = isDealt
+                ? (isSelected ? 400 : 100 + d.indexInHand + (d.seat === "bottom" ? 50 : 0))
+                : 20 + (32 - i);
               const visible = isDealt || phase === "dealing";
+              const clickable = phase === "done" && d.seat === "bottom";
               return (
                 <div
                   key={d.card.id}
-                  className="absolute left-0 top-0"
+                  className={`absolute left-0 top-0 ${clickable ? "cursor-pointer" : ""}`}
+                  onClick={clickable ? () => handleCardClick(d.card.id, d.seat) : undefined}
                   style={{
                     width: w,
                     height: h,
                     transform: `translate3d(${x - w / 2}px, ${y - h / 2}px, 0) rotate(${rotate}deg)`,
-                    transition: `transform ${FLIGHT_MS}ms cubic-bezier(0.22, 0.7, 0.25, 1)`,
+                    transition: `transform ${isSelected ? 180 : FLIGHT_MS}ms cubic-bezier(0.22, 0.7, 0.25, 1)`,
                     zIndex: z,
                     willChange: "transform",
                     opacity: visible ? 1 : 0,
+                    filter: isSelected
+                      ? "drop-shadow(0 10px 14px oklch(0 0 0 / 55%)) drop-shadow(0 0 8px oklch(0.85 0.14 82 / 55%))"
+                      : undefined,
                   }}
                 >
                   {showFace ? <CardFace card={d.card} /> : <CardBack />}
@@ -559,6 +676,70 @@ function GameTable() {
         </div>
       </div>
     </main>
+  );
+}
+
+// --- Shuffle animation -----------------------------------------------------
+
+function ShuffleAnimation({ deckPos }: { deckPos: { x: number; y: number; angle: number } }) {
+  const w = 46;
+  const h = 66;
+  const layers = 8;
+  return (
+    <div
+      className="pointer-events-none absolute left-0 top-0"
+      style={{
+        transform: `translate3d(${deckPos.x - w / 2}px, ${deckPos.y - h / 2}px, 0) rotate(${deckPos.angle}deg)`,
+        zIndex: 60,
+        width: w,
+        height: h,
+      }}
+    >
+      {/* Left half riffling */}
+      <div
+        style={{
+          position: "absolute",
+          inset: 0,
+          animation: "capi-riffle 900ms cubic-bezier(0.4, 0.1, 0.3, 1) 3",
+        }}
+      >
+        {Array.from({ length: layers }).map((_, i) => (
+          <div
+            key={`L${i}`}
+            style={{
+              position: "absolute",
+              inset: 0,
+              transform: `translate(${-i * 0.5}px, ${-i * 0.9}px)`,
+              animation: `capi-riffle-tick 900ms ease-in-out ${i * 40}ms infinite`,
+            }}
+          >
+            <CardBack />
+          </div>
+        ))}
+      </div>
+      {/* Right half riffling */}
+      <div
+        style={{
+          position: "absolute",
+          inset: 0,
+          animation: "capi-riffle-r 900ms cubic-bezier(0.4, 0.1, 0.3, 1) 3",
+        }}
+      >
+        {Array.from({ length: layers }).map((_, i) => (
+          <div
+            key={`R${i}`}
+            style={{
+              position: "absolute",
+              inset: 0,
+              transform: `translate(${i * 0.5}px, ${-i * 0.9}px)`,
+              animation: `capi-riffle-tick 900ms ease-in-out ${i * 40 + 20}ms infinite`,
+            }}
+          >
+            <CardBack />
+          </div>
+        ))}
+      </div>
+    </div>
   );
 }
 
@@ -699,7 +880,6 @@ function PlayerBadge({
   isDealer: boolean;
   isLocal: boolean;
 }) {
-  // Avatars are placed OUTSIDE the wooden table, at the seated position.
   const style: React.CSSProperties =
     position === "bottom"
       ? { left: "50%", bottom: 0, transform: "translate(-50%, 55%)" }
@@ -809,26 +989,26 @@ function CardFace({ card }: { card: Card }) {
     <div
       className="relative h-full w-full overflow-hidden"
       style={{
-        borderRadius: 7,
+        borderRadius: 8,
         background:
           "linear-gradient(180deg, oklch(0.99 0.01 90) 0%, oklch(0.94 0.01 85) 100%)",
         border: "1px solid oklch(0.75 0.02 85)",
         boxShadow: "0 5px 10px -3px oklch(0 0 0 / 60%), 0 1px 0 oklch(1 0 0 / 60%) inset",
       }}
     >
-      <div className="absolute left-1 top-0.5 flex flex-col items-center leading-none" style={{ color }}>
-        <span className="font-serif text-[16px] font-bold">{card.rank}</span>
-        <span className="text-[15px]">{card.suit}</span>
+      <div className="absolute left-1.5 top-1 flex flex-col items-center leading-none" style={{ color }}>
+        <span className="font-serif text-[18px] font-bold">{card.rank}</span>
+        <span className="text-[16px]">{card.suit}</span>
       </div>
       <div className="absolute inset-0 flex items-center justify-center" style={{ color }}>
-        <span className="text-[34px] leading-none">{card.suit}</span>
+        <span className="text-[38px] leading-none">{card.suit}</span>
       </div>
       <div
-        className="absolute bottom-0.5 right-1 flex rotate-180 flex-col items-center leading-none"
+        className="absolute bottom-1 right-1.5 flex rotate-180 flex-col items-center leading-none"
         style={{ color }}
       >
-        <span className="font-serif text-[16px] font-bold">{card.rank}</span>
-        <span className="text-[15px]">{card.suit}</span>
+        <span className="font-serif text-[18px] font-bold">{card.rank}</span>
+        <span className="text-[16px]">{card.suit}</span>
       </div>
     </div>
   );
