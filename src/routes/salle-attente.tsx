@@ -140,6 +140,9 @@ function WaitingRoom() {
   const total = 4;
   const readyCount = seats.filter((s) => s.player?.ready).length;
   const allReady = playersCount === total && readyCount === total;
+  const roomFull = playersCount === total;
+  const localReady = seats.find((s) => s.position === "bottom")?.player?.ready ?? false;
+
 
   function toggleReady(pos: Position) {
     setSeats((s) =>
