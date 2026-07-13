@@ -36,23 +36,30 @@ const CARD_H_BIG = 82;
 const CARD_W_SMALL = 34;
 const CARD_H_SMALL = 50;
 
-const DEAL_MS = 170; // stagger between cards (~0.17s)
-const FLIGHT_MS = 360; // per-card flight duration
-const CUT_MS = 1700; // total cut animation
+const FLIGHT_MS = 420; // per-card flight
+const CUT_MS = 1700;
+const BATCH_PAUSE_MS = 220; // extra pause between batches / seat changes
+
+type DealMode = "3-2-3" | "2-3-3";
 
 type Dealt = {
   card: Card;
   seat: Position;
   indexInHand: number; // 0..7
+  batchIndex: number;
 };
 
-type Phase = "cut" | "dealing" | "done";
+type Phase = "mode" | "cut" | "dealing" | "done";
 
 function nextClockwise(p: Position): Position {
   return POSITIONS[(POSITIONS.indexOf(p) + 1) % 4];
 }
 
-// Lightweight card-flick sound using the WebAudio API — no assets.
+function prevClockwise(p: Position): Position {
+  return POSITIONS[(POSITIONS.indexOf(p) + 3) % 4];
+}
+
+// Soft, felted card sound — a low thud + a short paper hiss.
 function playCardSound() {
   try {
     const w = window as unknown as {
@@ -65,25 +72,43 @@ function playCardSound() {
     if (!w.__capiAudioCtx) w.__capiAudioCtx = new Ctor();
     const ctx = w.__capiAudioCtx!;
     const now = ctx.currentTime;
-    // Short filtered noise burst = card flick
-    const dur = 0.07;
+
+    // 1) Soft paper hiss (band-limited noise)
+    const dur = 0.09;
     const buffer = ctx.createBuffer(1, Math.floor(ctx.sampleRate * dur), ctx.sampleRate);
     const data = buffer.getChannelData(0);
     for (let i = 0; i < data.length; i++) {
       const t = i / data.length;
-      data[i] = (Math.random() * 2 - 1) * (1 - t) * 0.55;
+      // fast attack, exp decay
+      const env = Math.pow(1 - t, 2.4);
+      data[i] = (Math.random() * 2 - 1) * env;
     }
     const src = ctx.createBufferSource();
     src.buffer = buffer;
-    const filter = ctx.createBiquadFilter();
-    filter.type = "highpass";
-    filter.frequency.value = 1800;
-    const gain = ctx.createGain();
-    gain.gain.setValueAtTime(0.18, now);
-    gain.gain.exponentialRampToValueAtTime(0.001, now + dur);
-    src.connect(filter).connect(gain).connect(ctx.destination);
+    const hp = ctx.createBiquadFilter();
+    hp.type = "highpass";
+    hp.frequency.value = 900;
+    const lp = ctx.createBiquadFilter();
+    lp.type = "lowpass";
+    lp.frequency.value = 3800;
+    const hissGain = ctx.createGain();
+    hissGain.gain.setValueAtTime(0.09 + Math.random() * 0.03, now);
+    hissGain.gain.exponentialRampToValueAtTime(0.0005, now + dur);
+    src.connect(hp).connect(lp).connect(hissGain).connect(ctx.destination);
     src.start(now);
     src.stop(now + dur);
+
+    // 2) Very short low thud (soft landing)
+    const osc = ctx.createOscillator();
+    osc.type = "sine";
+    osc.frequency.setValueAtTime(180, now);
+    osc.frequency.exponentialRampToValueAtTime(90, now + 0.06);
+    const oGain = ctx.createGain();
+    oGain.gain.setValueAtTime(0.045, now);
+    oGain.gain.exponentialRampToValueAtTime(0.0005, now + 0.07);
+    osc.connect(oGain).connect(ctx.destination);
+    osc.start(now);
+    osc.stop(now + 0.08);
   } catch {
     /* silent */
   }
@@ -95,24 +120,34 @@ function GameTable() {
   const [dealtCount, setDealtCount] = useState(0);
   const [dealSeed, setDealSeed] = useState(0);
   const [dealer, setDealer] = useState<Position>("bottom");
-  const [phase, setPhase] = useState<Phase>("cut");
-  const [cutStep, setCutStep] = useState<0 | 1 | 2>(0); // 0 idle, 1 split, 2 recomposed
+  const [phase, setPhase] = useState<Phase>("mode");
+  const [cutStep, setCutStep] = useState<0 | 1 | 2>(0);
+  const [dealMode, setDealMode] = useState<DealMode | null>(null);
 
-  const cutter = nextClockwise(dealer);
+  const cutter = prevClockwise(dealer);
 
   const dealOrder = useMemo<Dealt[]>(() => {
+    if (!dealMode) return [];
     const deck = shuffle(buildDeck());
     const order: Dealt[] = [];
-    // 8 cards each, dealt one-by-one clockwise starting AFTER the dealer.
+    // Start with the player AFTER the dealer (clockwise), classic Contrée.
     const start = (POSITIONS.indexOf(dealer) + 1) % 4;
     const handIdx: Record<Position, number> = { bottom: 0, left: 0, top: 0, right: 0 };
-    for (let k = 0; k < 32; k++) {
-      const seat = POSITIONS[(start + k) % 4];
-      order.push({ card: deck[k], seat, indexInHand: handIdx[seat]++ });
+    const pattern = dealMode === "3-2-3" ? [3, 2, 3] : [2, 3, 3];
+    let k = 0;
+    let batchIndex = 0;
+    for (const size of pattern) {
+      for (let seatOffset = 0; seatOffset < 4; seatOffset++) {
+        const seat = POSITIONS[(start + seatOffset) % 4];
+        for (let c = 0; c < size; c++) {
+          order.push({ card: deck[k++], seat, indexInHand: handIdx[seat]++, batchIndex });
+        }
+        batchIndex++;
+      }
     }
     return order;
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [dealSeed, dealer]);
+  }, [dealSeed, dealer, dealMode]);
 
   useLayoutEffect(() => {
     const el = boxRef.current;
@@ -124,62 +159,90 @@ function GameTable() {
     return () => ro.disconnect();
   }, []);
 
-  // Round lifecycle: cut → deal → done.
+  // Reset to mode-choice each new round.
   useEffect(() => {
-    if (size.w === 0) return;
+    setPhase("mode");
+    setCutStep(0);
+    setDealtCount(0);
+    setDealMode(null);
+  }, [dealSeed, dealer]);
+
+  // Cut → deal lifecycle (only once mode chosen)
+  useEffect(() => {
+    if (size.w === 0 || !dealMode) return;
     setPhase("cut");
     setCutStep(0);
     setDealtCount(0);
     const timers: number[] = [];
-    // Split
     timers.push(window.setTimeout(() => setCutStep(1), 550));
-    // Recompose
     timers.push(window.setTimeout(() => setCutStep(2), 550 + 700));
-    // Start dealing
     timers.push(
       window.setTimeout(() => {
         setPhase("dealing");
-        for (let k = 1; k <= 32; k++) {
+        // Human-paced deal: 220-300ms between cards, plus a pause between batches.
+        let cumulative = 0;
+        for (let k = 0; k < dealOrder.length; k++) {
+          const prev = dealOrder[k - 1];
+          const cur = dealOrder[k];
+          const seatChanged = !prev || prev.seat !== cur.seat;
+          const batchChanged = !prev || prev.batchIndex !== cur.batchIndex;
+          const base = 240 + Math.random() * 70; // 240-310ms natural jitter
+          const extra = seatChanged ? (batchChanged ? BATCH_PAUSE_MS : 60) : 0;
+          cumulative += k === 0 ? 260 : base + extra;
+          const stepIdx = k + 1;
           timers.push(
             window.setTimeout(() => {
-              setDealtCount(k);
+              setDealtCount(stepIdx);
               playCardSound();
-            }, k * DEAL_MS),
+            }, cumulative),
           );
         }
-        timers.push(window.setTimeout(() => setPhase("done"), 32 * DEAL_MS + FLIGHT_MS + 200));
+        timers.push(window.setTimeout(() => setPhase("done"), cumulative + FLIGHT_MS + 250));
       }, CUT_MS),
     );
     return () => timers.forEach(clearTimeout);
-  }, [dealSeed, dealer, size.w]);
+  }, [dealMode, dealOrder, size.w]);
 
-  // Seat anchor points (center of the fanned hand)
+  // Seat anchor points — closer to the physical edge of the table.
   const anchors = useMemo(() => {
     const w = size.w || 1;
     const h = size.h || 1;
     return {
-      bottom: { x: w * 0.5, y: h - 70, angle: 0 },
-      top: { x: w * 0.5, y: 70, angle: 180 },
-      left: { x: 46, y: h * 0.5, angle: 90 },
-      right: { x: w - 46, y: h * 0.5, angle: -90 },
+      bottom: { x: w * 0.5, y: h - 44, angle: 0 },
+      top: { x: w * 0.5, y: 44, angle: 180 },
+      left: { x: 32, y: h * 0.5, angle: 90 },
+      right: { x: w - 32, y: h * 0.5, angle: -90 },
     } as const;
   }, [size]);
 
-  // Deck sits just in front of the dealer (pulled toward table center from seat).
-  const deckPos = useMemo(() => {
+  // Deck sits just in front of the dealer.
+  const deckBase = useMemo(() => {
     const a = anchors[dealer];
     const cx = (size.w || 0) / 2;
     const cy = (size.h || 0) / 2;
     const dx = cx - a.x;
     const dy = cy - a.y;
     const len = Math.hypot(dx, dy) || 1;
-    const inset = dealer === "bottom" || dealer === "top" ? 110 : 90;
+    const inset = dealer === "bottom" || dealer === "top" ? 110 : 95;
     return {
       x: a.x + (dx / len) * inset,
       y: a.y + (dy / len) * inset,
       angle: a.angle,
     };
   }, [anchors, dealer, size]);
+
+  // Deck pivots slightly toward the current recipient (like a real wrist turn).
+  const deckPos = useMemo(() => {
+    if (phase !== "dealing" || dealtCount === 0 || dealtCount > dealOrder.length) return deckBase;
+    const cur = dealOrder[Math.min(dealtCount, dealOrder.length - 1)] ?? dealOrder[dealtCount - 1];
+    const rec = anchors[cur.seat];
+    const dx = rec.x - deckBase.x;
+    const dy = rec.y - deckBase.y;
+    const targetAngle = (Math.atan2(dy, dx) * 180) / Math.PI + 90; // 0 = pointing "up" toward recipient
+    // Blend gently between base angle and target for a subtle wrist tilt.
+    const diff = ((targetAngle - deckBase.angle + 540) % 360) - 180;
+    return { ...deckBase, angle: deckBase.angle + diff * 0.18 };
+  }, [phase, dealtCount, dealOrder, deckBase, anchors]);
 
   const computeTarget = (d: Dealt) => {
     const isBottom = d.seat === "bottom";
@@ -190,7 +253,7 @@ function GameTable() {
     const spread = isBottom ? 34 : 22;
     const step = spread / (n - 1);
     const localAngle = -spread / 2 + step * d.indexInHand;
-    const radius = isBottom ? 140 : 90;
+    const radius = isBottom ? 90 : 58; // cards sit close to the seated player
     const rad = (localAngle * Math.PI) / 180;
     const lx = Math.sin(rad) * radius;
     const ly = -Math.cos(rad) * radius;
@@ -206,17 +269,16 @@ function GameTable() {
     };
   };
 
-  // Persist per-card target so rotation jitter doesn't jump each render.
   const targetsRef = useRef<Record<string, ReturnType<typeof computeTarget>>>({});
   useEffect(() => {
     targetsRef.current = {};
-  }, [dealSeed, dealer, size.w]);
+  }, [dealSeed, dealer, size.w, dealMode]);
 
   const nextRound = () => {
     setDealer((d) => nextClockwise(d));
     setDealSeed((s) => s + 1);
   };
-  const redeal = () => setDealSeed((s) => s + 1);
+
 
   return (
     <main className="relative min-h-screen w-full overflow-hidden bg-background">
