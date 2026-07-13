@@ -812,34 +812,20 @@ function GameCards({
         const hand = hands[seat];
         return hand.map((card, index) => {
           const t = handTarget(seat, index, hand.length, anchors);
-          const isSelected = selectedCardId === card.id && seat === "bottom";
           const isBottom = seat === "bottom";
-          let lx = 0, ly = 0;
-          if (isSelected) {
-            const seatRad = (t.seatAngle * Math.PI) / 180;
-            const upX = -Math.sin(seatRad + Math.PI);
-            const upY = Math.cos(seatRad + Math.PI);
-            lx = upX * 20;
-            ly = upY * 20;
-          }
           const showFace = isBottom;
-          const dim = legalIds && !legalIds.has(card.id) ? 0.55 : 1;
-          const clickable = isBottom && phase === "playing" && currentTurn === "bottom";
+          const clickable = isBottom && phase === "playing" && currentTurn === "bottom" && (!legalIds || legalIds.has(card.id));
           return (
             <div
               key={card.id}
               onClick={clickable ? () => onLocalPlay(card) : undefined}
-              onMouseEnter={isBottom ? () => setSelectedCardId(card.id) : undefined}
               className={`absolute left-0 top-0 ${clickable ? "cursor-pointer" : ""}`}
               style={{
                 width: t.w, height: t.h,
-                transform: `translate3d(${t.x + lx - t.w/2}px, ${t.y + ly - t.h/2}px, 0) rotate(${t.rotate}deg)`,
-                transition: `transform ${isSelected ? 180 : 320}ms cubic-bezier(0.22, 0.7, 0.25, 1), opacity 200ms ease`,
-                zIndex: isSelected ? 400 : 100 + index + (isBottom ? 50 : 0),
-                opacity: dim,
-                filter: isSelected
-                  ? "drop-shadow(0 10px 14px oklch(0 0 0 / 55%)) drop-shadow(0 0 8px oklch(0.85 0.14 82 / 55%))"
-                  : undefined,
+                transform: `translate3d(${t.x - t.w/2}px, ${t.y - t.h/2}px, 0) rotate(${t.rotate}deg)`,
+                transition: `transform 320ms cubic-bezier(0.22, 0.7, 0.25, 1)`,
+                zIndex: 100 + index + (isBottom ? 50 : 0),
+                opacity: 1,
               }}
             >
               {showFace ? <CardFace card={card} /> : <CardBack />}
