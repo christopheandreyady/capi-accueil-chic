@@ -304,6 +304,7 @@ function GameTable() {
       window.setTimeout(() => {
         const h: Record<Position, Card[]> = { bottom: [], left: [], top: [], right: [] };
         for (const d of dealOrder) h[d.seat].push(d.card);
+        for (const p of POSITIONS) h[p] = sortHand(h[p], null);
         setHands(h);
         setBids([]);
         setContract(null);
