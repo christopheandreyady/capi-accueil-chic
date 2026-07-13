@@ -268,118 +268,141 @@ function WaitingRoom() {
         {/* Table area */}
         <section className="relative mt-6 flex-1">
           <div className="relative mx-auto aspect-square w-full max-w-[400px]">
-            {/* Wooden table (round) */}
+            {/* Wooden table — rounded square, like a real dining table */}
             <div
-              className="absolute inset-0 rounded-full"
+              className="absolute inset-[4%]"
               style={{
+                borderRadius: "14%",
                 background:
-                  "radial-gradient(circle at 50% 22%, oklch(0.48 0.10 45) 0%, oklch(0.34 0.09 42) 55%, oklch(0.18 0.05 35) 100%)",
+                  "linear-gradient(155deg, oklch(0.5 0.10 48) 0%, oklch(0.38 0.09 44) 45%, oklch(0.24 0.07 38) 100%)",
                 boxShadow:
-                  "0 30px 60px -20px oklch(0 0 0 / 80%), inset 0 2px 0 oklch(1 0 0 / 10%), inset 0 -14px 24px oklch(0 0 0 / 62%)",
+                  "0 30px 55px -18px oklch(0 0 0 / 82%), 0 10px 20px -12px oklch(0 0 0 / 55%), inset 0 2px 0 oklch(1 0 0 / 12%), inset 0 -12px 22px oklch(0 0 0 / 55%)",
               }}
             >
-              {/* Wood grain */}
+              {/* Wood grain — straight planks */}
               <div
-                className="pointer-events-none absolute inset-0 rounded-full opacity-55 mix-blend-overlay"
+                className="pointer-events-none absolute inset-0 opacity-60 mix-blend-overlay"
                 style={{
+                  borderRadius: "inherit",
                   backgroundImage:
-                    "repeating-conic-gradient(from 0deg at 50% 50%, oklch(1 0 0 / 5%) 0deg 2.5deg, oklch(0 0 0 / 9%) 2.5deg 5deg), radial-gradient(ellipse at 30% 40%, oklch(1 0 0 / 7%), transparent 60%), repeating-linear-gradient(92deg, oklch(0 0 0 / 6%) 0 3px, transparent 3px 9px)",
+                    "repeating-linear-gradient(90deg, oklch(0 0 0 / 12%) 0 1px, transparent 1px 6px), repeating-linear-gradient(90deg, oklch(1 0 0 / 5%) 0 2px, transparent 2px 42px), radial-gradient(ellipse 60% 30% at 25% 30%, oklch(1 0 0 / 8%), transparent 70%), radial-gradient(ellipse 40% 20% at 75% 70%, oklch(0 0 0 / 15%), transparent 70%)",
                 }}
               />
-              {/* Inner darker ring for depth under the mat */}
+              {/* Wood knots */}
               <div
-                className="pointer-events-none absolute inset-[10%] rounded-full"
+                className="pointer-events-none absolute inset-0 opacity-40 mix-blend-multiply"
                 style={{
+                  borderRadius: "inherit",
+                  backgroundImage:
+                    "radial-gradient(circle 6px at 22% 68%, oklch(0.18 0.05 35) 0%, transparent 70%), radial-gradient(circle 5px at 78% 22%, oklch(0.2 0.05 35) 0%, transparent 70%)",
+                }}
+              />
+              {/* Edge bevel */}
+              <div
+                className="pointer-events-none absolute inset-0"
+                style={{
+                  borderRadius: "inherit",
                   boxShadow:
-                    "inset 0 0 0 1px oklch(0 0 0 / 45%), inset 0 3px 8px oklch(0 0 0 / 55%)",
+                    "inset 0 0 0 1px oklch(0 0 0 / 55%), inset 0 0 0 2px oklch(1 0 0 / 6%)",
                 }}
               />
             </div>
 
-            {/* Fabric mat — a real removable Contrée mat laid on the wood */}
+            {/* Playing mat — ~65% of the table, generous wooden border all around */}
             <div
               className="absolute"
               style={{
-                left: "12%",
-                right: "12%",
-                top: "12%",
-                bottom: "12%",
-                transform: "rotate(-2.4deg)",
-                borderRadius: "14%",
+                left: "19%",
+                right: "19%",
+                top: "19%",
+                bottom: "19%",
+                transform: "rotate(-1.6deg)",
+                borderRadius: "12%",
                 background:
-                  "linear-gradient(160deg, oklch(0.36 0.10 152) 0%, oklch(0.28 0.09 152) 45%, oklch(0.22 0.08 150) 100%)",
+                  "linear-gradient(160deg, oklch(0.34 0.10 152) 0%, oklch(0.27 0.09 152) 50%, oklch(0.20 0.07 150) 100%)",
                 boxShadow:
-                  // shadow of the cloth on the wood
-                  "0 14px 22px -10px oklch(0 0 0 / 75%), 0 6px 10px -6px oklch(0 0 0 / 55%), 0 2px 0 oklch(0 0 0 / 35%), " +
-                  // felt depth
-                  "inset 0 0 70px oklch(0 0 0 / 50%), inset 0 2px 0 oklch(1 0 0 / 7%), inset 0 -8px 18px oklch(0 0 0 / 40%)",
+                  "0 10px 18px -8px oklch(0 0 0 / 70%), 0 4px 8px -5px oklch(0 0 0 / 55%), 0 1px 0 oklch(0 0 0 / 35%), inset 0 0 60px oklch(0 0 0 / 45%), inset 0 2px 0 oklch(1 0 0 / 6%), inset 0 -6px 14px oklch(0 0 0 / 40%)",
               }}
             >
+              {/* Integrated faded suits — printed INTO the fabric, decorating the corners */}
+              <div
+                className="pointer-events-none absolute inset-0 overflow-hidden"
+                style={{ borderRadius: "inherit" }}
+              >
+                <IntegratedSuit symbol="♠" color="black" style={{ left: "-4%", top: "-6%", fontSize: 82, transform: "rotate(-18deg)" }} />
+                <IntegratedSuit symbol="♥" color="red" style={{ right: "-4%", top: "-6%", fontSize: 82, transform: "rotate(16deg)" }} />
+                <IntegratedSuit symbol="♦" color="red" style={{ left: "-4%", bottom: "-6%", fontSize: 82, transform: "rotate(14deg)" }} />
+                <IntegratedSuit symbol="♣" color="black" style={{ right: "-4%", bottom: "-6%", fontSize: 82, transform: "rotate(-14deg)" }} />
+              </div>
+
               {/* Fabric weave */}
               <div
-                className="pointer-events-none absolute inset-0 opacity-70 mix-blend-overlay"
+                className="pointer-events-none absolute inset-0 opacity-80 mix-blend-overlay"
                 style={{
                   borderRadius: "inherit",
                   backgroundImage:
-                    "repeating-linear-gradient(45deg, oklch(1 0 0 / 6%) 0 1px, transparent 1px 2px), repeating-linear-gradient(-45deg, oklch(0 0 0 / 12%) 0 1px, transparent 1px 2px), radial-gradient(oklch(1 0 0 / 7%) 1px, transparent 1px)",
-                  backgroundSize: "auto, auto, 3px 3px",
+                    "repeating-linear-gradient(45deg, oklch(1 0 0 / 7%) 0 1px, transparent 1px 2px), repeating-linear-gradient(-45deg, oklch(0 0 0 / 14%) 0 1px, transparent 1px 2px), radial-gradient(oklch(1 0 0 / 8%) 1px, transparent 1px), radial-gradient(oklch(0 0 0 / 10%) 1px, transparent 1px)",
+                  backgroundSize: "auto, auto, 3px 3px, 5px 5px",
                 }}
               />
 
-              {/* Soft natural folds / lighting on the cloth */}
+              {/* Subtle wear / imperfections */}
               <div
-                className="pointer-events-none absolute inset-0 opacity-70"
+                className="pointer-events-none absolute inset-0 opacity-45"
                 style={{
                   borderRadius: "inherit",
                   background:
-                    "linear-gradient(115deg, transparent 20%, oklch(1 0 0 / 5%) 32%, transparent 44%), linear-gradient(70deg, transparent 55%, oklch(0 0 0 / 18%) 72%, transparent 88%), radial-gradient(60% 40% at 30% 30%, oklch(1 0 0 / 6%), transparent 70%)",
+                    "radial-gradient(ellipse 25% 8% at 35% 60%, oklch(0 0 0 / 25%), transparent 70%), radial-gradient(ellipse 15% 6% at 70% 40%, oklch(1 0 0 / 8%), transparent 70%), radial-gradient(ellipse 10% 4% at 20% 30%, oklch(0 0 0 / 20%), transparent 70%)",
                 }}
               />
 
-              {/* Stitched border (double) */}
+              {/* Natural folds / soft lighting */}
+              <div
+                className="pointer-events-none absolute inset-0 opacity-60"
+                style={{
+                  borderRadius: "inherit",
+                  background:
+                    "linear-gradient(115deg, transparent 22%, oklch(1 0 0 / 5%) 34%, transparent 46%), linear-gradient(70deg, transparent 58%, oklch(0 0 0 / 18%) 74%, transparent 90%)",
+                }}
+              />
+
+              {/* Stitched border */}
               <div
                 className="pointer-events-none absolute inset-[3%]"
                 style={{
-                  borderRadius: "12%",
+                  borderRadius: "10%",
                   border: "1px dashed oklch(0.86 0.06 85 / 55%)",
-                  boxShadow:
-                    "inset 0 0 0 1px oklch(0 0 0 / 35%), 0 0 0 1px oklch(0 0 0 / 25%)",
+                  boxShadow: "inset 0 0 0 1px oklch(0 0 0 / 30%)",
                 }}
               />
               <div
-                className="pointer-events-none absolute inset-[5.5%]"
+                className="pointer-events-none absolute inset-[5%]"
                 style={{
-                  borderRadius: "11%",
-                  border: "1px solid oklch(0.86 0.06 85 / 18%)",
+                  borderRadius: "9%",
+                  border: "1px solid oklch(0.86 0.06 85 / 15%)",
                 }}
               />
-
-              {/* Four discreet suit corners — black & red like a real mat */}
-              <SuitMark symbol="♠" color="black" style={{ position: "absolute", left: "7%", top: "7%" }} />
-              <SuitMark symbol="♥" color="red" style={{ position: "absolute", right: "7%", top: "7%" }} />
-              <SuitMark symbol="♦" color="red" style={{ position: "absolute", left: "7%", bottom: "7%" }} />
-              <SuitMark symbol="♣" color="black" style={{ position: "absolute", right: "7%", bottom: "7%" }} />
             </div>
 
-            {/* Score tokens — Team A set beside YOU (bottom-right, on the wood) */}
-            <div className="absolute" style={{ right: "2%", bottom: "10%", width: 84, height: 76 }}>
+            {/* Score tokens — Team A set on the wood, bottom-right corner */}
+            <div className="absolute" style={{ right: "6%", bottom: "7%", width: 72, height: 66 }}>
               <ScoreBarLong className="absolute" style={{ left: 0, top: 0, transform: "rotate(-8deg)" }} color="white" />
               <ScoreBarLong className="absolute" style={{ left: 4, top: 10, transform: "rotate(-3deg)" }} color="green" />
               <ScoreBarMedium className="absolute" style={{ left: 2, top: 24, transform: "rotate(5deg)" }} color="blue" />
-              <ScoreBarMedium className="absolute" style={{ left: 26, top: 30, transform: "rotate(-4deg)" }} color="red" />
-              <ScoreRound className="absolute" style={{ left: 52, top: 8 }} color="yellow" />
-              <ScoreRound className="absolute" style={{ left: 64, top: 22 }} color="white" />
-              <ScoreRound className="absolute" style={{ left: 50, top: 36 }} color="red" />
+              <ScoreBarMedium className="absolute" style={{ left: 22, top: 30, transform: "rotate(-4deg)" }} color="red" />
+              <ScoreRound className="absolute" style={{ left: 46, top: 8 }} color="yellow" />
+              <ScoreRound className="absolute" style={{ left: 56, top: 22 }} color="white" />
+              <ScoreRound className="absolute" style={{ left: 44, top: 36 }} color="red" />
             </div>
 
-            {/* Score tokens — Team B set beside Margaux (left-top, on the wood) */}
-            <div className="absolute" style={{ left: "2%", top: "14%", width: 84, height: 76 }}>
+            {/* Score tokens — Team B set on the wood, top-left corner */}
+            <div className="absolute" style={{ left: "6%", top: "7%", width: 72, height: 66 }}>
               <ScoreBarLong className="absolute" style={{ left: 0, top: 0, transform: "rotate(9deg)" }} color="white" />
               <ScoreBarMedium className="absolute" style={{ left: 4, top: 16, transform: "rotate(-5deg)" }} color="green" />
-              <ScoreBarMedium className="absolute" style={{ left: 28, top: 22, transform: "rotate(4deg)" }} color="yellow" />
-              <ScoreRound className="absolute" style={{ left: 54, top: 4 }} color="red" />
-              <ScoreRound className="absolute" style={{ left: 64, top: 18 }} color="blue" />
-              <ScoreRound className="absolute" style={{ left: 50, top: 32 }} color="white" />
+              <ScoreBarMedium className="absolute" style={{ left: 24, top: 22, transform: "rotate(4deg)" }} color="yellow" />
+              <ScoreRound className="absolute" style={{ left: 48, top: 4 }} color="red" />
+              <ScoreRound className="absolute" style={{ left: 58, top: 18 }} color="blue" />
+              <ScoreRound className="absolute" style={{ left: 44, top: 32 }} color="white" />
             </div>
 
             {/* Seats */}
@@ -579,6 +602,34 @@ function IconAction({
     >
       {children}
     </button>
+  );
+}
+
+function IntegratedSuit({
+  symbol,
+  color,
+  style,
+}: {
+  symbol: string;
+  color: "black" | "red";
+  style?: React.CSSProperties;
+}) {
+  const isRed = color === "red";
+  return (
+    <span
+      style={{
+        position: "absolute",
+        fontFamily: "ui-serif, Georgia, serif",
+        lineHeight: 1,
+        color: isRed ? "oklch(0.42 0.18 25)" : "oklch(0.12 0.02 40)",
+        opacity: 0.22,
+        mixBlendMode: "multiply",
+        filter: "blur(0.3px)",
+        ...style,
+      }}
+    >
+      {symbol}
+    </span>
   );
 }
 
