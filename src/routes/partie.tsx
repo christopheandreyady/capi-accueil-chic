@@ -228,6 +228,16 @@ function GameTable() {
   const [chipsSlideTo, setChipsSlideTo] = useState<Team | null>(null);
   const [chipsVisible, setChipsVisible] = useState(true);
   const [stashes, setStashes] = useState<{ A: ChipBreakdown[]; B: ChipBreakdown[] }>({ A: [], B: [] });
+  const [recentBid, setRecentBid] = useState<{ seat: Position; bid: Bid } | null>(null);
+  useEffect(() => {
+    if (bids.length === 0) { setRecentBid(null); return; }
+    const b = bids[bids.length - 1];
+    setRecentBid({ seat: b.seat, bid: b });
+    const id = window.setTimeout(() => {
+      setRecentBid((cur) => (cur && cur.bid === b ? null : cur));
+    }, 2800);
+    return () => window.clearTimeout(id);
+  }, [bids]);
 
   const cutter = prevSeat(dealer);
 
