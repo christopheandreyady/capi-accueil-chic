@@ -268,141 +268,122 @@ function WaitingRoom() {
         {/* Table area */}
         <section className="relative mt-6 flex-1">
           <div className="relative mx-auto aspect-square w-full max-w-[400px]">
-            {/* Wooden table — rounded square, like a real dining table */}
+            {/* Wooden bistro table — solid oak/walnut, rounded-square */}
             <div
-              className="absolute inset-[4%]"
+              className="absolute inset-[4%] overflow-hidden"
               style={{
                 borderRadius: "14%",
                 background:
-                  "linear-gradient(155deg, oklch(0.5 0.10 48) 0%, oklch(0.38 0.09 44) 45%, oklch(0.24 0.07 38) 100%)",
+                  "radial-gradient(ellipse 120% 90% at 30% 20%, oklch(0.52 0.11 55) 0%, oklch(0.42 0.10 48) 35%, oklch(0.30 0.08 42) 70%, oklch(0.20 0.06 38) 100%)",
                 boxShadow:
-                  "0 30px 55px -18px oklch(0 0 0 / 82%), 0 10px 20px -12px oklch(0 0 0 / 55%), inset 0 2px 0 oklch(1 0 0 / 12%), inset 0 -12px 22px oklch(0 0 0 / 55%)",
+                  "0 32px 60px -18px oklch(0 0 0 / 85%), 0 12px 22px -10px oklch(0 0 0 / 60%), inset 0 2px 0 oklch(1 0 0 / 14%), inset 0 -14px 26px oklch(0 0 0 / 55%)",
               }}
             >
-              {/* Wood grain — straight planks */}
+              {/* Wood grain — flowing veins */}
               <div
-                className="pointer-events-none absolute inset-0 opacity-60 mix-blend-overlay"
+                className="pointer-events-none absolute inset-0 opacity-70 mix-blend-overlay"
                 style={{
-                  borderRadius: "inherit",
                   backgroundImage:
-                    "repeating-linear-gradient(90deg, oklch(0 0 0 / 12%) 0 1px, transparent 1px 6px), repeating-linear-gradient(90deg, oklch(1 0 0 / 5%) 0 2px, transparent 2px 42px), radial-gradient(ellipse 60% 30% at 25% 30%, oklch(1 0 0 / 8%), transparent 70%), radial-gradient(ellipse 40% 20% at 75% 70%, oklch(0 0 0 / 15%), transparent 70%)",
+                    "repeating-linear-gradient(92deg, oklch(0 0 0 / 10%) 0 1px, transparent 1px 5px), repeating-linear-gradient(88deg, oklch(1 0 0 / 4%) 0 1px, transparent 1px 11px), repeating-linear-gradient(94deg, oklch(0 0 0 / 6%) 0 2px, transparent 2px 34px)",
                 }}
               />
-              {/* Wood knots */}
+              {/* Grain waves */}
               <div
-                className="pointer-events-none absolute inset-0 opacity-40 mix-blend-multiply"
+                className="pointer-events-none absolute inset-0 opacity-55 mix-blend-overlay"
                 style={{
-                  borderRadius: "inherit",
                   backgroundImage:
-                    "radial-gradient(circle 6px at 22% 68%, oklch(0.18 0.05 35) 0%, transparent 70%), radial-gradient(circle 5px at 78% 22%, oklch(0.2 0.05 35) 0%, transparent 70%)",
+                    "radial-gradient(ellipse 140% 8% at 50% 18%, oklch(0.6 0.10 55 / 45%) 0%, transparent 60%), radial-gradient(ellipse 140% 6% at 50% 38%, oklch(0.22 0.06 38 / 55%) 0%, transparent 60%), radial-gradient(ellipse 140% 10% at 50% 58%, oklch(0.58 0.10 55 / 30%) 0%, transparent 60%), radial-gradient(ellipse 140% 6% at 50% 78%, oklch(0.22 0.06 38 / 50%) 0%, transparent 60%)",
                 }}
               />
-              {/* Edge bevel */}
+              {/* Wood knots & imperfections */}
+              <div
+                className="pointer-events-none absolute inset-0 opacity-55 mix-blend-multiply"
+                style={{
+                  backgroundImage:
+                    "radial-gradient(circle 5px at 20% 66%, oklch(0.16 0.05 32) 0%, oklch(0.22 0.06 38 / 60%) 40%, transparent 75%), radial-gradient(circle 4px at 80% 24%, oklch(0.18 0.05 32) 0%, transparent 75%), radial-gradient(circle 3px at 65% 82%, oklch(0.18 0.05 32) 0%, transparent 75%), radial-gradient(circle 2px at 34% 12%, oklch(0.18 0.05 32) 0%, transparent 75%)",
+                }}
+              />
+              {/* Satin sheen */}
+              <div
+                className="pointer-events-none absolute inset-0 opacity-40"
+                style={{
+                  background:
+                    "linear-gradient(150deg, oklch(1 0 0 / 8%) 0%, transparent 35%, transparent 65%, oklch(0 0 0 / 18%) 100%)",
+                }}
+              />
+              {/* Bevel */}
               <div
                 className="pointer-events-none absolute inset-0"
                 style={{
-                  borderRadius: "inherit",
                   boxShadow:
-                    "inset 0 0 0 1px oklch(0 0 0 / 55%), inset 0 0 0 2px oklch(1 0 0 / 6%)",
+                    "inset 0 0 0 1px oklch(0 0 0 / 55%), inset 0 0 0 2px oklch(1 0 0 / 7%)",
                 }}
               />
             </div>
 
-            {/* Playing mat — ~65% of the table, generous wooden border all around */}
+            {/* Playing mat — flat felt cloth, simply laid on the table */}
             <div
-              className="absolute"
+              className="absolute overflow-hidden"
               style={{
-                left: "19%",
-                right: "19%",
-                top: "19%",
-                bottom: "19%",
-                transform: "rotate(-1.6deg)",
-                borderRadius: "12%",
+                left: "14%",
+                right: "14%",
+                top: "14%",
+                bottom: "14%",
+                transform: "rotate(-1.2deg)",
+                borderRadius: "6%",
                 background:
-                  "linear-gradient(160deg, oklch(0.34 0.10 152) 0%, oklch(0.27 0.09 152) 50%, oklch(0.20 0.07 150) 100%)",
+                  "linear-gradient(162deg, oklch(0.32 0.09 152) 0%, oklch(0.27 0.08 152) 55%, oklch(0.22 0.07 150) 100%)",
                 boxShadow:
-                  "0 10px 18px -8px oklch(0 0 0 / 70%), 0 4px 8px -5px oklch(0 0 0 / 55%), 0 1px 0 oklch(0 0 0 / 35%), inset 0 0 60px oklch(0 0 0 / 45%), inset 0 2px 0 oklch(1 0 0 / 6%), inset 0 -6px 14px oklch(0 0 0 / 40%)",
+                  "0 3px 6px -2px oklch(0 0 0 / 45%), 0 1px 2px oklch(0 0 0 / 40%), inset 0 0 0 1px oklch(0 0 0 / 25%)",
               }}
             >
-              {/* Integrated faded suits — printed INTO the fabric, decorating the corners */}
-              <div
-                className="pointer-events-none absolute inset-0 overflow-hidden"
-                style={{ borderRadius: "inherit" }}
-              >
-                <IntegratedSuit symbol="♠" color="black" style={{ left: "-4%", top: "-6%", fontSize: 82, transform: "rotate(-18deg)" }} />
-                <IntegratedSuit symbol="♥" color="red" style={{ right: "-4%", top: "-6%", fontSize: 82, transform: "rotate(16deg)" }} />
-                <IntegratedSuit symbol="♦" color="red" style={{ left: "-4%", bottom: "-6%", fontSize: 82, transform: "rotate(14deg)" }} />
-                <IntegratedSuit symbol="♣" color="black" style={{ right: "-4%", bottom: "-6%", fontSize: 82, transform: "rotate(-14deg)" }} />
+              {/* Faint printed suits — 12% opacity, integrated in fabric */}
+              <div className="pointer-events-none absolute inset-0" style={{ opacity: 0.12 }}>
+                <IntegratedSuit symbol="♠" color="black" style={{ left: "6%", top: "5%", fontSize: 58, transform: "rotate(-14deg)" }} />
+                <IntegratedSuit symbol="♥" color="red" style={{ right: "6%", top: "5%", fontSize: 58, transform: "rotate(12deg)" }} />
+                <IntegratedSuit symbol="♦" color="red" style={{ left: "6%", bottom: "5%", fontSize: 58, transform: "rotate(10deg)" }} />
+                <IntegratedSuit symbol="♣" color="black" style={{ right: "6%", bottom: "5%", fontSize: 58, transform: "rotate(-10deg)" }} />
               </div>
 
-              {/* Fabric weave */}
+              {/* Felt fiber texture — fine, matte */}
               <div
-                className="pointer-events-none absolute inset-0 opacity-80 mix-blend-overlay"
+                className="pointer-events-none absolute inset-0 opacity-70 mix-blend-overlay"
                 style={{
-                  borderRadius: "inherit",
                   backgroundImage:
-                    "repeating-linear-gradient(45deg, oklch(1 0 0 / 7%) 0 1px, transparent 1px 2px), repeating-linear-gradient(-45deg, oklch(0 0 0 / 14%) 0 1px, transparent 1px 2px), radial-gradient(oklch(1 0 0 / 8%) 1px, transparent 1px), radial-gradient(oklch(0 0 0 / 10%) 1px, transparent 1px)",
-                  backgroundSize: "auto, auto, 3px 3px, 5px 5px",
+                    "repeating-linear-gradient(45deg, oklch(1 0 0 / 4%) 0 1px, transparent 1px 2px), repeating-linear-gradient(-45deg, oklch(0 0 0 / 8%) 0 1px, transparent 1px 2px), radial-gradient(oklch(1 0 0 / 5%) 0.5px, transparent 0.5px), radial-gradient(oklch(0 0 0 / 7%) 0.5px, transparent 0.5px)",
+                  backgroundSize: "auto, auto, 2px 2px, 3px 3px",
                 }}
               />
 
-              {/* Subtle wear / imperfections */}
+              {/* Subtle worn spots */}
               <div
-                className="pointer-events-none absolute inset-0 opacity-45"
+                className="pointer-events-none absolute inset-0 opacity-30"
                 style={{
-                  borderRadius: "inherit",
                   background:
-                    "radial-gradient(ellipse 25% 8% at 35% 60%, oklch(0 0 0 / 25%), transparent 70%), radial-gradient(ellipse 15% 6% at 70% 40%, oklch(1 0 0 / 8%), transparent 70%), radial-gradient(ellipse 10% 4% at 20% 30%, oklch(0 0 0 / 20%), transparent 70%)",
-                }}
-              />
-
-              {/* Natural folds / soft lighting */}
-              <div
-                className="pointer-events-none absolute inset-0 opacity-60"
-                style={{
-                  borderRadius: "inherit",
-                  background:
-                    "linear-gradient(115deg, transparent 22%, oklch(1 0 0 / 5%) 34%, transparent 46%), linear-gradient(70deg, transparent 58%, oklch(0 0 0 / 18%) 74%, transparent 90%)",
-                }}
-              />
-
-              {/* Stitched border */}
-              <div
-                className="pointer-events-none absolute inset-[3%]"
-                style={{
-                  borderRadius: "10%",
-                  border: "1px dashed oklch(0.86 0.06 85 / 55%)",
-                  boxShadow: "inset 0 0 0 1px oklch(0 0 0 / 30%)",
-                }}
-              />
-              <div
-                className="pointer-events-none absolute inset-[5%]"
-                style={{
-                  borderRadius: "9%",
-                  border: "1px solid oklch(0.86 0.06 85 / 15%)",
+                    "radial-gradient(ellipse 22% 7% at 38% 62%, oklch(0 0 0 / 22%), transparent 70%), radial-gradient(ellipse 14% 5% at 68% 42%, oklch(1 0 0 / 5%), transparent 70%), radial-gradient(ellipse 10% 4% at 22% 32%, oklch(0 0 0 / 18%), transparent 70%)",
                 }}
               />
             </div>
 
-            {/* Score tokens — Team A set on the wood, bottom-right corner */}
-            <div className="absolute" style={{ right: "6%", bottom: "7%", width: 72, height: 66 }}>
+            {/* Score tokens — Team A pile, bottom-right on the wood */}
+            <div className="absolute" style={{ right: "5%", bottom: "6%", width: 78, height: 68 }}>
               <ScoreBarLong className="absolute" style={{ left: 0, top: 0, transform: "rotate(-8deg)" }} color="white" />
               <ScoreBarLong className="absolute" style={{ left: 4, top: 10, transform: "rotate(-3deg)" }} color="green" />
               <ScoreBarMedium className="absolute" style={{ left: 2, top: 24, transform: "rotate(5deg)" }} color="blue" />
               <ScoreBarMedium className="absolute" style={{ left: 22, top: 30, transform: "rotate(-4deg)" }} color="red" />
-              <ScoreRound className="absolute" style={{ left: 46, top: 8 }} color="yellow" />
-              <ScoreRound className="absolute" style={{ left: 56, top: 22 }} color="white" />
-              <ScoreRound className="absolute" style={{ left: 44, top: 36 }} color="red" />
+              <ScoreRound className="absolute" style={{ left: 48, top: 8 }} color="yellow" />
+              <ScoreRound className="absolute" style={{ left: 58, top: 22 }} color="white" />
+              <ScoreRound className="absolute" style={{ left: 46, top: 36 }} color="red" />
             </div>
 
-            {/* Score tokens — Team B set on the wood, top-left corner */}
-            <div className="absolute" style={{ left: "6%", top: "7%", width: 72, height: 66 }}>
+            {/* Score tokens — Team B pile, top-left on the wood */}
+            <div className="absolute" style={{ left: "5%", top: "6%", width: 78, height: 68 }}>
               <ScoreBarLong className="absolute" style={{ left: 0, top: 0, transform: "rotate(9deg)" }} color="white" />
               <ScoreBarMedium className="absolute" style={{ left: 4, top: 16, transform: "rotate(-5deg)" }} color="green" />
               <ScoreBarMedium className="absolute" style={{ left: 24, top: 22, transform: "rotate(4deg)" }} color="yellow" />
-              <ScoreRound className="absolute" style={{ left: 48, top: 4 }} color="red" />
-              <ScoreRound className="absolute" style={{ left: 58, top: 18 }} color="blue" />
-              <ScoreRound className="absolute" style={{ left: 44, top: 32 }} color="white" />
+              <ScoreRound className="absolute" style={{ left: 50, top: 4 }} color="red" />
+              <ScoreRound className="absolute" style={{ left: 60, top: 18 }} color="blue" />
+              <ScoreRound className="absolute" style={{ left: 46, top: 32 }} color="white" />
             </div>
 
             {/* Seats */}
