@@ -460,9 +460,10 @@ function WaitingRoom() {
           </div>
         </section>
 
-        {/* Bottom actions */}
-        <div className="mt-6 flex flex-col gap-3">
-          {!allReady && (
+        {/* Bottom actions — always above the table; lobby chrome hidden once 4 players are seated */}
+        <div className="relative z-30 mt-10 flex flex-col gap-3">
+          {playersCount < total && (
+
             <button
               type="button"
               onClick={() => setInviteOpen(true)}
