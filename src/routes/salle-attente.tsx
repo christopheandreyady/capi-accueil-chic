@@ -332,25 +332,25 @@ function WaitingRoom() {
             {/* Seats — positioned exactly like /partie's PlayerBadge */}
             <SeatSlot
               seat={seats.find((s) => s.position === "top")!}
-              style={{ left: "50%", top: "1%", transform: "translate(-50%, 0)" }}
+              style={{ left: "50%", top: "-2%", transform: "translate(-50%, 0)" }}
               delay={80}
               onInvite={() => setInviteOpen(true)}
             />
             <SeatSlot
               seat={seats.find((s) => s.position === "left")!}
-              style={{ left: "3%", top: "50%", transform: "translate(0, -50%)" }}
+              style={{ left: "0%", top: "50%", transform: "translate(0, -50%)" }}
               delay={180}
               onInvite={() => setInviteOpen(true)}
             />
             <SeatSlot
               seat={seats.find((s) => s.position === "right")!}
-              style={{ right: "3%", top: "50%", transform: "translate(0, -50%)" }}
+              style={{ right: "0%", top: "50%", transform: "translate(0, -50%)" }}
               delay={260}
               onInvite={() => setInviteOpen(true)}
             />
             <SeatSlot
               seat={seats.find((s) => s.position === "bottom")!}
-              style={{ left: "50%", bottom: "1%", transform: "translate(-50%, 0)" }}
+              style={{ left: "50%", bottom: "-2%", transform: "translate(-50%, 0)" }}
               isLocal
               delay={0}
               onInvite={() => setInviteOpen(true)}
