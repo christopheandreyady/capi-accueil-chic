@@ -664,7 +664,7 @@ function GameTable() {
           <div
             ref={boxRef}
             className="relative"
-            style={{ width: "min(98vw, calc((100dvh - 200px) * 1.5), 720px)", aspectRatio: "3 / 2" }}
+            style={{ width: "min(98vw, calc((100dvh - 180px) * 1.5), 760px)", aspectRatio: "3 / 2" }}
           >
             {/* Round wooden bistro table — a physical object floating in the
                 room. Transparent PNG so the environment stays visible around
@@ -680,6 +680,24 @@ function GameTable() {
             {/* Warm key light on the felt — masked to a circle so it never spills onto the room. */}
             <div className="pointer-events-none absolute inset-[8%] rounded-full" style={{ background:"radial-gradient(45% 38% at 50% 45%, oklch(0.92 0.15 78 / 22%) 0%, oklch(0.85 0.12 72 / 8%) 50%, transparent 78%)" }} />
             <div className="pointer-events-none absolute inset-[8%] rounded-full" style={{ background:"radial-gradient(60% 55% at 50% 55%, transparent 0%, transparent 55%, oklch(0 0 0 / 32%) 100%)" }} />
+
+            {/* CAPI emblem engraved into the felt — subtle watermark that
+                reads clearly without breaking the embossed felt feel. */}
+            <img
+              src={capiEmblem}
+              alt=""
+              aria-hidden="true"
+              width={512}
+              height={512}
+              className="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-[5]"
+              style={{
+                width: "22%",
+                height: "auto",
+                opacity: 0.28,
+                mixBlendMode: "overlay",
+                filter: "drop-shadow(0 1px 0 oklch(0 0 0 / 55%)) drop-shadow(0 -1px 0 oklch(1 0 0 / 12%))",
+              }}
+            />
 
 
 
