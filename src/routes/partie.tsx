@@ -1145,11 +1145,15 @@ function PlayerBadge({
   position: Position; info: PlayerInfo; isDealer: boolean; isLocal: boolean;
   isActive?: boolean; isThinking?: boolean; announcement?: Bid | null; announcementIsTaker?: boolean;
 }) {
+  // Seats are anchored to the TABLE container (percentages of the table
+  // aspect-square box), never to the viewport. They sit on the wooden rim
+  // just inside the table edge so no avatar can visually leave the play
+  // zone, and every seat scales automatically with the table.
   const style: React.CSSProperties =
-    position === "bottom" ? { left:"50%", bottom:"-118px", transform:"translate(-50%, 0)" }
-    : position === "top" ? { left:"50%", top:"-100px", transform:"translate(-50%, 0)" }
-    : position === "left" ? { left:"-86px", top:"38%", transform:"translate(0, -50%)" }
-    : { right:"-86px", top:"38%", transform:"translate(0, -50%)" };
+    position === "bottom" ? { left:"50%", bottom:"3%", transform:"translate(-50%, 0)" }
+    : position === "top" ? { left:"50%", top:"3%", transform:"translate(-50%, 0)" }
+    : position === "left" ? { left:"3%", top:"50%", transform:"translate(0, -50%)" }
+    : { right:"3%", top:"50%", transform:"translate(0, -50%)" };
 
 
 
