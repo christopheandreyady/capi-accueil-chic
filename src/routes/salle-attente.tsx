@@ -462,94 +462,107 @@ function WaitingRoom() {
 
         {/* Bottom actions */}
         <div className="mt-6 flex flex-col gap-3">
-          <button
-            type="button"
-            onClick={() => setInviteOpen(true)}
-            className="flex w-full items-center justify-center gap-2 rounded-2xl border py-2.5 text-sm font-semibold transition active:scale-[0.98]"
-            style={{
-              background: "oklch(0.18 0.03 40 / 70%)",
-              borderColor: "oklch(0.82 0.14 82 / 30%)",
-              color: "oklch(0.92 0.11 85)",
-              backdropFilter: "blur(8px)",
-              boxShadow: "inset 0 1px 0 oklch(1 0 0 / 6%)",
-            }}
-          >
-            <UserPlus className="h-4 w-4" />
-            Inviter des joueurs
-          </button>
+          {!allReady && (
+            <button
+              type="button"
+              onClick={() => setInviteOpen(true)}
+              className="flex w-full items-center justify-center gap-2 rounded-2xl border py-2.5 text-sm font-semibold transition active:scale-[0.98] animate-fade-in"
+              style={{
+                background: "oklch(0.18 0.03 40 / 70%)",
+                borderColor: "oklch(0.82 0.14 82 / 30%)",
+                color: "oklch(0.92 0.11 85)",
+                backdropFilter: "blur(8px)",
+                boxShadow: "inset 0 1px 0 oklch(1 0 0 / 6%)",
+              }}
+            >
+              <UserPlus className="h-4 w-4" />
+              Inviter des joueurs
+            </button>
+          )}
 
           <button
             type="button"
             disabled={!allReady}
             onClick={() => allReady && navigate({ to: "/partie" })}
-            className="group relative flex w-full items-center justify-center gap-3 overflow-hidden px-6 py-3 transition-all duration-200 ease-out active:scale-[0.98] disabled:cursor-not-allowed disabled:active:scale-100"
+            className="group relative flex w-full items-center justify-center gap-3 overflow-hidden px-6 py-3.5 transition-all duration-200 ease-out active:scale-[0.985] disabled:cursor-not-allowed disabled:active:scale-100"
             style={{
-              borderRadius: "0.9rem",
+              borderRadius: "1rem",
               background: allReady
-                ? "linear-gradient(160deg, oklch(0.5 0.15 155) 0%, oklch(0.32 0.10 155) 100%)"
-                : "linear-gradient(160deg, oklch(0.3 0.02 40) 0%, oklch(0.2 0.02 40) 100%)",
-              border: `1px solid ${allReady ? "oklch(0.62 0.15 155 / 60%)" : "oklch(0.4 0.02 40 / 45%)"}`,
+                ? "linear-gradient(168deg, oklch(0.38 0.11 152) 0%, oklch(0.28 0.09 152) 50%, oklch(0.20 0.07 150) 100%)"
+                : "linear-gradient(168deg, oklch(0.22 0.03 42) 0%, oklch(0.16 0.02 40) 100%)",
+              border: `1px solid ${allReady ? "oklch(0.78 0.14 82 / 55%)" : "oklch(0.35 0.02 40 / 45%)"}`,
               boxShadow: allReady
-                ? "0 8px 18px -10px oklch(0.42 0.13 155 / 55%), 0 0 20px -4px oklch(0.6 0.18 155 / 40%), 0 1px 0 0 oklch(1 0 0 / 12%) inset"
-                : "0 3px 8px -6px oklch(0 0 0 / 60%), 0 1px 0 0 oklch(1 0 0 / 5%) inset",
-              opacity: allReady ? 1 : 0.78,
-              animation: allReady ? "capi-glow 2.6s ease-in-out infinite" : undefined,
+                ? "0 14px 26px -14px oklch(0 0 0 / 75%), 0 6px 12px -6px oklch(0.32 0.10 152 / 55%), inset 0 1px 0 oklch(1 0 0 / 14%), inset 0 -8px 14px oklch(0 0 0 / 40%), inset 0 0 0 1px oklch(0.82 0.14 82 / 18%)"
+                : "0 6px 14px -8px oklch(0 0 0 / 70%), inset 0 1px 0 oklch(1 0 0 / 6%), inset 0 -6px 10px oklch(0 0 0 / 35%)",
+              opacity: allReady ? 1 : 0.75,
+              animation: allReady ? "capi-glow 3s ease-in-out infinite" : undefined,
             }}
           >
+            {/* Top satin highlight */}
             <span
-              className="pointer-events-none absolute inset-x-0 top-0 h-1/2 opacity-60"
+              className="pointer-events-none absolute inset-x-0 top-0 h-1/2 opacity-70"
               style={{
                 background:
-                  "linear-gradient(180deg, oklch(1 0 0 / 18%) 0%, oklch(1 0 0 / 4%) 60%, transparent 100%)",
+                  "linear-gradient(180deg, oklch(1 0 0 / 14%) 0%, oklch(1 0 0 / 3%) 60%, transparent 100%)",
               }}
             />
+            {/* Inner gold hairline */}
+            {allReady && (
+              <span
+                className="pointer-events-none absolute inset-[3px] rounded-[0.85rem]"
+                style={{
+                  border: "1px solid oklch(0.82 0.14 82 / 22%)",
+                }}
+              />
+            )}
             {allReady && (
               <span
                 className="pointer-events-none absolute inset-y-0 -left-1/3 w-1/3 skew-x-[-20deg]"
                 style={{
                   background:
-                    "linear-gradient(90deg, transparent, oklch(1 0 0 / 22%), transparent)",
-                  animation: "capi-sheen 2.6s ease-in-out infinite",
+                    "linear-gradient(90deg, transparent, oklch(1 0 0 / 20%), transparent)",
+                  animation: "capi-sheen 3.4s ease-in-out infinite",
                 }}
               />
             )}
             <Play
-              className="h-4 w-4"
+              className="relative h-4 w-4"
               style={{
-                color: allReady ? "oklch(0.94 0.11 88)" : "oklch(0.6 0.03 80)",
+                color: allReady ? "oklch(0.94 0.11 88)" : "oklch(0.55 0.03 80)",
                 filter: allReady
-                  ? "drop-shadow(0 0 6px oklch(0.82 0.14 82 / 35%))"
+                  ? "drop-shadow(0 1px 2px oklch(0 0 0 / 60%)) drop-shadow(0 0 6px oklch(0.82 0.14 82 / 45%))"
                   : "none",
               }}
               strokeWidth={2.2}
               fill="currentColor"
             />
             <span
-              className="font-serif text-base font-semibold tracking-wide"
+              className="relative font-serif text-base font-semibold tracking-wide"
               style={{
                 background: allReady
-                  ? "linear-gradient(180deg, oklch(0.96 0.1 88), oklch(0.76 0.14 78))"
-                  : "linear-gradient(180deg, oklch(0.68 0.03 80), oklch(0.52 0.03 80))",
+                  ? "linear-gradient(180deg, oklch(0.97 0.10 88), oklch(0.74 0.14 78))"
+                  : "linear-gradient(180deg, oklch(0.62 0.03 80), oklch(0.48 0.03 80))",
                 WebkitBackgroundClip: "text",
                 backgroundClip: "text",
                 color: "transparent",
-                textShadow: "0 1px 0 oklch(0 0 0 / 30%)",
+                textShadow: "0 1px 0 oklch(0 0 0 / 40%)",
               }}
             >
               {allReady ? "Commencer la partie" : "En attente des joueurs…"}
             </span>
           </button>
-          <p
-            className="text-center text-[11px] uppercase tracking-[0.22em]"
-            style={{ color: "oklch(0.75 0.05 82 / 65%)" }}
-          >
-            {allReady
-              ? "Tout le monde est prêt"
-              : playersCount < total
+          {!allReady && (
+            <p
+              className="text-center text-[11px] uppercase tracking-[0.22em] animate-fade-in"
+              style={{ color: "oklch(0.75 0.05 82 / 65%)" }}
+            >
+              {playersCount < total
                 ? `${total - playersCount} place${total - playersCount > 1 ? "s" : ""} libre${total - playersCount > 1 ? "s" : ""}`
                 : `${total - readyCount} joueur${total - readyCount > 1 ? "s" : ""} pas encore prêt${total - readyCount > 1 ? "s" : ""}`}
-          </p>
+            </p>
+          )}
         </div>
+
       </div>
 
       <InviteModal open={inviteOpen} onClose={() => setInviteOpen(false)} code={cfg.code} />
