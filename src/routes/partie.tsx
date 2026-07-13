@@ -67,13 +67,13 @@ const PLAYERS: Record<Position, PlayerInfo> = {
   right: { name: "Bot Alex", level: 12, photo: "https://i.pravatar.cc/200?img=15" },
 };
 
-// Card sizes
-const CARD_W_BIG = 94;
-const CARD_H_BIG = 138;
-const CARD_W_SMALL = 44;
-const CARD_H_SMALL = 64;
-const CARD_W_TRICK = 62;
-const CARD_H_TRICK = 92;
+// Card sizes — camera pulled closer, hand + trick more imposing.
+const CARD_W_BIG = 108;
+const CARD_H_BIG = 158;
+const CARD_W_SMALL = 46;
+const CARD_H_SMALL = 68;
+const CARD_W_TRICK = 74;
+const CARD_H_TRICK = 110;
 
 const FLIGHT_MS = 460;
 const CUT_MS = 2900;
@@ -592,9 +592,11 @@ function GameTable() {
         height={1536}
         className="pointer-events-none absolute inset-0 h-full w-full object-cover"
       />
-      <div className="pointer-events-none absolute inset-0" style={{ background:"radial-gradient(60% 35% at 50% 0%, oklch(0.85 0.14 75 / 32%) 0%, oklch(0.7 0.12 65 / 12%) 40%, transparent 70%)" }} />
-      <div className="pointer-events-none absolute inset-0" style={{ background:"radial-gradient(120% 80% at 50% 50%, transparent 0%, oklch(0 0 0 / 45%) 60%, oklch(0.08 0.02 40 / 94%) 100%)" }} />
-      <div className="pointer-events-none absolute inset-0" style={{ background:"linear-gradient(180deg, oklch(0.12 0.03 40 / 72%) 0%, transparent 22%, transparent 55%, oklch(0.08 0.02 40 / 92%) 100%)" }} />
+      {/* Warm bistro key light from above, then a deep vignette that pulls
+          the eye toward the table. */}
+      <div className="pointer-events-none absolute inset-0" style={{ background:"radial-gradient(70% 42% at 50% -4%, oklch(0.9 0.16 78 / 44%) 0%, oklch(0.78 0.14 68 / 22%) 30%, transparent 62%)" }} />
+      <div className="pointer-events-none absolute inset-0" style={{ background:"radial-gradient(130% 90% at 50% 55%, transparent 0%, oklch(0 0 0 / 55%) 62%, oklch(0.06 0.02 40 / 96%) 100%)" }} />
+      <div className="pointer-events-none absolute inset-0" style={{ background:"linear-gradient(180deg, oklch(0.10 0.03 40 / 78%) 0%, transparent 20%, transparent 58%, oklch(0.06 0.02 40 / 94%) 100%)" }} />
 
       <div className="relative z-10 mx-auto flex min-h-screen w-full max-w-md flex-col px-4 pt-4 pb-4">
         <header className="flex items-center justify-between gap-2">
@@ -626,24 +628,32 @@ function GameTable() {
         </header>
 
 
-        <div ref={boxRef} className="relative mx-auto mt-3 w-full max-w-[420px] flex-1">
+        <div ref={boxRef} className="relative mx-auto mt-2 w-full max-w-[520px] flex-1">
           <div className="relative mx-auto aspect-square w-full">
-            {/* Table */}
-            <div className="absolute inset-[4%] overflow-hidden" style={{ borderRadius:"14%", background:"radial-gradient(ellipse 120% 90% at 30% 20%, oklch(0.52 0.11 55) 0%, oklch(0.42 0.10 48) 35%, oklch(0.30 0.08 42) 70%, oklch(0.20 0.06 38) 100%)", boxShadow:"0 32px 60px -18px oklch(0 0 0 / 85%), 0 12px 22px -10px oklch(0 0 0 / 60%), inset 0 2px 0 oklch(1 0 0 / 14%), inset 0 -14px 26px oklch(0 0 0 / 55%)" }}>
-              <div className="pointer-events-none absolute inset-0 opacity-70 mix-blend-overlay" style={{ backgroundImage:"repeating-linear-gradient(92deg, oklch(0 0 0 / 10%) 0 1px, transparent 1px 5px), repeating-linear-gradient(88deg, oklch(1 0 0 / 4%) 0 1px, transparent 1px 11px), repeating-linear-gradient(94deg, oklch(0 0 0 / 6%) 0 2px, transparent 2px 34px)" }} />
-              <div className="pointer-events-none absolute inset-0 opacity-40" style={{ background:"linear-gradient(150deg, oklch(1 0 0 / 8%) 0%, transparent 35%, transparent 65%, oklch(0 0 0 / 18%) 100%)" }} />
-              <div className="pointer-events-none absolute inset-0" style={{ boxShadow:"inset 0 0 0 1px oklch(0 0 0 / 55%), inset 0 0 0 2px oklch(1 0 0 / 7%)" }} />
+            {/* Wooden table — warmer, richer bevel and grain */}
+            <div className="absolute inset-[2%] overflow-hidden" style={{ borderRadius:"16%", background:"radial-gradient(ellipse 130% 100% at 32% 18%, oklch(0.58 0.13 55) 0%, oklch(0.45 0.12 48) 30%, oklch(0.32 0.09 42) 65%, oklch(0.18 0.06 38) 100%)", boxShadow:"0 42px 80px -22px oklch(0 0 0 / 92%), 0 18px 30px -12px oklch(0 0 0 / 72%), inset 0 2px 0 oklch(1 0 0 / 18%), inset 0 -18px 30px oklch(0 0 0 / 60%)" }}>
+              {/* Wood grain — layered, warmer, with a couple of soft "planks" */}
+              <div className="pointer-events-none absolute inset-0 opacity-80 mix-blend-overlay" style={{ backgroundImage:"repeating-linear-gradient(92deg, oklch(0 0 0 / 14%) 0 1px, transparent 1px 4px), repeating-linear-gradient(88deg, oklch(1 0 0 / 5%) 0 1px, transparent 1px 9px), repeating-linear-gradient(94deg, oklch(0 0 0 / 8%) 0 2px, transparent 2px 28px), repeating-linear-gradient(91deg, oklch(0.3 0.08 40 / 20%) 0 3px, transparent 3px 90px)" }} />
+              {/* Warm highlight sweep */}
+              <div className="pointer-events-none absolute inset-0 opacity-55" style={{ background:"linear-gradient(148deg, oklch(1 0 0 / 12%) 0%, transparent 30%, transparent 65%, oklch(0 0 0 / 25%) 100%)" }} />
+              {/* Inner bevel */}
+              <div className="pointer-events-none absolute inset-0" style={{ boxShadow:"inset 0 0 0 1px oklch(0 0 0 / 65%), inset 0 0 0 2px oklch(1 0 0 / 10%), inset 0 0 60px oklch(0 0 0 / 45%)" }} />
             </div>
 
-            {/* Felt */}
-            <div className="absolute overflow-hidden" style={{ left:"14%", right:"14%", top:"14%", bottom:"14%", transform:"rotate(-1.2deg)", borderRadius:"6%", background:"linear-gradient(162deg, oklch(0.32 0.09 152) 0%, oklch(0.27 0.08 152) 55%, oklch(0.22 0.07 150) 100%)", boxShadow:"0 3px 6px -2px oklch(0 0 0 / 45%), 0 1px 2px oklch(0 0 0 / 40%), inset 0 0 0 1px oklch(0 0 0 / 25%)" }}>
-              <div className="pointer-events-none absolute inset-0" style={{ opacity: 0.12 }}>
-                <IntegratedSuit symbol="♠" color="black" style={{ left:"6%", top:"5%", fontSize:58, transform:"rotate(-14deg)" }} />
-                <IntegratedSuit symbol="♥" color="red" style={{ right:"6%", top:"5%", fontSize:58, transform:"rotate(12deg)" }} />
-                <IntegratedSuit symbol="♦" color="red" style={{ left:"6%", bottom:"5%", fontSize:58, transform:"rotate(10deg)" }} />
-                <IntegratedSuit symbol="♣" color="black" style={{ right:"6%", bottom:"5%", fontSize:58, transform:"rotate(-10deg)" }} />
+            {/* Felt — deeper, more living green with soft vignette + weave */}
+            <div className="absolute overflow-hidden" style={{ left:"11%", right:"11%", top:"11%", bottom:"11%", transform:"rotate(-1.2deg)", borderRadius:"7%", background:"radial-gradient(ellipse 100% 90% at 45% 30%, oklch(0.40 0.11 152) 0%, oklch(0.32 0.09 152) 45%, oklch(0.24 0.08 150) 80%, oklch(0.18 0.06 150) 100%)", boxShadow:"0 5px 12px -3px oklch(0 0 0 / 60%), 0 1px 2px oklch(0 0 0 / 50%), inset 0 0 0 1px oklch(0 0 0 / 40%), inset 0 22px 40px oklch(0 0 0 / 35%), inset 0 -18px 34px oklch(0 0 0 / 45%)" }}>
+              <div className="pointer-events-none absolute inset-0" style={{ opacity: 0.10 }}>
+                <IntegratedSuit symbol="♠" color="black" style={{ left:"5%", top:"4%", fontSize:68, transform:"rotate(-14deg)" }} />
+                <IntegratedSuit symbol="♥" color="red" style={{ right:"5%", top:"4%", fontSize:68, transform:"rotate(12deg)" }} />
+                <IntegratedSuit symbol="♦" color="red" style={{ left:"5%", bottom:"4%", fontSize:68, transform:"rotate(10deg)" }} />
+                <IntegratedSuit symbol="♣" color="black" style={{ right:"5%", bottom:"4%", fontSize:68, transform:"rotate(-10deg)" }} />
               </div>
-              <div className="pointer-events-none absolute inset-0 opacity-70 mix-blend-overlay" style={{ backgroundImage:"repeating-linear-gradient(45deg, oklch(1 0 0 / 4%) 0 1px, transparent 1px 2px), repeating-linear-gradient(-45deg, oklch(0 0 0 / 8%) 0 1px, transparent 1px 2px)" }} />
+              {/* Felt weave */}
+              <div className="pointer-events-none absolute inset-0 opacity-80 mix-blend-overlay" style={{ backgroundImage:"repeating-linear-gradient(45deg, oklch(1 0 0 / 5%) 0 1px, transparent 1px 2px), repeating-linear-gradient(-45deg, oklch(0 0 0 / 9%) 0 1px, transparent 1px 2px)" }} />
+              {/* Warm key-light hotspot on felt */}
+              <div className="pointer-events-none absolute inset-0" style={{ background:"radial-gradient(45% 30% at 50% 18%, oklch(0.95 0.12 78 / 12%) 0%, transparent 70%)" }} />
+              {/* Soft used-felt wear */}
+              <div className="pointer-events-none absolute inset-0 opacity-40 mix-blend-multiply" style={{ background:"radial-gradient(60% 45% at 55% 60%, transparent 0%, oklch(0 0 0 / 22%) 100%)" }} />
             </div>
 
             {/* Player badges */}
@@ -1238,17 +1248,17 @@ function CardFace({ card }: { card: Card }) {
   const red = isRedSuit(card.suit);
   const color = red ? "oklch(0.5 0.19 25)" : "oklch(0.2 0.03 260)";
   return (
-    <div className="relative h-full w-full overflow-hidden" style={{ borderRadius:8, background:"linear-gradient(180deg, oklch(0.99 0.01 90) 0%, oklch(0.94 0.01 85) 100%)", border:"1px solid oklch(0.75 0.02 85)", boxShadow:"0 5px 10px -3px oklch(0 0 0 / 60%), 0 1px 0 oklch(1 0 0 / 60%) inset" }}>
+    <div className="relative h-full w-full overflow-hidden" style={{ borderRadius:9, background:"linear-gradient(180deg, oklch(0.99 0.01 90) 0%, oklch(0.93 0.015 82) 100%)", border:"1px solid oklch(0.72 0.03 82)", boxShadow:"0 10px 18px -6px oklch(0 0 0 / 75%), 0 3px 6px -1px oklch(0 0 0 / 55%), inset 0 1px 0 oklch(1 0 0 / 70%), inset 0 -1px 0 oklch(0 0 0 / 15%)" }}>
       <div className="absolute left-1.5 top-1 flex flex-col items-center leading-none" style={{ color }}>
-        <span className="font-serif text-[18px] font-bold">{card.rank}</span>
-        <span className="text-[16px]">{card.suit}</span>
+        <span className="font-serif text-[20px] font-bold">{card.rank}</span>
+        <span className="text-[18px]">{card.suit}</span>
       </div>
       <div className="absolute inset-0 flex items-center justify-center" style={{ color }}>
-        <span className="text-[38px] leading-none">{card.suit}</span>
+        <span className="text-[46px] leading-none">{card.suit}</span>
       </div>
       <div className="absolute bottom-1 right-1.5 flex rotate-180 flex-col items-center leading-none" style={{ color }}>
-        <span className="font-serif text-[18px] font-bold">{card.rank}</span>
-        <span className="text-[16px]">{card.suit}</span>
+        <span className="font-serif text-[20px] font-bold">{card.rank}</span>
+        <span className="text-[18px]">{card.suit}</span>
       </div>
     </div>
   );
@@ -1256,9 +1266,9 @@ function CardFace({ card }: { card: Card }) {
 
 function CardBack() {
   return (
-    <div className="relative h-full w-full overflow-hidden" style={{ borderRadius:6, background:"linear-gradient(160deg, oklch(0.28 0.09 25) 0%, oklch(0.18 0.06 25) 100%)", border:"1px solid oklch(0.55 0.14 78 / 60%)", boxShadow:"0 5px 10px -3px oklch(0 0 0 / 65%), 0 1px 0 oklch(1 0 0 / 15%) inset" }}>
+    <div className="relative h-full w-full overflow-hidden" style={{ borderRadius:7, background:"linear-gradient(160deg, oklch(0.30 0.10 25) 0%, oklch(0.18 0.06 25) 100%)", border:"1px solid oklch(0.55 0.14 78 / 60%)", boxShadow:"0 8px 14px -5px oklch(0 0 0 / 75%), 0 2px 4px oklch(0 0 0 / 55%), inset 0 1px 0 oklch(1 0 0 / 18%)" }}>
       <div className="absolute inset-1 rounded-[4px]" style={{ border:"1px solid oklch(0.72 0.14 82 / 55%)", backgroundImage:"repeating-linear-gradient(45deg, oklch(0.72 0.14 82 / 18%) 0 2px, transparent 2px 6px), repeating-linear-gradient(-45deg, oklch(0.72 0.14 82 / 12%) 0 2px, transparent 2px 6px)" }} />
-      <div className="absolute inset-0 flex items-center justify-center font-serif text-[12px] font-bold tracking-widest" style={{ color:"oklch(0.85 0.14 82)", textShadow:"0 1px 0 oklch(0 0 0 / 60%)" }}>CAPI</div>
+      <div className="absolute inset-0 flex items-center justify-center font-serif text-[13px] font-bold tracking-widest" style={{ color:"oklch(0.85 0.14 82)", textShadow:"0 1px 0 oklch(0 0 0 / 65%)" }}>CAPI</div>
     </div>
   );
 }
