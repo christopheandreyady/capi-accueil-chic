@@ -1,5 +1,7 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { Spade, Trophy, Users, User } from "lucide-react";
+
+type RoutePath = "/salle-attente" | undefined;
 import bistrotTable from "@/assets/capi-bistrot-table.jpg";
 import capiEmblem from "@/assets/capi-emblem.png";
 
@@ -28,6 +30,7 @@ type Btn = {
   base: string;
   edge: string;
   glow: string;
+  to?: RoutePath;
 };
 
 const buttons: Btn[] = [
@@ -37,6 +40,7 @@ const buttons: Btn[] = [
     base: "linear-gradient(160deg, oklch(0.44 0.13 155) 0%, oklch(0.30 0.09 155) 100%)",
     edge: "oklch(0.55 0.14 155 / 60%)",
     glow: "oklch(0.42 0.13 155 / 40%)",
+    to: "/salle-attente",
   },
   {
     label: "Tournois",
@@ -145,10 +149,13 @@ function Home() {
 
         {/* Buttons */}
         <nav className="mt-auto grid grid-cols-2 gap-3.5 pt-12" aria-label="Menu principal">
-          {buttons.map(({ label, icon: Icon, base, edge, glow }) => (
-            <button
+          {buttons.map(({ label, icon: Icon, base, edge, glow, to }) => {
+            const Comp: React.ElementType = to ? Link : "button";
+            const compProps = to ? { to } : { type: "button" as const };
+            return (
+            <Comp
               key={label}
-              type="button"
+              {...compProps}
               className="group relative flex flex-col items-center justify-center gap-2.5 overflow-hidden px-3 py-5 transition-all duration-200 ease-out active:scale-[0.97] active:brightness-95"
               style={{
                 borderRadius: "1.1rem",
@@ -210,8 +217,9 @@ function Home() {
               >
                 {label}
               </span>
-            </button>
-          ))}
+            </Comp>
+          );
+          })}
         </nav>
 
         <p
