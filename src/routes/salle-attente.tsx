@@ -313,8 +313,11 @@ function WaitingRoom() {
 
         {/* Table area — the wooden bistro table image is a bounded, centered
             UI object. Seats sit around the OUTSIDE of the wooden border. */}
-        <section className="relative mx-auto my-auto w-full max-w-[380px] px-2 py-3">
-          <div className="relative mx-auto aspect-square w-full">
+        <section className="relative mx-auto my-auto flex w-full flex-1 items-center justify-center px-2 py-3">
+          <div
+            className="relative aspect-square"
+            style={{ width: "min(90vw, calc(100dvh - 260px), 520px)" }}
+          >
             <img
               src={bistrotTable}
               alt=""
@@ -331,28 +334,29 @@ function WaitingRoom() {
                 obstruct the seats or the empty center of the table. */}
             <AmbientDecor />
 
-            {/* Seats — positioned around the OUTSIDE of the wooden border */}
+            {/* Seats — positioned around the OUTSIDE of the wooden border,
+                following the rounded shape of the table. */}
             <SeatSlot
               seat={seats.find((s) => s.position === "top")!}
-              style={{ left: "50%", top: "-82px", transform: "translate(-50%, 0)" }}
+              style={{ left: "50%", top: "-100px", transform: "translate(-50%, 0)" }}
               delay={80}
               onInvite={() => setInviteOpen(true)}
             />
             <SeatSlot
               seat={seats.find((s) => s.position === "left")!}
-              style={{ left: "-64px", top: "50%", transform: "translate(0, -50%)" }}
+              style={{ left: "-86px", top: "38%", transform: "translate(0, -50%)" }}
               delay={180}
               onInvite={() => setInviteOpen(true)}
             />
             <SeatSlot
               seat={seats.find((s) => s.position === "right")!}
-              style={{ right: "-64px", top: "50%", transform: "translate(0, -50%)" }}
+              style={{ right: "-86px", top: "38%", transform: "translate(0, -50%)" }}
               delay={260}
               onInvite={() => setInviteOpen(true)}
             />
             <SeatSlot
               seat={seats.find((s) => s.position === "bottom")!}
-              style={{ left: "50%", bottom: "-104px", transform: "translate(-50%, 0)" }}
+              style={{ left: "50%", bottom: "-118px", transform: "translate(-50%, 0)" }}
               isLocal
               delay={0}
               onInvite={() => setInviteOpen(true)}
