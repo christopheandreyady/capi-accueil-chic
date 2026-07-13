@@ -1306,7 +1306,7 @@ function RoundChip({ index }: { index: number }) {
     <div
       className="relative"
       style={{
-        width: 18, height: 18, borderRadius: "50%",
+        width: 15, height: 15, borderRadius: "50%",
         background: bg,
         border: "1.5px solid oklch(0.85 0.14 82 / 75%)",
         boxShadow: "0 3px 6px -2px oklch(0 0 0 / 55%), 0 1px 0 oklch(1 0 0 / 30%) inset",
