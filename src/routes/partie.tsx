@@ -629,12 +629,13 @@ function GameTable() {
         </header>
 
 
-        <div ref={boxRef} className="relative mx-auto mt-2 w-full max-w-[520px] flex-1">
+        <div ref={boxRef} className="relative mx-auto mt-2 w-full max-w-[480px] flex-1">
           <div className="relative mx-auto aspect-square w-full">
             {/* Table surface is provided by the background artwork (bistrotTable).
                 No wooden/felt overlay is drawn here — game elements sit directly
-                on the photographed table. A soft vignette keeps focus centered. */}
-            <div className="pointer-events-none absolute inset-0" style={{ background:"radial-gradient(60% 55% at 50% 50%, transparent 0%, transparent 55%, oklch(0 0 0 / 30%) 100%)" }} />
+                on the photographed table. Soft central halo + vignette. */}
+            <div className="pointer-events-none absolute inset-0" style={{ background:"radial-gradient(38% 30% at 50% 50%, oklch(0.9 0.14 78 / 14%) 0%, oklch(0.85 0.12 72 / 6%) 45%, transparent 75%)" }} />
+            <div className="pointer-events-none absolute inset-0" style={{ background:"radial-gradient(60% 55% at 50% 50%, transparent 0%, transparent 55%, oklch(0 0 0 / 32%) 100%)" }} />
 
 
             {/* Player badges */}
