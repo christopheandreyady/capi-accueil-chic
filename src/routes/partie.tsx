@@ -1130,10 +1130,10 @@ function PlayerBadge({
   isActive?: boolean; isThinking?: boolean; announcement?: Bid | null; announcementIsTaker?: boolean;
 }) {
   const style: React.CSSProperties =
-    position === "bottom" ? { left:"50%", bottom:"-104px", transform:"translate(-50%, 0)" }
-    : position === "top" ? { left:"50%", top:"-82px", transform:"translate(-50%, 0)" }
-    : position === "left" ? { left:"-64px", top:"50%", transform:"translate(0, -50%)" }
-    : { right:"-64px", top:"50%", transform:"translate(0, -50%)" };
+    position === "bottom" ? { left:"50%", bottom:"-118px", transform:"translate(-50%, 0)" }
+    : position === "top" ? { left:"50%", top:"-100px", transform:"translate(-50%, 0)" }
+    : position === "left" ? { left:"-86px", top:"38%", transform:"translate(0, -50%)" }
+    : { right:"-86px", top:"38%", transform:"translate(0, -50%)" };
 
 
 
