@@ -1181,12 +1181,12 @@ function ContractChips({ contract, slideTo }: { contract: Contract; slideTo?: Te
       <div className="flex flex-col items-center gap-1.5">
         {b.largeBar > 0 && (
           <div className="animate-scale-in" style={{ animationDelay: "40ms" }}>
-            <ChipBar width={72} height={22} tone="large" value={100} />
+            <ChipBar width={72} height={17} tone="large" value={100} tilt={-5} />
           </div>
         )}
         {b.smallBar > 0 && (
           <div className="animate-scale-in" style={{ animationDelay: "120ms" }}>
-            <ChipBar width={52} height={18} tone="small" value={50} />
+            <ChipBar width={52} height={14} tone="small" value={50} tilt={4} />
           </div>
         )}
         {b.rounds > 0 && (
