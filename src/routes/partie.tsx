@@ -760,9 +760,10 @@ function handTarget(seat: Position, index: number, total: number, anchors: Ancho
   const cardW = isBottom ? CARD_W_BIG : CARD_W_SMALL;
   const cardH = isBottom ? CARD_H_BIG : CARD_H_SMALL;
   const a = anchors[seat];
-  const spread = isBottom ? 88 : 14;
-  const step = total > 1 ? spread / (total - 1) : 0;
-  const localAngle = total > 1 ? -spread / 2 + step * index : 0;
+  // Constant per-card angular step: the fan CLOSES as cards are played,
+  // so the hand always stays visually compact with no gap where a card was.
+  const stepDeg = isBottom ? 12.5 : 2.2;
+  const localAngle = total > 1 ? -((total - 1) / 2) * stepDeg + stepDeg * index : 0;
   const radius = isBottom ? 82 : 70;
   const rad = (localAngle * Math.PI) / 180;
   const lx = Math.sin(rad) * radius;
@@ -780,18 +781,39 @@ function handTarget(seat: Position, index: number, total: number, anchors: Ancho
   };
 }
 
-function trickTarget(seat: Position, anchors: Anchors, size: { w: number; h: number }) {
+// Deterministic pseudo-random in [-1, 1] from seat + play index.
+function seatJitter(seat: Position, orderIndex: number, salt: number) {
+  const seed = (seat.charCodeAt(0) * 131 + orderIndex * 977 + salt * 31) % 1000;
+  return (seed / 1000) * 2 - 1;
+}
+
+function trickTarget(
+  seat: Position,
+  anchors: Anchors,
+  size: { w: number; h: number },
+  orderIndex: number,
+) {
   const cx = (size.w || 1) / 2;
   const cy = (size.h || 1) / 2;
   const a = anchors[seat];
   const dx = a.x - cx;
   const dy = a.y - cy;
   const len = Math.hypot(dx, dy) || 1;
-  const OFFSET = 48;
+  // Card is pushed further OUT of the center, near its player, so it clearly
+  // belongs to that seat. Slight tangential + radial jitter avoids the
+  // "four perfectly aligned cards" look and shows the play order via
+  // increasing offset.
+  const nx = dx / len;
+  const ny = dy / len;
+  // Perpendicular unit vector.
+  const px = -ny;
+  const py = nx;
+  const radialOffset = 62 + orderIndex * 3;
+  const tangentOffset = seatJitter(seat, 0, 1) * 10 + (orderIndex - 1.5) * 4;
   return {
-    x: cx + (dx / len) * OFFSET,
-    y: cy + (dy / len) * OFFSET,
-    rotate: a.angle + (Math.random() < 0.5 ? -4 : 4),
+    x: cx + nx * radialOffset + px * tangentOffset,
+    y: cy + ny * radialOffset + py * tangentOffset,
+    rotate: a.angle + seatJitter(seat, 0, 2) * 12 + (orderIndex % 2 === 0 ? -3 : 3),
   };
 }
 
