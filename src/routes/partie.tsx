@@ -1232,7 +1232,7 @@ function TableScoreBadge({ team, label, value, pulse }: { team: Team; label: str
 }
 
 
-function ChipBar({ width, height, tone, value }: { width: number; height: number; tone: "large" | "small"; value: number }) {
+function ChipBar({ width, height, tone, value, tilt = 0 }: { width: number; height: number; tone: "large" | "small"; value: number; tilt?: number }) {
   const bg = tone === "large"
     ? "linear-gradient(180deg, oklch(0.58 0.19 28) 0%, oklch(0.44 0.17 28) 50%, oklch(0.3 0.13 28) 100%)"
     : "linear-gradient(180deg, oklch(0.72 0.16 240) 0%, oklch(0.55 0.15 240) 50%, oklch(0.38 0.13 240) 100%)";
