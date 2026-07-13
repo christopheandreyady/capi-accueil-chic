@@ -268,64 +268,89 @@ function WaitingRoom() {
         {/* Table area */}
         <section className="relative mt-6 flex-1">
           <div className="relative mx-auto aspect-square w-full max-w-[400px]">
-            {/* Wooden rim + felt */}
+            {/* Wooden table */}
             <div
               className="absolute inset-0 rounded-full"
               style={{
                 background:
-                  "radial-gradient(circle at 50% 30%, oklch(0.42 0.09 45) 0%, oklch(0.3 0.08 40) 55%, oklch(0.18 0.05 35) 100%)",
+                  "radial-gradient(circle at 50% 25%, oklch(0.45 0.10 45) 0%, oklch(0.32 0.08 42) 55%, oklch(0.18 0.05 35) 100%)",
                 boxShadow:
-                  "0 30px 60px -20px oklch(0 0 0 / 80%), inset 0 2px 0 oklch(1 0 0 / 10%), inset 0 -10px 20px oklch(0 0 0 / 60%)",
+                  "0 30px 60px -20px oklch(0 0 0 / 80%), inset 0 2px 0 oklch(1 0 0 / 10%), inset 0 -12px 22px oklch(0 0 0 / 60%)",
               }}
             >
+              {/* Wood grain */}
               <div
-                className="pointer-events-none absolute inset-0 rounded-full opacity-40 mix-blend-overlay"
+                className="pointer-events-none absolute inset-0 rounded-full opacity-45 mix-blend-overlay"
                 style={{
                   backgroundImage:
-                    "repeating-radial-gradient(circle at 50% 50%, oklch(0 0 0 / 25%) 0 2px, transparent 2px 6px), repeating-conic-gradient(from 0deg, oklch(1 0 0 / 4%) 0deg 8deg, transparent 8deg 16deg)",
+                    "repeating-conic-gradient(from 0deg at 50% 50%, oklch(1 0 0 / 4%) 0deg 3deg, oklch(0 0 0 / 8%) 3deg 6deg), radial-gradient(ellipse at 30% 40%, oklch(1 0 0 / 6%), transparent 60%)",
                 }}
               />
+              {/* Wood inner ring / bevel */}
               <div
-                className="pointer-events-none absolute inset-[10%] rounded-full"
+                className="pointer-events-none absolute inset-[16%] rounded-full"
                 style={{
-                  border: "1px solid oklch(0.82 0.14 82 / 55%)",
                   boxShadow:
-                    "0 0 12px oklch(0.82 0.14 82 / 25%), inset 0 0 12px oklch(0.82 0.14 82 / 20%)",
+                    "inset 0 0 0 1px oklch(0 0 0 / 55%), inset 0 2px 4px oklch(0 0 0 / 55%), 0 2px 0 oklch(1 0 0 / 6%)",
                 }}
               />
             </div>
 
-            {/* Felt */}
+            {/* Felt mat — a real cloth laid on top of the wood */}
             <div
-              className="absolute inset-[13%] rounded-full"
+              className="absolute inset-[19%] rounded-full"
               style={{
                 background:
-                  "radial-gradient(circle at 50% 35%, oklch(0.44 0.11 152) 0%, oklch(0.3 0.09 152) 55%, oklch(0.18 0.06 150) 100%)",
+                  "radial-gradient(circle at 50% 32%, oklch(0.42 0.11 152) 0%, oklch(0.28 0.09 152) 60%, oklch(0.16 0.06 150) 100%)",
                 boxShadow:
-                  "inset 0 0 100px oklch(0 0 0 / 60%), inset 0 20px 40px oklch(1 0 0 / 5%), 0 0 0 2px oklch(0.15 0.04 35)",
+                  "0 10px 22px -6px oklch(0 0 0 / 75%), 0 3px 0 oklch(0 0 0 / 45%), inset 0 0 90px oklch(0 0 0 / 55%), inset 0 2px 0 oklch(1 0 0 / 8%), inset 0 -6px 14px oklch(0 0 0 / 45%)",
               }}
             >
+              {/* Fabric weave */}
               <div
-                className="pointer-events-none absolute inset-0 rounded-full opacity-40 mix-blend-overlay"
+                className="pointer-events-none absolute inset-0 rounded-full opacity-55 mix-blend-overlay"
                 style={{
                   backgroundImage:
-                    "radial-gradient(oklch(0 0 0 / 30%) 1px, transparent 1px), radial-gradient(oklch(1 0 0 / 12%) 1px, transparent 1px)",
-                  backgroundSize: "3px 3px, 5px 5px",
-                  backgroundPosition: "0 0, 1px 2px",
+                    "repeating-linear-gradient(45deg, oklch(1 0 0 / 6%) 0 1px, transparent 1px 2px), repeating-linear-gradient(-45deg, oklch(0 0 0 / 10%) 0 1px, transparent 1px 2px), radial-gradient(oklch(1 0 0 / 8%) 1px, transparent 1px)",
+                  backgroundSize: "auto, auto, 3px 3px",
                 }}
               />
+              {/* Subtle gold hairline */}
+              <div
+                className="pointer-events-none absolute inset-[6%] rounded-full"
+                style={{
+                  border: "1px solid oklch(0.82 0.14 82 / 22%)",
+                  boxShadow: "inset 0 0 20px oklch(0.82 0.14 82 / 8%)",
+                }}
+              />
+
+              {/* Four gold suit corners */}
+              <SuitMark symbol="♠" className="absolute" style={{ left: "10%", top: "12%", transform: "rotate(-18deg)" }} />
+              <SuitMark symbol="♥" className="absolute" style={{ right: "10%", top: "12%", transform: "rotate(16deg)" }} />
+              <SuitMark symbol="♦" className="absolute" style={{ left: "10%", bottom: "12%", transform: "rotate(14deg)" }} />
+              <SuitMark symbol="♣" className="absolute" style={{ right: "10%", bottom: "12%", transform: "rotate(-14deg)" }} />
             </div>
 
-            {/* Jetons */}
-            <RoundChip className="absolute" style={{ left: "10%", top: "18%", transform: "rotate(-12deg)" }} color="oklch(0.55 0.19 25)" />
-            <BarChip className="absolute" style={{ left: "18%", top: "8%", transform: "rotate(24deg)" }} value={100} />
-            <RoundChip className="absolute" style={{ left: "6%", top: "42%", transform: "rotate(8deg)" }} color="oklch(0.5 0.15 260)" />
-            <BarChip className="absolute" style={{ right: "10%", top: "12%", transform: "rotate(-18deg)" }} value={50} />
-            <RoundChip className="absolute" style={{ right: "8%", top: "38%", transform: "rotate(-5deg)" }} color="oklch(0.62 0.14 82)" />
-            <BarChip className="absolute" style={{ left: "12%", bottom: "14%", transform: "rotate(14deg)" }} value={50} />
-            <RoundChip className="absolute" style={{ left: "22%", bottom: "8%", transform: "rotate(-6deg)" }} color="oklch(0.55 0.19 25)" />
-            <RoundChip className="absolute" style={{ right: "14%", bottom: "10%", transform: "rotate(18deg)" }} color="oklch(0.5 0.15 260)" />
-            <BarChip className="absolute" style={{ right: "18%", bottom: "18%", transform: "rotate(-22deg)" }} value={100} />
+            {/* Score tokens — Team A set beside YOU (bottom-right) */}
+            <div className="absolute" style={{ right: "3%", bottom: "12%", width: 80, height: 70 }}>
+              <ScoreBarLong className="absolute" style={{ left: 0, top: 0, transform: "rotate(-8deg)" }} color="ivory" />
+              <ScoreBarLong className="absolute" style={{ left: 4, top: 10, transform: "rotate(-4deg)" }} color="red" />
+              <ScoreBarShort className="absolute" style={{ left: 2, top: 26, transform: "rotate(6deg)" }} color="blue" />
+              <ScoreBarShort className="absolute" style={{ left: 22, top: 30, transform: "rotate(-3deg)" }} color="red" />
+              <ScoreRound className="absolute" style={{ left: 46, top: 8, transform: "rotate(0deg)" }} color="ivory" />
+              <ScoreRound className="absolute" style={{ left: 58, top: 22, transform: "rotate(0deg)" }} color="blue" />
+              <ScoreRound className="absolute" style={{ left: 42, top: 34, transform: "rotate(0deg)" }} color="red" />
+            </div>
+
+            {/* Score tokens — Team B set beside Margaux (left seat) */}
+            <div className="absolute" style={{ left: "3%", top: "18%", width: 80, height: 70 }}>
+              <ScoreBarLong className="absolute" style={{ left: 0, top: 0, transform: "rotate(10deg)" }} color="ivory" />
+              <ScoreBarShort className="absolute" style={{ left: 4, top: 16, transform: "rotate(-6deg)" }} color="red" />
+              <ScoreBarShort className="absolute" style={{ left: 26, top: 20, transform: "rotate(4deg)" }} color="blue" />
+              <ScoreRound className="absolute" style={{ left: 50, top: 4, transform: "rotate(0deg)" }} color="red" />
+              <ScoreRound className="absolute" style={{ left: 60, top: 18, transform: "rotate(0deg)" }} color="ivory" />
+              <ScoreRound className="absolute" style={{ left: 48, top: 30, transform: "rotate(0deg)" }} color="blue" />
+            </div>
 
             {/* Seats */}
             <SeatSlot
