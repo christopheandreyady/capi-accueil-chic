@@ -1145,22 +1145,22 @@ function AnnouncementBubble({ bid, position }: { bid: Bid; position: Position })
       style={{
         ...placement,
         zIndex: 40,
-        padding: "6px 12px",
-        borderRadius: 10,
+        padding: "8px 14px",
+        borderRadius: 12,
         background: isPass
-          ? "linear-gradient(180deg, oklch(0.22 0.03 40 / 96%) 0%, oklch(0.15 0.03 40 / 96%) 100%)"
-          : "linear-gradient(180deg, oklch(0.98 0.02 88) 0%, oklch(0.88 0.03 82) 100%)",
+          ? "linear-gradient(180deg, oklch(0.20 0.03 40 / 98%) 0%, oklch(0.12 0.03 40 / 98%) 100%)"
+          : "linear-gradient(180deg, oklch(0.995 0.01 88) 0%, oklch(0.9 0.03 82) 100%)",
         border: isPass
-          ? "1px solid oklch(0.82 0.14 82 / 55%)"
-          : "1.5px solid oklch(0.65 0.16 72)",
+          ? "1.5px solid oklch(0.85 0.16 82 / 75%)"
+          : "2px solid oklch(0.6 0.17 68)",
         boxShadow:
-          "0 10px 22px -6px oklch(0 0 0 / 75%), 0 2px 0 oklch(1 0 0 / 25%) inset, 0 0 0 1px oklch(0 0 0 / 40%)",
-        color: isPass ? "oklch(0.94 0.1 85)" : "oklch(0.2 0.05 40)",
+          "0 14px 28px -8px oklch(0 0 0 / 85%), 0 2px 0 oklch(1 0 0 / 30%) inset, 0 0 0 1px oklch(0 0 0 / 50%)",
+        color: isPass ? "oklch(0.96 0.12 85)" : "oklch(0.14 0.05 40)",
       }}
     >
-      <span className="inline-flex items-center gap-1.5 font-serif font-bold" style={{ fontSize: 18, lineHeight: 1, letterSpacing: "0.02em" }}>
+      <span className="inline-flex items-center gap-2 font-serif font-black" style={{ fontSize: 22, lineHeight: 1, letterSpacing: "0.02em" }}>
         <span>{label}</span>
-        {suit && <SuitBadge suit={suit} size={16} />}
+        {suit && <SuitBadge suit={suit} size={22} />}
       </span>
     </div>
   );
