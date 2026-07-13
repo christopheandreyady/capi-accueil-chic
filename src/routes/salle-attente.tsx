@@ -1,8 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { Plus, ArrowLeft, Crown, Check, Copy, QrCode, Share2, UserPlus } from "lucide-react";
-import bistrotTable from "@/assets/capi-table-only.png";
-import bistrotRoom from "@/assets/capi-bistrot-room.jpg";
+import bistrotTable from "@/assets/capi-bistrot-table.jpg";
 import capiEmblem from "@/assets/capi-emblem.png";
 import { InviteModal } from "@/components/InviteModal";
 import { PremiumModal } from "@/components/PremiumModal";
@@ -215,18 +214,30 @@ function WaitingRoom() {
 
   return (
     <main className="relative min-h-screen w-full overflow-hidden bg-background">
-      {/* French bistro environment — a blurred bar, banquette and warm bokeh
-          fill the space AROUND the wooden table. The table object is rendered
-          on top so the environment never covers the felt. */}
-      <img
-        src={bistrotRoom}
-        alt=""
-        aria-hidden="true"
-        className="pointer-events-none absolute inset-0 h-full w-full object-cover"
-        style={{ filter: "blur(2px) brightness(0.55) saturate(0.9)" }}
+      {/* Ambient bistro atmosphere — identical stack to the homepage /
+          BistrotShell so the waiting room shares the same visual identity. */}
+      <div
+        className="pointer-events-none absolute inset-0"
+        style={{
+          background:
+            "radial-gradient(60% 35% at 50% 0%, oklch(0.85 0.14 75 / 32%) 0%, oklch(0.7 0.12 65 / 12%) 40%, transparent 70%)",
+        }}
       />
-      <div className="pointer-events-none absolute inset-0" style={{ background:"radial-gradient(75% 60% at 50% 50%, oklch(0 0 0 / 15%) 0%, oklch(0 0 0 / 55%) 60%, oklch(0.03 0.01 40 / 90%) 100%)" }} />
-      <div className="pointer-events-none absolute inset-0" style={{ background:"radial-gradient(70% 40% at 50% -6%, oklch(0.92 0.17 76 / 28%) 0%, oklch(0.78 0.14 66 / 10%) 32%, transparent 62%)" }} />
+      <div
+        className="pointer-events-none absolute inset-0"
+        style={{
+          background:
+            "radial-gradient(120% 80% at 50% 50%, transparent 0%, oklch(0 0 0 / 45%) 60%, oklch(0.08 0.02 40 / 94%) 100%)",
+        }}
+      />
+      <div
+        className="pointer-events-none absolute inset-0"
+        style={{
+          background:
+            "linear-gradient(180deg, oklch(0.12 0.03 40 / 75%) 0%, transparent 22%, transparent 55%, oklch(0.08 0.02 40 / 92%) 100%)",
+        }}
+      />
+
 
 
       <div className="relative z-10 mx-auto flex min-h-screen w-full max-w-md flex-col px-5 pt-6 pb-8">
