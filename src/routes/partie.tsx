@@ -419,7 +419,12 @@ function GameTable() {
       };
       raf = requestAnimationFrame(tick);
     }, 1900);
-    const t3 = window.setTimeout(() => setChipsVisible(false), 3900);
+    const t3 = window.setTimeout(() => {
+      if (contract) {
+        setStashes((s) => ({ ...s, [winner]: [...s[winner], contractChipBreakdown(contract)] }));
+      }
+      setChipsVisible(false);
+    }, 3900);
     return () => {
       clearTimeout(t1);
       clearTimeout(t2);
