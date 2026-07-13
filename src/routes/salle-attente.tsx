@@ -492,35 +492,47 @@ function WaitingRoom() {
               if (allReady) navigate({ to: "/partie" });
               else toggleReady("bottom");
             }}
-            className="group relative flex w-full items-center justify-center gap-3 overflow-hidden px-6 py-3.5 transition-all duration-200 ease-out active:scale-[0.985] disabled:cursor-not-allowed disabled:active:scale-100"
+            className="group relative flex w-full items-center justify-center gap-3 overflow-hidden px-6 py-4 transition-all duration-200 ease-out active:scale-[0.985] disabled:cursor-not-allowed disabled:active:scale-100"
             style={{
-              borderRadius: "1rem",
+              borderRadius: "1.15rem",
               background: allReady
-                ? "linear-gradient(168deg, oklch(0.38 0.11 152) 0%, oklch(0.28 0.09 152) 50%, oklch(0.20 0.07 150) 100%)"
+                ? "linear-gradient(168deg, oklch(0.42 0.12 152) 0%, oklch(0.30 0.10 152) 48%, oklch(0.20 0.07 150) 100%)"
                 : roomFull
                   ? localReady
-                    ? "linear-gradient(168deg, oklch(0.28 0.06 42) 0%, oklch(0.20 0.04 40) 100%)"
-                    : "linear-gradient(168deg, oklch(0.36 0.10 82) 0%, oklch(0.26 0.08 78) 100%)"
-                  : "linear-gradient(168deg, oklch(0.22 0.03 42) 0%, oklch(0.16 0.02 40) 100%)",
-              border: `1px solid ${allReady || roomFull ? "oklch(0.78 0.14 82 / 55%)" : "oklch(0.35 0.02 40 / 45%)"}`,
+                    ? "linear-gradient(168deg, oklch(0.30 0.06 42) 0%, oklch(0.20 0.04 40) 100%)"
+                    : "linear-gradient(168deg, oklch(0.40 0.11 82) 0%, oklch(0.28 0.09 78) 100%)"
+                  : "linear-gradient(168deg, oklch(0.24 0.03 42) 0%, oklch(0.16 0.02 40) 100%)",
+              border: `1px solid ${allReady || roomFull ? "oklch(0.82 0.14 82 / 65%)" : "oklch(0.35 0.02 40 / 45%)"}`,
               boxShadow: allReady
-                ? "0 14px 26px -14px oklch(0 0 0 / 75%), 0 6px 12px -6px oklch(0.32 0.10 152 / 55%), inset 0 1px 0 oklch(1 0 0 / 14%), inset 0 -8px 14px oklch(0 0 0 / 40%), inset 0 0 0 1px oklch(0.82 0.14 82 / 18%)"
-                : "0 10px 20px -12px oklch(0 0 0 / 70%), inset 0 1px 0 oklch(1 0 0 / 10%), inset 0 -6px 12px oklch(0 0 0 / 35%)",
+                ? "0 18px 32px -14px oklch(0 0 0 / 80%), 0 8px 16px -6px oklch(0.32 0.10 152 / 55%), inset 0 1px 0 oklch(1 0 0 / 18%), inset 0 -10px 18px oklch(0 0 0 / 45%), inset 0 0 0 1px oklch(0.82 0.14 82 / 22%)"
+                : "0 12px 24px -12px oklch(0 0 0 / 72%), inset 0 1px 0 oklch(1 0 0 / 12%), inset 0 -8px 14px oklch(0 0 0 / 40%)",
               opacity: roomFull ? 1 : 0.75,
               animation: allReady ? "capi-glow 3s ease-in-out infinite" : undefined,
             }}
           >
+            {/* Leather grain texture */}
+            <span
+              className="pointer-events-none absolute inset-0 opacity-25 mix-blend-overlay"
+              style={{
+                backgroundImage:
+                  "radial-gradient(oklch(1 0 0 / 8%) 0.5px, transparent 0.5px), radial-gradient(oklch(0 0 0 / 12%) 0.5px, transparent 0.5px)",
+                backgroundSize: "3px 3px, 4px 4px",
+                backgroundPosition: "0 0, 1px 2px",
+              }}
+            />
+            {/* Top satin highlight */}
             <span
               className="pointer-events-none absolute inset-x-0 top-0 h-1/2 opacity-70"
               style={{
                 background:
-                  "linear-gradient(180deg, oklch(1 0 0 / 14%) 0%, oklch(1 0 0 / 3%) 60%, transparent 100%)",
+                  "linear-gradient(180deg, oklch(1 0 0 / 18%) 0%, oklch(1 0 0 / 3%) 60%, transparent 100%)",
               }}
             />
-            {allReady && (
+            {/* Inner gold hairline frame */}
+            {(allReady || roomFull) && (
               <span
-                className="pointer-events-none absolute inset-[3px] rounded-[0.85rem]"
-                style={{ border: "1px solid oklch(0.82 0.14 82 / 22%)" }}
+                className="pointer-events-none absolute inset-[3px] rounded-[0.95rem]"
+                style={{ border: "1px solid oklch(0.82 0.14 82 / 28%)" }}
               />
             )}
             {allReady && (
@@ -528,7 +540,7 @@ function WaitingRoom() {
                 className="pointer-events-none absolute inset-y-0 -left-1/3 w-1/3 skew-x-[-20deg]"
                 style={{
                   background:
-                    "linear-gradient(90deg, transparent, oklch(1 0 0 / 20%), transparent)",
+                    "linear-gradient(90deg, transparent, oklch(1 0 0 / 22%), transparent)",
                   animation: "capi-sheen 3.4s ease-in-out infinite",
                 }}
               />
@@ -556,12 +568,12 @@ function WaitingRoom() {
               style={{
                 background:
                   allReady || roomFull
-                    ? "linear-gradient(180deg, oklch(0.97 0.10 88), oklch(0.74 0.14 78))"
+                    ? "linear-gradient(180deg, oklch(0.98 0.10 88), oklch(0.72 0.14 78))"
                     : "linear-gradient(180deg, oklch(0.62 0.03 80), oklch(0.48 0.03 80))",
                 WebkitBackgroundClip: "text",
                 backgroundClip: "text",
                 color: "transparent",
-                textShadow: "0 1px 0 oklch(0 0 0 / 40%)",
+                textShadow: "0 1px 0 oklch(0 0 0 / 45%)",
               }}
             >
               {allReady
@@ -955,22 +967,24 @@ function SeatSlot({
             </p>
           </div>
 
-          {/* Ready toggle button per player (only local is directly actionable; others too for demo) */}
-          <button
-            type="button"
-            onClick={() => onToggleReady(pos)}
-            className="rounded-full px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-[0.14em] transition active:scale-95"
-            style={{
-              background: p.ready
-                ? "oklch(0.2 0.02 40 / 70%)"
-                : "linear-gradient(160deg, oklch(0.5 0.15 155), oklch(0.32 0.10 155))",
-              border: `1px solid ${p.ready ? "oklch(0.82 0.14 82 / 25%)" : "oklch(0.62 0.15 155 / 60%)"}`,
-              color: p.ready ? "oklch(0.85 0.05 82 / 85%)" : "oklch(0.95 0.1 88)",
-              boxShadow: "0 2px 6px oklch(0 0 0 / 45%), inset 0 1px 0 oklch(1 0 0 / 10%)",
-            }}
-          >
-            {p.ready ? "Annuler" : "Je suis prêt"}
-          </button>
+          {/* Ready toggle — only the local player controls their own readiness */}
+          {isLocal && (
+            <button
+              type="button"
+              onClick={() => onToggleReady(pos)}
+              className="rounded-full px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-[0.14em] transition active:scale-95"
+              style={{
+                background: p.ready
+                  ? "oklch(0.2 0.02 40 / 70%)"
+                  : "linear-gradient(160deg, oklch(0.5 0.15 155), oklch(0.32 0.10 155))",
+                border: `1px solid ${p.ready ? "oklch(0.82 0.14 82 / 25%)" : "oklch(0.62 0.15 155 / 60%)"}`,
+                color: p.ready ? "oklch(0.85 0.05 82 / 85%)" : "oklch(0.95 0.1 88)",
+                boxShadow: "0 2px 6px oklch(0 0 0 / 45%), inset 0 1px 0 oklch(1 0 0 / 10%)",
+              }}
+            >
+              {p.ready ? "Annuler" : "Je suis prêt"}
+            </button>
+          )}
         </>
       ) : (
         <button
