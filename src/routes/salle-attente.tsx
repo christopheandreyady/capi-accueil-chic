@@ -552,90 +552,133 @@ function IconAction({
   );
 }
 
-function RoundChip({
+function SuitMark({
+  symbol,
+  className,
+  style,
+}: {
+  symbol: string;
+  className?: string;
+  style?: React.CSSProperties;
+}) {
+  return (
+    <span
+      className={className}
+      style={{
+        fontFamily: "ui-serif, Georgia, serif",
+        fontSize: 22,
+        lineHeight: 1,
+        background: "linear-gradient(180deg, oklch(0.92 0.14 88), oklch(0.62 0.14 72))",
+        WebkitBackgroundClip: "text",
+        backgroundClip: "text",
+        color: "transparent",
+        textShadow: "0 1px 0 oklch(0 0 0 / 55%)",
+        filter: "drop-shadow(0 2px 3px oklch(0 0 0 / 55%))",
+        opacity: 0.9,
+        ...style,
+      }}
+    >
+      {symbol}
+    </span>
+  );
+}
+
+type TokenColor = "ivory" | "red" | "blue";
+
+function tokenGradient(color: TokenColor) {
+  switch (color) {
+    case "ivory":
+      return "linear-gradient(160deg, oklch(0.93 0.03 85) 0%, oklch(0.78 0.04 80) 100%)";
+    case "red":
+      return "linear-gradient(160deg, oklch(0.55 0.19 25) 0%, oklch(0.36 0.14 25) 100%)";
+    case "blue":
+      return "linear-gradient(160deg, oklch(0.48 0.14 245) 0%, oklch(0.30 0.10 250) 100%)";
+  }
+}
+
+function tokenText(color: TokenColor) {
+  return color === "ivory" ? "oklch(0.28 0.05 40)" : "oklch(0.95 0.06 85)";
+}
+
+function ScoreRound({
   className,
   style,
   color,
 }: {
   className?: string;
   style?: React.CSSProperties;
-  color: string;
+  color: TokenColor;
 }) {
   return (
     <div
       className={className}
       style={{
-        width: 26,
-        height: 26,
+        width: 14,
+        height: 14,
         borderRadius: "9999px",
-        background: `radial-gradient(ellipse at 40% 30%, oklch(1 0 0 / 25%), transparent 60%), ${color}`,
+        background: tokenGradient(color),
         border: "1px solid oklch(0 0 0 / 55%)",
         boxShadow:
-          "0 3px 5px oklch(0 0 0 / 60%), inset 0 -2px 0 oklch(0 0 0 / 40%), inset 0 1px 0 oklch(1 0 0 / 30%)",
-        backgroundImage: `
-          repeating-conic-gradient(from 0deg, oklch(1 0 0 / 15%) 0deg 15deg, transparent 15deg 30deg),
-          radial-gradient(ellipse at 40% 30%, oklch(1 0 0 / 35%), transparent 60%)
-        `,
+          "0 2px 3px oklch(0 0 0 / 55%), inset 0 1px 0 oklch(1 0 0 / 35%), inset 0 -1px 0 oklch(0 0 0 / 30%)",
         ...style,
       }}
-    >
-      <div
-        style={{
-          position: "absolute",
-          inset: 4,
-          borderRadius: "9999px",
-          background: color,
-          border: "1px dashed oklch(1 0 0 / 40%)",
-          boxShadow: "inset 0 1px 2px oklch(0 0 0 / 40%)",
-        }}
-      />
-    </div>
+    />
   );
 }
 
-function BarChip({
+function ScoreBarShort({
   className,
   style,
-  value,
+  color,
 }: {
   className?: string;
   style?: React.CSSProperties;
-  value: 50 | 100;
+  color: TokenColor;
 }) {
-  const base =
-    value === 100
-      ? "linear-gradient(160deg, oklch(0.5 0.15 260) 0%, oklch(0.32 0.12 260) 100%)"
-      : "linear-gradient(160deg, oklch(0.55 0.19 25) 0%, oklch(0.35 0.14 25) 100%)";
   return (
     <div
       className={className}
       style={{
-        width: 44,
-        height: 14,
-        borderRadius: 3,
-        background: base,
+        width: 22,
+        height: 7,
+        borderRadius: 2,
+        background: tokenGradient(color),
         border: "1px solid oklch(0 0 0 / 60%)",
         boxShadow:
-          "0 3px 5px oklch(0 0 0 / 60%), inset 0 -2px 0 oklch(0 0 0 / 35%), inset 0 1px 0 oklch(1 0 0 / 25%)",
+          "0 2px 3px oklch(0 0 0 / 55%), inset 0 1px 0 oklch(1 0 0 / 30%), inset 0 -1px 0 oklch(0 0 0 / 30%)",
+        ...style,
+      }}
+    />
+  );
+}
+
+function ScoreBarLong({
+  className,
+  style,
+  color,
+}: {
+  className?: string;
+  style?: React.CSSProperties;
+  color: TokenColor;
+}) {
+  return (
+    <div
+      className={className}
+      style={{
+        width: 40,
+        height: 7,
+        borderRadius: 2,
+        background: tokenGradient(color),
+        border: "1px solid oklch(0 0 0 / 60%)",
+        boxShadow:
+          "0 2px 3px oklch(0 0 0 / 55%), inset 0 1px 0 oklch(1 0 0 / 30%), inset 0 -1px 0 oklch(0 0 0 / 30%)",
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
+        color: tokenText(color),
         ...style,
       }}
-    >
-      <span
-        style={{
-          fontFamily: "ui-serif, Georgia, serif",
-          fontSize: 9,
-          fontWeight: 700,
-          letterSpacing: "0.05em",
-          color: "oklch(0.94 0.1 88)",
-          textShadow: "0 1px 0 oklch(0 0 0 / 60%)",
-        }}
-      >
-        {value}
-      </span>
-    </div>
+    />
   );
 }
 
