@@ -472,11 +472,15 @@ function GameTable() {
   const anchors = useMemo(() => {
     const w = size.w || 1;
     const h = size.h || 1;
+    // Anchors are inset from the table edges so the hand fans / trick /
+    // chips sit on the FELT, not under the avatars now seated on the
+    // wooden rim (at ~3% inside each edge of the table container).
+    const inset = Math.min(w, h) * 0.14;
     return {
-      bottom: { x: w * 0.5, y: h - 6, angle: 0 },
-      top: { x: w * 0.5, y: 34, angle: 180 },
-      left: { x: 26, y: h * 0.5, angle: 90 },
-      right: { x: w - 26, y: h * 0.5, angle: -90 },
+      bottom: { x: w * 0.5, y: h - inset, angle: 0 },
+      top: { x: w * 0.5, y: inset, angle: 180 },
+      left: { x: inset, y: h * 0.5, angle: 90 },
+      right: { x: w - inset, y: h * 0.5, angle: -90 },
     } as const;
   }, [size]);
 
@@ -1145,11 +1149,15 @@ function PlayerBadge({
   position: Position; info: PlayerInfo; isDealer: boolean; isLocal: boolean;
   isActive?: boolean; isThinking?: boolean; announcement?: Bid | null; announcementIsTaker?: boolean;
 }) {
+  // Seats are anchored to the TABLE container (percentages of the table
+  // aspect-square box), never to the viewport. They sit on the wooden rim
+  // just inside the table edge so no avatar can visually leave the play
+  // zone, and every seat scales automatically with the table.
   const style: React.CSSProperties =
-    position === "bottom" ? { left:"50%", bottom:"-118px", transform:"translate(-50%, 0)" }
-    : position === "top" ? { left:"50%", top:"-100px", transform:"translate(-50%, 0)" }
-    : position === "left" ? { left:"-86px", top:"38%", transform:"translate(0, -50%)" }
-    : { right:"-86px", top:"38%", transform:"translate(0, -50%)" };
+    position === "bottom" ? { left:"50%", bottom:"3%", transform:"translate(-50%, 0)" }
+    : position === "top" ? { left:"50%", top:"3%", transform:"translate(-50%, 0)" }
+    : position === "left" ? { left:"3%", top:"50%", transform:"translate(0, -50%)" }
+    : { right:"3%", top:"50%", transform:"translate(0, -50%)" };
 
 
 
