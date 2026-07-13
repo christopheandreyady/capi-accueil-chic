@@ -1246,6 +1246,7 @@ function ChipBar({ width, height, tone, value, tilt = 0 }: { width: number; heig
         width, height,
         background: bg,
         clipPath: clip,
+        transform: tilt ? `rotate(${tilt}deg)` : undefined,
         boxShadow: "0 4px 8px -3px oklch(0 0 0 / 55%), 0 1px 0 oklch(1 0 0 / 22%) inset, 0 -1px 0 oklch(0 0 0 / 40%) inset",
       }}
     >
