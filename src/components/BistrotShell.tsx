@@ -93,10 +93,7 @@ export function BistrotShell({ title, subtitle, backTo, children }: BistrotShell
             container, so avatars/buttons/cards/annonces/messages/score all
             sit around the table and not around the screen. */}
         <section className="relative mx-auto my-auto flex w-full flex-1 items-center justify-center">
-          <div
-            className="relative aspect-square"
-            style={{ width: "min(82vw, calc(100dvh - 220px), 520px)" }}
-          >
+          <div className="relative aspect-square" style={{ width: "min(82vw, calc(100dvh - 220px), 900px)" }}>
             <img
               src={bistrotTable}
               alt=""
@@ -104,17 +101,14 @@ export function BistrotShell({ title, subtitle, backTo, children }: BistrotShell
               height={1024}
               className="pointer-events-none absolute inset-0 h-full w-full object-contain"
               style={{
-                filter:
-                  "drop-shadow(0 30px 40px oklch(0 0 0 / 70%)) drop-shadow(0 10px 18px oklch(0 0 0 / 50%))",
+                filter: "drop-shadow(0 30px 40px oklch(0 0 0 / 70%)) drop-shadow(0 10px 18px oklch(0 0 0 / 50%))",
               }}
             />
             {/* Children slot — absolutely positioned over the table so screens
                 can freely place avatars/buttons/cards using top/left/right/
                 bottom relative to the table itself. A centered column
                 default keeps simple stacked content (button lists) working. */}
-            <div className="absolute inset-0 flex flex-col items-center justify-center px-6">
-              {children}
-            </div>
+            <div className="absolute inset-0 flex flex-col items-center justify-center px-6">{children}</div>
           </div>
         </section>
       </div>
