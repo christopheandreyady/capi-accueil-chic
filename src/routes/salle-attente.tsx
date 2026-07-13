@@ -1,8 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { Plus, ArrowLeft, Crown, Check, Copy, QrCode, Share2, UserPlus } from "lucide-react";
-import bistrotTable from "@/assets/capi-table-only.png";
-import bistrotRoom from "@/assets/capi-bistrot-room.jpg";
+import bistrotTable from "@/assets/capi-bistrot-table.jpg";
 import capiEmblem from "@/assets/capi-emblem.png";
 import { InviteModal } from "@/components/InviteModal";
 import { PremiumModal } from "@/components/PremiumModal";
