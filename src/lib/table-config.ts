@@ -3,8 +3,8 @@ export type TableConfig = {
   isPrivate: boolean;
   maxScore: 1000 | 1500 | 2000;
   announcements: boolean;
-  coinche: boolean;
-  surcoinche: boolean;
+  contrer: boolean;
+  surcontrer: boolean;
   shuffle: boolean;
   maxSpectators: 0 | 2 | 4 | 8;
   code: string;
@@ -27,8 +27,8 @@ export function defaultTableConfig(): TableConfig {
     isPrivate: true,
     maxScore: 1500,
     announcements: true,
-    coinche: true,
-    surcoinche: false,
+    contrer: true,
+    surcontrer: false,
     shuffle: true,
     maxSpectators: 2,
     code: generateInviteCode(),
