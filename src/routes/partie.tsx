@@ -227,6 +227,7 @@ function GameTable() {
   const [displayScores, setDisplayScores] = useState<{ A: number; B: number }>({ A: 0, B: 0 });
   const [chipsSlideTo, setChipsSlideTo] = useState<Team | null>(null);
   const [chipsVisible, setChipsVisible] = useState(true);
+  const [stashes, setStashes] = useState<{ A: ChipBreakdown[]; B: ChipBreakdown[] }>({ A: [], B: [] });
 
   const cutter = prevSeat(dealer);
 
