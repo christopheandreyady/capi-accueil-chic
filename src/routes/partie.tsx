@@ -195,6 +195,7 @@ function GameTable() {
   const [dealer, setDealer] = useState<Position>("bottom");
   const [phase, setPhase] = useState<Phase>("shuffle");
   const [cutStep, setCutStep] = useState<0 | 1 | 2>(0);
+  const [deckHolder, setDeckHolder] = useState<Position | null>(null);
   const [dealMode, setDealMode] = useState<DealMode | null>(null);
   const [selectedCardId, setSelectedCardId] = useState<string | null>(null);
 
