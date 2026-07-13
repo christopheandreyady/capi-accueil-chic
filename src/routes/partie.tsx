@@ -986,7 +986,7 @@ function GameCards({
 // --- Sub components --------------------------------------------------------
 
 function ShuffleAnimation({ deckPos }: { deckPos: { x: number; y: number; angle: number } }) {
-  const w = 46, h = 66, layers = 8;
+  const w = CARD_W_DECK, h = CARD_H_DECK, layers = 8;
   return (
     <div className="pointer-events-none absolute left-0 top-0" style={{ transform:`translate3d(${deckPos.x-w/2}px, ${deckPos.y-h/2}px, 0) rotate(${deckPos.angle}deg)`, zIndex:60, width:w, height:h }}>
       <div style={{ position:"absolute", inset:0, animation:"capi-riffle 900ms cubic-bezier(0.4, 0.1, 0.3, 1) 3" }}>
