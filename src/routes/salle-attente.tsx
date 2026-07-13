@@ -214,18 +214,11 @@ function WaitingRoom() {
 
   return (
     <main className="relative min-h-screen w-full overflow-hidden bg-background">
-      <img
-        src={bistrotTable}
-        alt=""
-        width={1024}
-        height={1536}
-        className="pointer-events-none absolute inset-0 h-full w-full object-cover"
-        style={{ transform: "scale(0.78)", transformOrigin: "50% 48%" }}
-      />
-      {/* Same lighting stack as /partie: warm bistro key light + vignette. */}
-      <div className="pointer-events-none absolute inset-0" style={{ background:"radial-gradient(72% 44% at 50% -6%, oklch(0.92 0.17 76 / 50%) 0%, oklch(0.78 0.14 66 / 24%) 32%, transparent 64%)" }} />
-      <div className="pointer-events-none absolute inset-0" style={{ background:"radial-gradient(130% 92% at 50% 56%, transparent 0%, oklch(0 0 0 / 60%) 62%, oklch(0.05 0.02 40 / 98%) 100%)" }} />
-      <div className="pointer-events-none absolute inset-0" style={{ background:"linear-gradient(180deg, oklch(0.08 0.03 40 / 82%) 0%, transparent 22%, transparent 58%, oklch(0.05 0.02 40 / 96%) 100%)" }} />
+      {/* Dark bistro room backdrop — the wooden table is a bounded UI object,
+          not a fullscreen wallpaper. */}
+      <div className="pointer-events-none absolute inset-0" style={{ background:"radial-gradient(120% 90% at 50% 45%, oklch(0.12 0.03 40) 0%, oklch(0.06 0.02 40) 62%, oklch(0.03 0.01 40) 100%)" }} />
+      <div className="pointer-events-none absolute inset-0" style={{ background:"radial-gradient(70% 40% at 50% -4%, oklch(0.92 0.17 76 / 38%) 0%, oklch(0.78 0.14 66 / 16%) 32%, transparent 62%)" }} />
+
 
       <div className="relative z-10 mx-auto flex min-h-screen w-full max-w-md flex-col px-5 pt-6 pb-8">
         {/* Header */}
