@@ -1203,6 +1203,17 @@ function CardBack() {
   );
 }
 
+// Breakdown from an arbitrary rounded score (multiples of 10).
+// 100 = grande barrette, 50 = petite barrette, 10 = jeton rond.
+function breakdownFromScore(score: number): ChipBreakdown {
+  const s = Math.max(0, Math.round(score / 10) * 10);
+  const largeBar = Math.floor(s / 100);
+  let rem = s - largeBar * 100;
+  const smallBar = rem >= 50 ? 1 : 0;
+  rem -= smallBar * 50;
+  const rounds = Math.round(rem / 10);
+  return { largeBar, smallBar, rounds, capot: false };
+
 // --- Contract chips visualization ------------------------------------------
 type ChipBreakdown = { largeBar: number; smallBar: number; rounds: number; capot: boolean };
 
