@@ -597,33 +597,34 @@ function GameTable() {
       <div className="pointer-events-none absolute inset-0" style={{ background:"linear-gradient(180deg, oklch(0.12 0.03 40 / 72%) 0%, transparent 22%, transparent 55%, oklch(0.08 0.02 40 / 92%) 100%)" }} />
 
       <div className="relative z-10 mx-auto flex min-h-screen w-full max-w-md flex-col px-4 pt-4 pb-4">
-        <header className="flex items-center justify-between">
-          <Link to="/salle-attente" className="flex h-9 w-9 items-center justify-center rounded-full border transition active:scale-95" style={{ background:"oklch(0.2 0.03 40 / 60%)", borderColor:"oklch(0.82 0.14 82 / 30%)", backdropFilter:"blur(8px)", color:"oklch(0.9 0.1 85)" }} aria-label="Retour"><ArrowLeft className="h-4 w-4" /></Link>
-          <h1 className="font-serif text-lg font-semibold tracking-wide" style={{ background:"linear-gradient(180deg, oklch(0.95 0.1 88), oklch(0.72 0.14 78))", WebkitBackgroundClip:"text", backgroundClip:"text", color:"transparent", textShadow:"0 1px 0 oklch(0 0 0 / 40%)" }}>{phaseTitle}</h1>
-          <button type="button" onClick={nextRound} className="flex h-9 w-9 items-center justify-center rounded-full border transition active:scale-95" style={{ background:"oklch(0.2 0.03 40 / 60%)", borderColor:"oklch(0.82 0.14 82 / 30%)", backdropFilter:"blur(8px)", color:"oklch(0.9 0.1 85)" }} aria-label="Manche suivante"><RotateCcw className="h-4 w-4" /></button>
+        <header className="flex items-center justify-between gap-2">
+          <div className="flex items-center gap-2">
+            <Link to="/salle-attente" className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border transition active:scale-95" style={{ background:"oklch(0.2 0.03 40 / 60%)", borderColor:"oklch(0.82 0.14 82 / 30%)", backdropFilter:"blur(8px)", color:"oklch(0.9 0.1 85)" }} aria-label="Retour"><ArrowLeft className="h-4 w-4" /></Link>
+            <div
+              className="pointer-events-none flex items-center gap-2 rounded-full border px-2.5 py-1 font-serif"
+              style={{
+                background: "oklch(0.14 0.03 40 / 78%)",
+                borderColor: "oklch(0.82 0.14 82 / 35%)",
+                color: "oklch(0.94 0.1 85)",
+                backdropFilter: "blur(8px)",
+                boxShadow: "0 6px 14px -6px oklch(0 0 0 / 75%), inset 0 1px 0 oklch(1 0 0 / 10%)",
+              }}
+            >
+              <span className="flex items-center gap-1">
+                <span className="uppercase tracking-[0.18em]" style={{ fontSize: 9, color: "oklch(0.85 0.08 82)" }}>Nous</span>
+                <span className="font-semibold tabular-nums" style={{ fontSize: 12 }}>{displayScores.A}</span>
+              </span>
+              <span aria-hidden="true" style={{ color: "oklch(0.82 0.14 82 / 45%)", fontSize: 10 }}>|</span>
+              <span className="flex items-center gap-1">
+                <span className="uppercase tracking-[0.18em]" style={{ fontSize: 9, color: "oklch(0.75 0.06 240)" }}>Eux</span>
+                <span className="font-semibold tabular-nums" style={{ fontSize: 12 }}>{displayScores.B}</span>
+              </span>
+            </div>
+          </div>
+          <h1 className="hidden font-serif text-base font-semibold tracking-wide sm:block" style={{ background:"linear-gradient(180deg, oklch(0.95 0.1 88), oklch(0.72 0.14 78))", WebkitBackgroundClip:"text", backgroundClip:"text", color:"transparent", textShadow:"0 1px 0 oklch(0 0 0 / 40%)" }}>{phaseTitle}</h1>
+          <button type="button" onClick={nextRound} className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border transition active:scale-95" style={{ background:"oklch(0.2 0.03 40 / 60%)", borderColor:"oklch(0.82 0.14 82 / 30%)", backdropFilter:"blur(8px)", color:"oklch(0.9 0.1 85)" }} aria-label="Manche suivante"><RotateCcw className="h-4 w-4" /></button>
         </header>
 
-        {/* Discreet top-left scoreboard */}
-        <div
-          className="pointer-events-none absolute left-3 top-3 z-30 flex flex-col gap-1 rounded-lg border px-2.5 py-1.5 font-serif text-[11px]"
-          style={{
-            background: "oklch(0.14 0.03 40 / 78%)",
-            borderColor: "oklch(0.82 0.14 82 / 35%)",
-            color: "oklch(0.94 0.1 85)",
-            backdropFilter: "blur(8px)",
-            boxShadow: "0 6px 14px -6px oklch(0 0 0 / 75%), inset 0 1px 0 oklch(1 0 0 / 10%)",
-            minWidth: 92,
-          }}
-        >
-          <div className="flex items-center justify-between gap-2">
-            <span className="uppercase tracking-[0.2em]" style={{ fontSize: 9, color: "oklch(0.85 0.08 82)" }}>Nous</span>
-            <span className="font-semibold tabular-nums" style={{ fontSize: 13 }}>{displayScores.A}</span>
-          </div>
-          <div className="flex items-center justify-between gap-2">
-            <span className="uppercase tracking-[0.2em]" style={{ fontSize: 9, color: "oklch(0.75 0.06 240)" }}>Eux</span>
-            <span className="font-semibold tabular-nums" style={{ fontSize: 13 }}>{displayScores.B}</span>
-          </div>
-        </div>
 
         <div ref={boxRef} className="relative mx-auto mt-3 w-full max-w-[420px] flex-1">
           <div className="relative mx-auto aspect-square w-full">
