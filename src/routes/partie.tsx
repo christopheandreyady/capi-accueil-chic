@@ -254,7 +254,7 @@ function GameTable() {
       const batchChanged = !prev || prev.batchIndex !== cur.batchIndex;
       // Within a packet: fast successive slides (~110-160ms).
       // Between packets (seat change): ~380ms wrist reset.
-      const step = k === 0 ? 260 : batchChanged ? 380 + Math.random() * 90 : 115 + Math.random() * 55;
+      const step = k === 0 ? 320 : batchChanged ? 460 + Math.random() * 110 : 155 + Math.random() * 70;
       cumulative += step;
       const stepIdx = k + 1;
       timers.push(
