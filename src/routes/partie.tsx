@@ -1182,35 +1182,50 @@ function AnnouncementBubble({ bid, position, isTaker }: { bid: Bid; position: Po
     bid.kind === "pass" ? "Passe"
     : bid.kind === "capot" ? "Capot"
     : String(bid.points);
+  // Small dark ribbon integrated just under the avatar — no white box.
   const placement: React.CSSProperties =
-    position === "top" ? { top: "calc(100% + 8px)", left: "50%", transform: "translateX(-50%)" }
-    : position === "bottom" ? { bottom: "calc(100% + 8px)", left: "50%", transform: "translateX(-50%)" }
-    : position === "left" ? { top: "50%", left: "calc(100% + 10px)", transform: "translateY(-50%)" }
-    : { top: "50%", right: "calc(100% + 10px)", transform: "translateY(-50%)" };
-  const fontSize = isTaker ? 20 : 22;
+    position === "bottom"
+      ? { bottom: "calc(100% + 6px)", left: "50%" }
+      : { top: "calc(100% + 6px)", left: "50%" };
+  const fontSize = isTaker ? 15 : 16;
+  const tilt = position === "bottom" ? -1.4 : position === "top" ? 1.2 : position === "left" ? -2 : 2;
   return (
     <div
       className="absolute whitespace-nowrap animate-scale-in"
       style={{
         ...placement,
+        transform: `translateX(-50%) rotate(${tilt}deg)`,
         zIndex: 40,
-        padding: isTaker ? "6px 12px" : "8px 14px",
-        borderRadius: 12,
-        background: isPass
-          ? "linear-gradient(180deg, oklch(0.20 0.03 40 / 98%) 0%, oklch(0.12 0.03 40 / 98%) 100%)"
-          : "linear-gradient(180deg, oklch(0.995 0.01 88) 0%, oklch(0.9 0.03 82) 100%)",
-        border: isPass
-          ? "1.5px solid oklch(0.85 0.16 82 / 75%)"
-          : "2px solid oklch(0.6 0.17 68)",
+        padding: "3px 10px",
+        borderRadius: 999,
+        background: "linear-gradient(180deg, oklch(0.22 0.04 40 / 96%) 0%, oklch(0.10 0.03 40 / 98%) 100%)",
+        border: isTaker
+          ? "1px solid oklch(0.85 0.16 82 / 85%)"
+          : "1px solid oklch(0.78 0.13 82 / 55%)",
         boxShadow:
-          "0 14px 28px -8px oklch(0 0 0 / 85%), 0 2px 0 oklch(1 0 0 / 30%) inset, 0 0 0 1px oklch(0 0 0 / 50%)",
-        color: isPass ? "oklch(0.96 0.12 85)" : "oklch(0.14 0.05 40)",
+          "0 6px 14px -6px oklch(0 0 0 / 85%), inset 0 1px 0 oklch(1 0 0 / 12%), inset 0 -1px 0 oklch(0 0 0 / 55%)",
+        color: "oklch(0.97 0.09 85)",
       }}
     >
-      <span className="inline-flex items-center gap-1.5 font-serif font-black" style={{ fontSize, lineHeight: 1, letterSpacing: "0.02em" }}>
-        {isTaker && <span style={{ fontSize: fontSize - 2 }}>👑</span>}
-        <span>{label}</span>
-        {suit && <SuitBadge suit={suit} size={fontSize} />}
+      <span className="inline-flex items-center gap-1 font-serif font-bold" style={{ fontSize, lineHeight: 1, letterSpacing: "0.01em", textShadow: "0 1px 0 oklch(0 0 0 / 70%)" }}>
+        {isTaker && <span style={{ fontSize: fontSize - 3 }}>👑</span>}
+        <span style={{ color: isPass ? "oklch(0.9 0.06 85)" : "oklch(0.98 0.12 85)" }}>{label}</span>
+        {suit && (
+          <span
+            aria-hidden
+            style={{
+              fontSize: fontSize + 2,
+              lineHeight: 1,
+              color: isRedSuit(suit) ? "#ff5b5b" : "#0f0f0f",
+              textShadow: isRedSuit(suit)
+                ? "0 0 1px oklch(0 0 0 / 70%)"
+                : "0 0 1px oklch(1 0 0 / 45%)",
+              fontWeight: 900,
+            }}
+          >
+            {suit}
+          </span>
+        )}
       </span>
     </div>
   );
