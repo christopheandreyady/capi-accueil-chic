@@ -955,22 +955,24 @@ function SeatSlot({
             </p>
           </div>
 
-          {/* Ready toggle button per player (only local is directly actionable; others too for demo) */}
-          <button
-            type="button"
-            onClick={() => onToggleReady(pos)}
-            className="rounded-full px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-[0.14em] transition active:scale-95"
-            style={{
-              background: p.ready
-                ? "oklch(0.2 0.02 40 / 70%)"
-                : "linear-gradient(160deg, oklch(0.5 0.15 155), oklch(0.32 0.10 155))",
-              border: `1px solid ${p.ready ? "oklch(0.82 0.14 82 / 25%)" : "oklch(0.62 0.15 155 / 60%)"}`,
-              color: p.ready ? "oklch(0.85 0.05 82 / 85%)" : "oklch(0.95 0.1 88)",
-              boxShadow: "0 2px 6px oklch(0 0 0 / 45%), inset 0 1px 0 oklch(1 0 0 / 10%)",
-            }}
-          >
-            {p.ready ? "Annuler" : "Je suis prêt"}
-          </button>
+          {/* Ready toggle — only the local player controls their own readiness */}
+          {isLocal && (
+            <button
+              type="button"
+              onClick={() => onToggleReady(pos)}
+              className="rounded-full px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-[0.14em] transition active:scale-95"
+              style={{
+                background: p.ready
+                  ? "oklch(0.2 0.02 40 / 70%)"
+                  : "linear-gradient(160deg, oklch(0.5 0.15 155), oklch(0.32 0.10 155))",
+                border: `1px solid ${p.ready ? "oklch(0.82 0.14 82 / 25%)" : "oklch(0.62 0.15 155 / 60%)"}`,
+                color: p.ready ? "oklch(0.85 0.05 82 / 85%)" : "oklch(0.95 0.1 88)",
+                boxShadow: "0 2px 6px oklch(0 0 0 / 45%), inset 0 1px 0 oklch(1 0 0 / 10%)",
+              }}
+            >
+              {p.ready ? "Annuler" : "Je suis prêt"}
+            </button>
+          )}
         </>
       ) : (
         <button
