@@ -1248,17 +1248,17 @@ function CardFace({ card }: { card: Card }) {
   const red = isRedSuit(card.suit);
   const color = red ? "oklch(0.5 0.19 25)" : "oklch(0.2 0.03 260)";
   return (
-    <div className="relative h-full w-full overflow-hidden" style={{ borderRadius:8, background:"linear-gradient(180deg, oklch(0.99 0.01 90) 0%, oklch(0.94 0.01 85) 100%)", border:"1px solid oklch(0.75 0.02 85)", boxShadow:"0 5px 10px -3px oklch(0 0 0 / 60%), 0 1px 0 oklch(1 0 0 / 60%) inset" }}>
+    <div className="relative h-full w-full overflow-hidden" style={{ borderRadius:9, background:"linear-gradient(180deg, oklch(0.99 0.01 90) 0%, oklch(0.93 0.015 82) 100%)", border:"1px solid oklch(0.72 0.03 82)", boxShadow:"0 10px 18px -6px oklch(0 0 0 / 75%), 0 3px 6px -1px oklch(0 0 0 / 55%), inset 0 1px 0 oklch(1 0 0 / 70%), inset 0 -1px 0 oklch(0 0 0 / 15%)" }}>
       <div className="absolute left-1.5 top-1 flex flex-col items-center leading-none" style={{ color }}>
-        <span className="font-serif text-[18px] font-bold">{card.rank}</span>
-        <span className="text-[16px]">{card.suit}</span>
+        <span className="font-serif text-[20px] font-bold">{card.rank}</span>
+        <span className="text-[18px]">{card.suit}</span>
       </div>
       <div className="absolute inset-0 flex items-center justify-center" style={{ color }}>
-        <span className="text-[38px] leading-none">{card.suit}</span>
+        <span className="text-[46px] leading-none">{card.suit}</span>
       </div>
       <div className="absolute bottom-1 right-1.5 flex rotate-180 flex-col items-center leading-none" style={{ color }}>
-        <span className="font-serif text-[18px] font-bold">{card.rank}</span>
-        <span className="text-[16px]">{card.suit}</span>
+        <span className="font-serif text-[20px] font-bold">{card.rank}</span>
+        <span className="text-[18px]">{card.suit}</span>
       </div>
     </div>
   );
@@ -1266,9 +1266,9 @@ function CardFace({ card }: { card: Card }) {
 
 function CardBack() {
   return (
-    <div className="relative h-full w-full overflow-hidden" style={{ borderRadius:6, background:"linear-gradient(160deg, oklch(0.28 0.09 25) 0%, oklch(0.18 0.06 25) 100%)", border:"1px solid oklch(0.55 0.14 78 / 60%)", boxShadow:"0 5px 10px -3px oklch(0 0 0 / 65%), 0 1px 0 oklch(1 0 0 / 15%) inset" }}>
+    <div className="relative h-full w-full overflow-hidden" style={{ borderRadius:7, background:"linear-gradient(160deg, oklch(0.30 0.10 25) 0%, oklch(0.18 0.06 25) 100%)", border:"1px solid oklch(0.55 0.14 78 / 60%)", boxShadow:"0 8px 14px -5px oklch(0 0 0 / 75%), 0 2px 4px oklch(0 0 0 / 55%), inset 0 1px 0 oklch(1 0 0 / 18%)" }}>
       <div className="absolute inset-1 rounded-[4px]" style={{ border:"1px solid oklch(0.72 0.14 82 / 55%)", backgroundImage:"repeating-linear-gradient(45deg, oklch(0.72 0.14 82 / 18%) 0 2px, transparent 2px 6px), repeating-linear-gradient(-45deg, oklch(0.72 0.14 82 / 12%) 0 2px, transparent 2px 6px)" }} />
-      <div className="absolute inset-0 flex items-center justify-center font-serif text-[12px] font-bold tracking-widest" style={{ color:"oklch(0.85 0.14 82)", textShadow:"0 1px 0 oklch(0 0 0 / 60%)" }}>CAPI</div>
+      <div className="absolute inset-0 flex items-center justify-center font-serif text-[13px] font-bold tracking-widest" style={{ color:"oklch(0.85 0.14 82)", textShadow:"0 1px 0 oklch(0 0 0 / 65%)" }}>CAPI</div>
     </div>
   );
 }
