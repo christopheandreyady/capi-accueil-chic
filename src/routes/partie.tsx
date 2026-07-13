@@ -760,9 +760,10 @@ function handTarget(seat: Position, index: number, total: number, anchors: Ancho
   const cardW = isBottom ? CARD_W_BIG : CARD_W_SMALL;
   const cardH = isBottom ? CARD_H_BIG : CARD_H_SMALL;
   const a = anchors[seat];
-  const spread = isBottom ? 88 : 14;
-  const step = total > 1 ? spread / (total - 1) : 0;
-  const localAngle = total > 1 ? -spread / 2 + step * index : 0;
+  // Constant per-card angular step: the fan CLOSES as cards are played,
+  // so the hand always stays visually compact with no gap where a card was.
+  const stepDeg = isBottom ? 12.5 : 2.2;
+  const localAngle = total > 1 ? -((total - 1) / 2) * stepDeg + stepDeg * index : 0;
   const radius = isBottom ? 82 : 70;
   const rad = (localAngle * Math.PI) / 180;
   const lx = Math.sin(rad) * radius;
@@ -780,18 +781,39 @@ function handTarget(seat: Position, index: number, total: number, anchors: Ancho
   };
 }
 
-function trickTarget(seat: Position, anchors: Anchors, size: { w: number; h: number }) {
+// Deterministic pseudo-random in [-1, 1] from seat + play index.
+function seatJitter(seat: Position, orderIndex: number, salt: number) {
+  const seed = (seat.charCodeAt(0) * 131 + orderIndex * 977 + salt * 31) % 1000;
+  return (seed / 1000) * 2 - 1;
+}
+
+function trickTarget(
+  seat: Position,
+  anchors: Anchors,
+  size: { w: number; h: number },
+  orderIndex: number,
+) {
   const cx = (size.w || 1) / 2;
   const cy = (size.h || 1) / 2;
   const a = anchors[seat];
   const dx = a.x - cx;
   const dy = a.y - cy;
   const len = Math.hypot(dx, dy) || 1;
-  const OFFSET = 48;
+  // Card is pushed further OUT of the center, near its player, so it clearly
+  // belongs to that seat. Slight tangential + radial jitter avoids the
+  // "four perfectly aligned cards" look and shows the play order via
+  // increasing offset.
+  const nx = dx / len;
+  const ny = dy / len;
+  // Perpendicular unit vector.
+  const px = -ny;
+  const py = nx;
+  const radialOffset = 62 + orderIndex * 3;
+  const tangentOffset = seatJitter(seat, 0, 1) * 10 + (orderIndex - 1.5) * 4;
   return {
-    x: cx + (dx / len) * OFFSET,
-    y: cy + (dy / len) * OFFSET,
-    rotate: a.angle + (Math.random() < 0.5 ? -4 : 4),
+    x: cx + nx * radialOffset + px * tangentOffset,
+    y: cy + ny * radialOffset + py * tangentOffset,
+    rotate: a.angle + seatJitter(seat, 0, 2) * 12 + (orderIndex % 2 === 0 ? -3 : 3),
   };
 }
 
@@ -822,9 +844,9 @@ function GameCards({
   const trickTargets = useMemo(() => {
     const map: Record<string, ReturnType<typeof trickTarget>> = {};
     if (!trick) return map;
-    for (const p of trick.plays) {
-      map[p.card.id] = trickTarget(p.seat, anchors, sz);
-    }
+    trick.plays.forEach((p, i) => {
+      map[p.card.id] = trickTarget(p.seat, anchors, sz, i);
+    });
     return map;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [trick, anchors, sz]);
@@ -852,7 +874,7 @@ function GameCards({
               style={{
                 width: t.w, height: t.h,
                 transform: `translate3d(${t.x - t.w/2}px, ${t.y - t.h/2}px, 0) rotate(${t.rotate}deg)`,
-                transition: `transform 320ms cubic-bezier(0.22, 0.7, 0.25, 1)`,
+                transition: `transform 380ms cubic-bezier(0.22, 0.7, 0.25, 1)`,
                 zIndex: 100 + index + (isBottom ? 50 : 0),
                 opacity: 1,
               }}
@@ -864,14 +886,14 @@ function GameCards({
       })}
 
       {/* Trick */}
-      {trick && trick.plays.map((p) => {
-        const t = trickTargets[p.card.id] ?? trickTarget(p.seat, anchors, sz);
+      {trick && trick.plays.map((p, i) => {
+        const t = trickTargets[p.card.id] ?? trickTarget(p.seat, anchors, sz, i);
         return (
           <div key={"trick-" + p.card.id} className="absolute left-0 top-0" style={{
             width: CARD_W_TRICK, height: CARD_H_TRICK,
             transform: `translate3d(${t.x - CARD_W_TRICK/2}px, ${t.y - CARD_H_TRICK/2}px, 0) rotate(${t.rotate}deg)`,
             transition: `transform 340ms cubic-bezier(0.22, 0.7, 0.25, 1)`,
-            zIndex: 300,
+            zIndex: 300 + i,
           }}>
             <CardFace card={p.card} />
           </div>
@@ -1350,38 +1372,45 @@ function SuitBadge({ suit, size = 20 }: { suit: Suit; size?: number }) {
 
 function TeamStash({ team, stash }: { team: Team; stash: ChipBreakdown[] }) {
   if (stash.length === 0) return null;
-  // Position: A near bottom-center (below score badge), B near left-middle (right of score badge).
+  // Anchored where the sliding contract chip lands, so the handoff feels
+  // continuous. Stacks slightly offset per round, like a real pile of chips
+  // pushed to the side of the table.
   const style: React.CSSProperties =
     team === "A"
-      ? { left: "50%", top: "80%", transform: "translate(-50%, -50%)", maxWidth: "70%" }
-      : { left: "18%", top: "50%", transform: "translate(-50%, -50%)", maxWidth: "22%" };
+      ? { left: "50%", top: "82%", transform: "translate(-50%, -50%)", maxWidth: "78%" }
+      : { left: "14%", top: "50%", transform: "translate(-50%, -50%)", maxWidth: "22%" };
   return (
     <div
-      className="pointer-events-none absolute z-[22] flex flex-wrap items-center justify-center gap-1 animate-fade-in"
+      className="pointer-events-none absolute z-[22] flex flex-wrap items-center justify-center gap-1.5"
       style={style}
     >
-      {stash.map((b, i) => (
-        <div key={i} className="flex items-center gap-0.5" style={{ transform: `rotate(${((i * 37) % 11) - 5}deg)` }}>
-          {b.capot && <CapotChip suit={"♠"} suitColor="oklch(0.94 0.14 82)" />}
-          {!b.capot && b.largeBar > 0 && <ChipBar width={34} height={10} tone="large" value={100} tilt={-3} />}
-          {!b.capot && b.smallBar > 0 && <ChipBar width={26} height={9} tone="small" value={50} tilt={3} />}
-          {!b.capot && b.rounds > 0 && (
-            <div className="flex items-center gap-[1px]">
-              {Array.from({ length: b.rounds }).map((_, j) => (
-                <div
-                  key={j}
-                  style={{
-                    width: 9, height: 9, borderRadius: "50%",
-                    background: "linear-gradient(180deg, oklch(0.94 0.02 90) 0%, oklch(0.7 0.02 90) 100%)",
-                    border: "1px solid oklch(0.82 0.14 82 / 70%)",
-                    boxShadow: "0 1px 2px oklch(0 0 0 / 45%)",
-                  }}
-                />
-              ))}
-            </div>
-          )}
-        </div>
-      ))}
+      {stash.map((b, i) => {
+        const tilt = ((i * 53) % 13) - 6;
+        return (
+          <div
+            key={i}
+            className="flex flex-col items-center gap-0.5"
+            style={{
+              transform: `translateY(${(i % 3) * -2}px) rotate(${tilt}deg)`,
+            }}
+          >
+            {b.capot && <CapotChip suit={"♠"} suitColor="oklch(0.94 0.14 82)" />}
+            {!b.capot && b.largeBar > 0 && (
+              <ChipBar width={58} height={14} tone="large" value={100} tilt={-3} />
+            )}
+            {!b.capot && b.smallBar > 0 && (
+              <ChipBar width={42} height={12} tone="small" value={50} tilt={3} />
+            )}
+            {!b.capot && b.rounds > 0 && (
+              <div className="flex items-center gap-[2px]">
+                {Array.from({ length: b.rounds }).map((_, j) => (
+                  <RoundChip key={j} index={j} />
+                ))}
+              </div>
+            )}
+          </div>
+        );
+      })}
     </div>
   );
 }
