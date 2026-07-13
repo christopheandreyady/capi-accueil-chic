@@ -652,8 +652,15 @@ function GameTable() {
               const isThinking = isActive && p !== "bottom";
               const lastBid = [...bids].reverse().find((b) => b.seat === p);
               const isRecent = recentBid?.seat === p;
-              const badgeAnnounce: Bid | null =
+              let badgeAnnounce: Bid | null =
                 phase === "bidding" && lastBid && isRecent ? lastBid : null;
+              let badgeIsTaker = false;
+              if ((phase === "playing" || phase === "scoring") && contract && contract.bidder === p) {
+                badgeAnnounce = contract.isCapot
+                  ? { kind: "capot", seat: p, suit: contract.suit }
+                  : { kind: "bid", seat: p, points: contract.points, suit: contract.suit };
+                badgeIsTaker = true;
+              }
               return (
                 <PlayerBadge
                   key={p}
@@ -664,6 +671,7 @@ function GameTable() {
                   isActive={isActive}
                   isThinking={isThinking}
                   announcement={badgeAnnounce}
+                  announcementIsTaker={badgeIsTaker}
                 />
               );
             })}
@@ -1117,10 +1125,10 @@ function DeckSlab({ count }: { count: number }) {
 }
 
 function PlayerBadge({
-  position, info, isDealer, isLocal, isActive, isThinking, announcement,
+  position, info, isDealer, isLocal, isActive, isThinking, announcement, announcementIsTaker,
 }: {
   position: Position; info: PlayerInfo; isDealer: boolean; isLocal: boolean;
-  isActive?: boolean; isThinking?: boolean; announcement?: Bid | null;
+  isActive?: boolean; isThinking?: boolean; announcement?: Bid | null; announcementIsTaker?: boolean;
 }) {
   const style: React.CSSProperties =
     position === "bottom" ? { left:"50%", bottom:0, transform:"translate(-50%, 55%)" }
@@ -1156,7 +1164,7 @@ function PlayerBadge({
           </div>
         )}
         {announcement && (
-          <AnnouncementBubble bid={announcement} position={position} />
+          <AnnouncementBubble bid={announcement} position={position} isTaker={announcementIsTaker} />
         )}
       </div>
       <div className="flex flex-col items-center leading-tight">
@@ -1167,7 +1175,7 @@ function PlayerBadge({
   );
 }
 
-function AnnouncementBubble({ bid, position }: { bid: Bid; position: Position }) {
+function AnnouncementBubble({ bid, position, isTaker }: { bid: Bid; position: Position; isTaker?: boolean }) {
   const isPass = bid.kind === "pass";
   const suit = bid.kind === "pass" ? null : bid.suit;
   const label =
@@ -1179,13 +1187,14 @@ function AnnouncementBubble({ bid, position }: { bid: Bid; position: Position })
     : position === "bottom" ? { bottom: "calc(100% + 8px)", left: "50%", transform: "translateX(-50%)" }
     : position === "left" ? { top: "50%", left: "calc(100% + 10px)", transform: "translateY(-50%)" }
     : { top: "50%", right: "calc(100% + 10px)", transform: "translateY(-50%)" };
+  const fontSize = isTaker ? 20 : 22;
   return (
     <div
       className="absolute whitespace-nowrap animate-scale-in"
       style={{
         ...placement,
         zIndex: 40,
-        padding: "8px 14px",
+        padding: isTaker ? "6px 12px" : "8px 14px",
         borderRadius: 12,
         background: isPass
           ? "linear-gradient(180deg, oklch(0.20 0.03 40 / 98%) 0%, oklch(0.12 0.03 40 / 98%) 100%)"
@@ -1198,9 +1207,10 @@ function AnnouncementBubble({ bid, position }: { bid: Bid; position: Position })
         color: isPass ? "oklch(0.96 0.12 85)" : "oklch(0.14 0.05 40)",
       }}
     >
-      <span className="inline-flex items-center gap-2 font-serif font-black" style={{ fontSize: 22, lineHeight: 1, letterSpacing: "0.02em" }}>
+      <span className="inline-flex items-center gap-1.5 font-serif font-black" style={{ fontSize, lineHeight: 1, letterSpacing: "0.02em" }}>
+        {isTaker && <span style={{ fontSize: fontSize - 2 }}>👑</span>}
         <span>{label}</span>
-        {suit && <SuitBadge suit={suit} size={22} />}
+        {suit && <SuitBadge suit={suit} size={fontSize} />}
       </span>
     </div>
   );
@@ -1311,7 +1321,7 @@ function ContractChips({ contract, slideTo }: { contract: Contract; slideTo?: Te
         )}
         {b.smallBar > 0 && (
           <div className="animate-scale-in" style={{ animationDelay: "120ms" }}>
-            <ChipBar width={44} height={12} tone="small" value={50} tilt={6} />
+            <ChipBar width={30} height={12} tone="small" value={50} tilt={6} />
           </div>
         )}
         {b.rounds > 0 && (
@@ -1502,7 +1512,7 @@ function TeamStash({ team, stash }: { team: Team; stash: ChipBreakdown[] }) {
               <ChipBar width={49} height={12} tone="large" value={100} tilt={-5} />
             )}
             {!b.capot && b.smallBar > 0 && (
-              <ChipBar width={36} height={10} tone="small" value={50} tilt={6} />
+              <ChipBar width={24} height={10} tone="small" value={50} tilt={6} />
             )}
             {!b.capot && b.rounds > 0 && (
               <div className="flex items-center gap-[2px]">
