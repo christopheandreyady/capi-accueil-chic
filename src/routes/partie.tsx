@@ -207,6 +207,9 @@ function GameTable() {
   const [roundScore, setRoundScore] = useState<RoundScore | null>(null);
   const [cumulative, setCumulative] = useState<{ A: number; B: number }>({ A: 0, B: 0 });
   const [selectedCardId, setSelectedCardId] = useState<string | null>(null);
+  const [displayScores, setDisplayScores] = useState<{ A: number; B: number }>({ A: 0, B: 0 });
+  const [chipsSlideTo, setChipsSlideTo] = useState<Team | null>(null);
+  const [chipsVisible, setChipsVisible] = useState(true);
 
   const cutter = prevSeat(dealer);
 
