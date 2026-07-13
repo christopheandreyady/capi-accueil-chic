@@ -19,7 +19,7 @@ export function BistrotShell({ title, subtitle, backTo, children }: BistrotShell
         alt=""
         width={1024}
         height={1536}
-        className="pointer-events-none absolute inset-0 h-full w-full object-cover"
+        className="pointer-events-none absolute inset-0 h-full w-full object-contain"
       />
       <div
         className="pointer-events-none absolute inset-0"
@@ -109,16 +109,7 @@ type PremiumCardProps = {
   glow: string;
 };
 
-export function PremiumCard({
-  title,
-  subtitle,
-  icon,
-  to,
-  onClick,
-  gradient,
-  edge,
-  glow,
-}: PremiumCardProps) {
+export function PremiumCard({ title, subtitle, icon, to, onClick, gradient, edge, glow }: PremiumCardProps) {
   const Comp: React.ElementType = to ? Link : "button";
   const compProps = to ? { to } : { type: "button" as const, onClick };
 
@@ -140,8 +131,7 @@ export function PremiumCard({
       <span
         className="pointer-events-none absolute inset-x-0 top-0 h-1/2 opacity-60"
         style={{
-          background:
-            "linear-gradient(180deg, oklch(1 0 0 / 20%) 0%, oklch(1 0 0 / 4%) 60%, transparent 100%)",
+          background: "linear-gradient(180deg, oklch(1 0 0 / 20%) 0%, oklch(1 0 0 / 4%) 60%, transparent 100%)",
         }}
       />
       <span
@@ -179,10 +169,7 @@ export function PremiumCard({
         >
           {title}
         </span>
-        <span
-          className="mt-0.5 text-[12.5px]"
-          style={{ color: "oklch(0.88 0.06 82 / 85%)" }}
-        >
+        <span className="mt-0.5 text-[12.5px]" style={{ color: "oklch(0.88 0.06 82 / 85%)" }}>
           {subtitle}
         </span>
       </span>
