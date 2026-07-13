@@ -818,25 +818,20 @@ function trickTarget(
   const dx = a.x - cx;
   const dy = a.y - cy;
   const len = Math.hypot(dx, dy) || 1;
-  // Card is pushed further OUT of the center, near its player, so it clearly
-  // belongs to that seat. Slight tangential + radial jitter avoids the
-  // "four perfectly aligned cards" look and shows the play order via
-  // increasing offset.
   const nx = dx / len;
   const ny = dy / len;
-  // Perpendicular unit vector.
   const px = -ny;
   const py = nx;
-  // Cards gather at the center of the table and slightly overlap each other,
-  // like a real trick pile. Each new card is pushed a touch further from its
-  // player so play order stays readable, but they stay close enough to
-  // consistently overlap.
-  const radialOffset = 26 + orderIndex * 3;
-  const tangentOffset = seatJitter(seat, 0, 1) * 5 + (orderIndex - 1.5) * 2.5;
+  // Cards gather tightly in the middle, overlap each other, and never form
+  // a clean cross. Each play sits a touch off-center on a different axis.
+  const radialOffset = 14 + seatJitter(seat, orderIndex, 3) * 5;
+  const tangentOffset = seatJitter(seat, orderIndex, 1) * 10 + (orderIndex - 1.5) * 3.5;
+  const wobble = seatJitter(seat, orderIndex, 5) * 6;
   return {
-    x: cx + nx * radialOffset + px * tangentOffset,
-    y: cy + ny * radialOffset + py * tangentOffset,
-    rotate: a.angle + seatJitter(seat, 0, 2) * 8 + (orderIndex % 2 === 0 ? -2 : 2),
+    x: cx + nx * radialOffset + px * tangentOffset + seatJitter(seat, orderIndex, 7) * 3,
+    y: cy + ny * radialOffset + py * tangentOffset + seatJitter(seat, orderIndex, 9) * 3,
+    // Break the strict 0/90/180/270 seat rotation with a real per-play wobble.
+    rotate: a.angle + wobble + (orderIndex % 2 === 0 ? -4 : 5) + seatJitter(seat, orderIndex, 11) * 3,
   };
 }
 
@@ -1182,35 +1177,50 @@ function AnnouncementBubble({ bid, position, isTaker }: { bid: Bid; position: Po
     bid.kind === "pass" ? "Passe"
     : bid.kind === "capot" ? "Capot"
     : String(bid.points);
+  // Small dark ribbon integrated just under the avatar — no white box.
   const placement: React.CSSProperties =
-    position === "top" ? { top: "calc(100% + 8px)", left: "50%", transform: "translateX(-50%)" }
-    : position === "bottom" ? { bottom: "calc(100% + 8px)", left: "50%", transform: "translateX(-50%)" }
-    : position === "left" ? { top: "50%", left: "calc(100% + 10px)", transform: "translateY(-50%)" }
-    : { top: "50%", right: "calc(100% + 10px)", transform: "translateY(-50%)" };
-  const fontSize = isTaker ? 20 : 22;
+    position === "bottom"
+      ? { bottom: "calc(100% + 6px)", left: "50%" }
+      : { top: "calc(100% + 6px)", left: "50%" };
+  const fontSize = isTaker ? 15 : 16;
+  const tilt = position === "bottom" ? -1.4 : position === "top" ? 1.2 : position === "left" ? -2 : 2;
   return (
     <div
       className="absolute whitespace-nowrap animate-scale-in"
       style={{
         ...placement,
+        transform: `translateX(-50%) rotate(${tilt}deg)`,
         zIndex: 40,
-        padding: isTaker ? "6px 12px" : "8px 14px",
-        borderRadius: 12,
-        background: isPass
-          ? "linear-gradient(180deg, oklch(0.20 0.03 40 / 98%) 0%, oklch(0.12 0.03 40 / 98%) 100%)"
-          : "linear-gradient(180deg, oklch(0.995 0.01 88) 0%, oklch(0.9 0.03 82) 100%)",
-        border: isPass
-          ? "1.5px solid oklch(0.85 0.16 82 / 75%)"
-          : "2px solid oklch(0.6 0.17 68)",
+        padding: "3px 10px",
+        borderRadius: 999,
+        background: "linear-gradient(180deg, oklch(0.22 0.04 40 / 96%) 0%, oklch(0.10 0.03 40 / 98%) 100%)",
+        border: isTaker
+          ? "1px solid oklch(0.85 0.16 82 / 85%)"
+          : "1px solid oklch(0.78 0.13 82 / 55%)",
         boxShadow:
-          "0 14px 28px -8px oklch(0 0 0 / 85%), 0 2px 0 oklch(1 0 0 / 30%) inset, 0 0 0 1px oklch(0 0 0 / 50%)",
-        color: isPass ? "oklch(0.96 0.12 85)" : "oklch(0.14 0.05 40)",
+          "0 6px 14px -6px oklch(0 0 0 / 85%), inset 0 1px 0 oklch(1 0 0 / 12%), inset 0 -1px 0 oklch(0 0 0 / 55%)",
+        color: "oklch(0.97 0.09 85)",
       }}
     >
-      <span className="inline-flex items-center gap-1.5 font-serif font-black" style={{ fontSize, lineHeight: 1, letterSpacing: "0.02em" }}>
-        {isTaker && <span style={{ fontSize: fontSize - 2 }}>👑</span>}
-        <span>{label}</span>
-        {suit && <SuitBadge suit={suit} size={fontSize} />}
+      <span className="inline-flex items-center gap-1 font-serif font-bold" style={{ fontSize, lineHeight: 1, letterSpacing: "0.01em", textShadow: "0 1px 0 oklch(0 0 0 / 70%)" }}>
+        {isTaker && <span style={{ fontSize: fontSize - 3 }}>👑</span>}
+        <span style={{ color: isPass ? "oklch(0.9 0.06 85)" : "oklch(0.98 0.12 85)" }}>{label}</span>
+        {suit && (
+          <span
+            aria-hidden
+            style={{
+              fontSize: fontSize + 2,
+              lineHeight: 1,
+              color: isRedSuit(suit) ? "#ff5b5b" : "#0f0f0f",
+              textShadow: isRedSuit(suit)
+                ? "0 0 1px oklch(0 0 0 / 70%)"
+                : "0 0 1px oklch(1 0 0 / 45%)",
+              fontWeight: 900,
+            }}
+          >
+            {suit}
+          </span>
+        )}
       </span>
     </div>
   );
@@ -1284,13 +1294,13 @@ function ContractChips({ contract, slideTo }: { contract: Contract; slideTo?: Te
   const b = contractChipBreakdown(contract);
   const suitColor = isRedSuit(contract.suit) ? "oklch(0.72 0.2 25)" : "oklch(0.18 0.02 40)";
 
-  // Slide from center → team score zone.
-  // A (Nous) → bottom-center (top≈88%). B (Eux) → left-middle (left≈12%).
+  // Slides toward the same side as the winning team's stash so the handoff
+  // reads as one continuous motion (A → bottom-right, B → top-left).
   const slideStyle: React.CSSProperties = slideTo
     ? {
-        top: slideTo === "A" ? "86%" : "50%",
-        left: slideTo === "A" ? "50%" : "12%",
-        transform: "translate(-50%, -50%) scale(0.62)",
+        top: slideTo === "A" ? "78%" : "22%",
+        left: slideTo === "A" ? "82%" : "18%",
+        transform: "translate(-50%, -50%) scale(0.66)",
         opacity: 0.85,
       }
     : { top: "50%", left: "50%", transform: "translate(-50%, -50%)" };
@@ -1313,21 +1323,28 @@ function ContractChips({ contract, slideTo }: { contract: Contract; slideTo?: Te
 
   return (
     <div style={wrapperStyle}>
-      <div className="flex flex-col items-center gap-1.5">
+      <div className="relative flex flex-col items-center" style={{ gap: 4 }}>
         {b.largeBar > 0 && (
-          <div className="animate-scale-in" style={{ animationDelay: "40ms" }}>
-            <ChipBar width={61} height={15} tone="large" value={100} tilt={-7} />
+          <div className="animate-scale-in" style={{ animationDelay: "40ms", transform: `translateX(${seatJitter("bottom", 0, 3) * 4}px)` }}>
+            <ChipBar width={52} height={13} tone="large" value={100} tilt={-6 + seatJitter("bottom", 1, 4) * 3} />
           </div>
         )}
         {b.smallBar > 0 && (
-          <div className="animate-scale-in" style={{ animationDelay: "120ms" }}>
-            <ChipBar width={30} height={12} tone="small" value={50} tilt={6} />
+          <div className="animate-scale-in" style={{ animationDelay: "120ms", transform: `translateX(${seatJitter("bottom", 2, 3) * 5}px)` }}>
+            <ChipBar width={26} height={11} tone="small" value={50} tilt={7 + seatJitter("bottom", 3, 4) * 3} />
           </div>
         )}
         {b.rounds > 0 && (
-          <div className="flex items-center gap-1">
+          <div className="flex items-center" style={{ gap: 3 }}>
             {Array.from({ length: b.rounds }).map((_, i) => (
-              <div key={i} className="animate-scale-in" style={{ animationDelay: `${180 + i * 70}ms`, transform: `rotate(${((i * 37) % 11) - 5}deg)` }}>
+              <div
+                key={i}
+                className="animate-scale-in"
+                style={{
+                  animationDelay: `${180 + i * 70}ms`,
+                  transform: `translate(${seatJitter("bottom", i, 6) * 3}px, ${seatJitter("bottom", i, 8) * 3}px) rotate(${((i * 37) % 17) - 8}deg)`,
+                }}
+              >
                 <RoundChip index={i} />
               </div>
             ))}
@@ -1485,39 +1502,45 @@ function SuitBadge({ suit, size = 20 }: { suit: Suit; size?: number }) {
 
 function TeamStash({ team, stash }: { team: Team; stash: ChipBreakdown[] }) {
   if (stash.length === 0) return null;
-  // Anchored where the sliding contract chip lands, so the handoff feels
-  // continuous. Stacks slightly offset per round, like a real pile of chips
-  // pushed to the side of the table.
+  // Chips sit ON THE FELT to the side of each team — well clear of the
+  // trick pile and the players' cards. Team A → bottom-right of the felt,
+  // Team B → top-left. Each round adds a small scattered pile, slightly
+  // rotated and offset like real chips pushed aside after a hand.
   const style: React.CSSProperties =
     team === "A"
-      ? { left: "50%", top: "82%", transform: "translate(-50%, -50%)", maxWidth: "78%" }
-      : { left: "14%", top: "50%", transform: "translate(-50%, -50%)", maxWidth: "22%" };
+      ? { right: "6%", bottom: "10%", width: "34%" }
+      : { left: "6%", top: "10%", width: "34%" };
   return (
     <div
-      className="pointer-events-none absolute z-[22] flex flex-wrap items-center justify-center gap-1.5"
-      style={style}
+      className="pointer-events-none absolute z-[22] flex flex-wrap gap-1.5"
+      style={{ ...style, justifyContent: team === "A" ? "flex-end" : "flex-start" }}
     >
       {stash.map((b, i) => {
-        const tilt = ((i * 53) % 13) - 6;
+        const tilt = ((i * 53) % 17) - 8;
+        const dx = seatJitter(team === "A" ? "bottom" : "top", i, 21) * 5;
+        const dy = seatJitter(team === "A" ? "bottom" : "top", i, 23) * 4 - (i % 3) * 2;
         return (
           <div
             key={i}
-            className="flex flex-col items-center gap-0.5"
+            className="flex flex-col items-center animate-scale-in"
             style={{
-              transform: `translateY(${(i % 3) * -2}px) rotate(${tilt}deg)`,
+              gap: 2,
+              transform: `translate(${dx}px, ${dy}px) rotate(${tilt}deg)`,
             }}
           >
             {b.capot && <CapotChip suit={"♠"} suitColor="oklch(0.94 0.14 82)" />}
             {!b.capot && b.largeBar > 0 && (
-              <ChipBar width={49} height={12} tone="large" value={100} tilt={-5} />
+              <ChipBar width={42} height={11} tone="large" value={100} tilt={-4 + seatJitter("top", i, 31) * 3} />
             )}
             {!b.capot && b.smallBar > 0 && (
-              <ChipBar width={24} height={10} tone="small" value={50} tilt={6} />
+              <ChipBar width={21} height={9} tone="small" value={50} tilt={5 + seatJitter("top", i, 33) * 3} />
             )}
             {!b.capot && b.rounds > 0 && (
-              <div className="flex items-center gap-[2px]">
+              <div className="flex items-center" style={{ gap: 2 }}>
                 {Array.from({ length: b.rounds }).map((_, j) => (
-                  <RoundChip key={j} index={j} />
+                  <div key={j} style={{ transform: `translateY(${seatJitter("top", j + i * 7, 37) * 2}px) rotate(${((j * 41) % 19) - 9}deg)` }}>
+                    <RoundChip index={j} />
+                  </div>
                 ))}
               </div>
             )}
