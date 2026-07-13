@@ -1116,10 +1116,11 @@ function PlayerBadge({
   isActive?: boolean; isThinking?: boolean; announcement?: Bid | null; announcementIsTaker?: boolean;
 }) {
   const style: React.CSSProperties =
-    position === "bottom" ? { left:"50%", bottom:0, transform:"translate(-50%, 55%)" }
-    : position === "top" ? { left:"50%", top:0, transform:"translate(-50%, -55%)" }
-    : position === "left" ? { left:0, top:"50%", transform:"translate(-55%, -50%)" }
-    : { right:0, top:"50%", transform:"translate(55%, -50%)" };
+    position === "bottom" ? { left:"50%", bottom:"2%", transform:"translate(-50%, 0)" }
+    : position === "top" ? { left:"50%", top:"2%", transform:"translate(-50%, 0)" }
+    : position === "left" ? { left:"6%", top:"50%", transform:"translate(0, -50%)" }
+    : { right:"6%", top:"50%", transform:"translate(0, -50%)" };
+
 
   const team = position === "bottom" || position === "top" ? "A" : "B";
   const ring = team === "A" ? "oklch(0.72 0.16 55 / 85%)" : "oklch(0.62 0.16 240 / 85%)";
