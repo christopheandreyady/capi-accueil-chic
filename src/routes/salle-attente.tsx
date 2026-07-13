@@ -33,14 +33,13 @@ type Seat = {
   player: Player | null;
 };
 
-// Bottom = local, top = partner, left/right = opponents.
 const seats: Seat[] = [
   {
     position: "top",
     player: {
       name: "Jean-Luc",
       level: 27,
-      photo: "https://i.pravatar.cc/160?img=68",
+      photo: "https://i.pravatar.cc/200?img=68",
       online: true,
     },
   },
@@ -49,7 +48,7 @@ const seats: Seat[] = [
     player: {
       name: "Margaux",
       level: 14,
-      photo: "https://i.pravatar.cc/160?img=47",
+      photo: "https://i.pravatar.cc/200?img=47",
       online: true,
     },
   },
@@ -59,7 +58,7 @@ const seats: Seat[] = [
     player: {
       name: "Vous",
       level: 22,
-      photo: "https://i.pravatar.cc/160?img=12",
+      photo: "https://i.pravatar.cc/200?img=12",
       online: true,
     },
   },
@@ -152,26 +151,48 @@ function WaitingRoom() {
         </header>
 
         {/* Table area */}
-        <section className="relative mt-6 flex-1">
-          <div className="relative mx-auto aspect-square w-full max-w-[380px]">
-            {/* Felt table circle */}
+        <section className="relative mt-8 flex-1">
+          <div className="relative mx-auto aspect-square w-full max-w-[400px]">
+            {/* Wooden rim + felt (rim = the outer ring where avatars sit) */}
             <div
-              className="absolute inset-6 rounded-full"
+              className="absolute inset-0 rounded-full"
               style={{
                 background:
-                  "radial-gradient(circle at 50% 38%, oklch(0.42 0.11 152) 0%, oklch(0.3 0.09 152) 55%, oklch(0.19 0.06 150) 100%)",
-                boxShadow: `
-                  0 0 0 6px oklch(0.24 0.06 40),
-                  0 0 0 8px oklch(0.82 0.14 82 / 45%),
-                  0 0 0 16px oklch(0.15 0.04 35),
-                  0 0 0 18px oklch(0.35 0.08 40 / 60%),
-                  0 30px 60px -20px oklch(0 0 0 / 80%),
-                  inset 0 0 90px oklch(0 0 0 / 55%),
-                  inset 0 20px 40px oklch(1 0 0 / 6%)
-                `,
+                  "radial-gradient(circle at 50% 30%, oklch(0.42 0.09 45) 0%, oklch(0.3 0.08 40) 55%, oklch(0.18 0.05 35) 100%)",
+                boxShadow:
+                  "0 30px 60px -20px oklch(0 0 0 / 80%), inset 0 2px 0 oklch(1 0 0 / 10%), inset 0 -10px 20px oklch(0 0 0 / 60%)",
               }}
             >
-              {/* Subtle felt texture */}
+              {/* Wood grain */}
+              <div
+                className="pointer-events-none absolute inset-0 rounded-full opacity-40 mix-blend-overlay"
+                style={{
+                  backgroundImage:
+                    "repeating-radial-gradient(circle at 50% 50%, oklch(0 0 0 / 25%) 0 2px, transparent 2px 6px), repeating-conic-gradient(from 0deg, oklch(1 0 0 / 4%) 0deg 8deg, transparent 8deg 16deg)",
+                }}
+              />
+              {/* Gold inlay */}
+              <div
+                className="pointer-events-none absolute inset-[10%] rounded-full"
+                style={{
+                  border: "1px solid oklch(0.82 0.14 82 / 55%)",
+                  boxShadow:
+                    "0 0 12px oklch(0.82 0.14 82 / 25%), inset 0 0 12px oklch(0.82 0.14 82 / 20%)",
+                }}
+              />
+            </div>
+
+            {/* Felt table */}
+            <div
+              className="absolute inset-[13%] rounded-full"
+              style={{
+                background:
+                  "radial-gradient(circle at 50% 35%, oklch(0.44 0.11 152) 0%, oklch(0.3 0.09 152) 55%, oklch(0.18 0.06 150) 100%)",
+                boxShadow:
+                  "inset 0 0 100px oklch(0 0 0 / 60%), inset 0 20px 40px oklch(1 0 0 / 5%), 0 0 0 2px oklch(0.15 0.04 35)",
+              }}
+            >
+              {/* Felt texture */}
               <div
                 className="pointer-events-none absolute inset-0 rounded-full opacity-40 mix-blend-overlay"
                 style={{
@@ -181,112 +202,100 @@ function WaitingRoom() {
                   backgroundPosition: "0 0, 1px 2px",
                 }}
               />
-
-              {/* Card deck on the felt */}
-              <div
-                className="absolute"
-                style={{ left: "22%", top: "58%", transform: "rotate(-8deg)" }}
-              >
-                <div className="relative">
-                  <div
-                    className="absolute h-14 w-10 rounded-md"
-                    style={{
-                      left: 2,
-                      top: 2,
-                      background: "linear-gradient(160deg, oklch(0.35 0.14 25), oklch(0.22 0.1 25))",
-                      boxShadow: "0 3px 5px oklch(0 0 0 / 55%)",
-                    }}
-                  />
-                  <div
-                    className="absolute h-14 w-10 rounded-md"
-                    style={{
-                      left: 1,
-                      top: 1,
-                      background: "linear-gradient(160deg, oklch(0.4 0.15 25), oklch(0.26 0.12 25))",
-                      boxShadow: "0 2px 4px oklch(0 0 0 / 45%)",
-                    }}
-                  />
-                  <div
-                    className="relative h-14 w-10 rounded-md border"
-                    style={{
-                      background:
-                        "repeating-linear-gradient(45deg, oklch(0.45 0.16 25) 0 3px, oklch(0.32 0.13 25) 3px 6px)",
-                      borderColor: "oklch(0.82 0.14 82 / 60%)",
-                      boxShadow:
-                        "0 3px 8px oklch(0 0 0 / 60%), inset 0 0 0 1px oklch(0 0 0 / 40%)",
-                    }}
-                  />
-                </div>
-              </div>
-
-              {/* Loose card on felt */}
-              <div
-                className="absolute h-14 w-10 rounded-md border"
-                style={{
-                  right: "24%",
-                  top: "60%",
-                  transform: "rotate(18deg)",
-                  background:
-                    "repeating-linear-gradient(45deg, oklch(0.45 0.16 25) 0 3px, oklch(0.32 0.13 25) 3px 6px)",
-                  borderColor: "oklch(0.82 0.14 82 / 55%)",
-                  boxShadow: "0 3px 8px oklch(0 0 0 / 55%)",
-                }}
-              />
-
-              {/* Contrée chips stack */}
-              <ChipStack
-                className="absolute"
-                style={{ left: "18%", top: "26%" }}
-                colors={["oklch(0.55 0.19 25)", "oklch(0.62 0.14 82)", "oklch(0.5 0.15 260)"]}
-              />
-              <ChipStack
-                className="absolute"
-                style={{ right: "18%", top: "30%" }}
-                colors={["oklch(0.5 0.15 260)", "oklch(0.55 0.19 25)"]}
-              />
             </div>
 
-            {/* Seats */}
+            {/* Jetons scattered on wooden rim (outside felt, inside wood) */}
+            {/* Top-left area */}
+            <RoundChip
+              className="absolute"
+              style={{ left: "10%", top: "18%", transform: "rotate(-12deg)" }}
+              color="oklch(0.55 0.19 25)"
+            />
+            <BarChip
+              className="absolute"
+              style={{ left: "18%", top: "8%", transform: "rotate(24deg)" }}
+              value={100}
+            />
+            <RoundChip
+              className="absolute"
+              style={{ left: "6%", top: "42%", transform: "rotate(8deg)" }}
+              color="oklch(0.5 0.15 260)"
+            />
+            {/* Top-right area */}
+            <BarChip
+              className="absolute"
+              style={{ right: "10%", top: "12%", transform: "rotate(-18deg)" }}
+              value={50}
+            />
+            <RoundChip
+              className="absolute"
+              style={{ right: "8%", top: "38%", transform: "rotate(-5deg)" }}
+              color="oklch(0.62 0.14 82)"
+            />
+            {/* Bottom-left */}
+            <BarChip
+              className="absolute"
+              style={{ left: "12%", bottom: "14%", transform: "rotate(14deg)" }}
+              value={50}
+            />
+            <RoundChip
+              className="absolute"
+              style={{ left: "22%", bottom: "8%", transform: "rotate(-6deg)" }}
+              color="oklch(0.55 0.19 25)"
+            />
+            {/* Bottom-right */}
+            <RoundChip
+              className="absolute"
+              style={{ right: "14%", bottom: "10%", transform: "rotate(18deg)" }}
+              color="oklch(0.5 0.15 260)"
+            />
+            <BarChip
+              className="absolute"
+              style={{ right: "18%", bottom: "18%", transform: "rotate(-22deg)" }}
+              value={100}
+            />
+
+            {/* Seats — placed ON the outer rim, at 90° angles */}
             <SeatSlot
               seat={seats.find((s) => s.position === "top")!}
-              className="absolute left-1/2 top-0 -translate-x-1/2"
+              className="absolute left-1/2 top-0 -translate-x-1/2 -translate-y-1/2"
               delay={80}
             />
             <SeatSlot
               seat={seats.find((s) => s.position === "left")!}
-              className="absolute left-0 top-1/2 -translate-y-1/2"
+              className="absolute left-0 top-1/2 -translate-x-1/2 -translate-y-1/2"
               delay={180}
             />
             <SeatSlot
               seat={seats.find((s) => s.position === "right")!}
-              className="absolute right-0 top-1/2 -translate-y-1/2"
+              className="absolute right-0 top-1/2 translate-x-1/2 -translate-y-1/2"
               delay={260}
             />
             <SeatSlot
               seat={seats.find((s) => s.position === "bottom")!}
-              className="absolute bottom-0 left-1/2 -translate-x-1/2"
+              className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2"
               isLocal
               delay={0}
             />
           </div>
         </section>
 
-        {/* Start button */}
-        <div className="mt-6">
+        {/* Start button — thinner & more elegant */}
+        <div className="mt-8">
           <button
             type="button"
             disabled={!allReady}
-            className="group relative flex w-full items-center justify-center gap-3 overflow-hidden px-6 py-4 transition-all duration-200 ease-out active:scale-[0.98] disabled:cursor-not-allowed disabled:active:scale-100"
+            className="group relative flex w-full items-center justify-center gap-3 overflow-hidden px-6 py-3 transition-all duration-200 ease-out active:scale-[0.98] disabled:cursor-not-allowed disabled:active:scale-100"
             style={{
-              borderRadius: "1.1rem",
+              borderRadius: "0.9rem",
               background: allReady
                 ? "linear-gradient(160deg, oklch(0.5 0.15 155) 0%, oklch(0.32 0.10 155) 100%)"
-                : "linear-gradient(160deg, oklch(0.32 0.02 40) 0%, oklch(0.22 0.02 40) 100%)",
-              border: `1px solid ${allReady ? "oklch(0.62 0.15 155 / 60%)" : "oklch(0.4 0.02 40 / 50%)"}`,
+                : "linear-gradient(160deg, oklch(0.3 0.02 40) 0%, oklch(0.2 0.02 40) 100%)",
+              border: `1px solid ${allReady ? "oklch(0.62 0.15 155 / 60%)" : "oklch(0.4 0.02 40 / 45%)"}`,
               boxShadow: allReady
-                ? "0 10px 22px -10px oklch(0.42 0.13 155 / 55%), 0 0 24px -4px oklch(0.6 0.18 155 / 45%), 0 1px 0 0 oklch(1 0 0 / 15%) inset, 0 -8px 16px -8px oklch(0 0 0 / 40%) inset"
-                : "0 4px 10px -6px oklch(0 0 0 / 60%), 0 1px 0 0 oklch(1 0 0 / 5%) inset",
-              opacity: allReady ? 1 : 0.75,
+                ? "0 8px 18px -10px oklch(0.42 0.13 155 / 55%), 0 0 20px -4px oklch(0.6 0.18 155 / 40%), 0 1px 0 0 oklch(1 0 0 / 12%) inset"
+                : "0 3px 8px -6px oklch(0 0 0 / 60%), 0 1px 0 0 oklch(1 0 0 / 5%) inset",
+              opacity: allReady ? 1 : 0.78,
               animation: allReady ? "capi-glow 2.6s ease-in-out infinite" : undefined,
             }}
           >
@@ -294,7 +303,7 @@ function WaitingRoom() {
               className="pointer-events-none absolute inset-x-0 top-0 h-1/2 opacity-60"
               style={{
                 background:
-                  "linear-gradient(180deg, oklch(1 0 0 / 22%) 0%, oklch(1 0 0 / 4%) 60%, transparent 100%)",
+                  "linear-gradient(180deg, oklch(1 0 0 / 18%) 0%, oklch(1 0 0 / 4%) 60%, transparent 100%)",
               }}
             />
             {allReady && (
@@ -308,22 +317,22 @@ function WaitingRoom() {
               />
             )}
             <Play
-              className="h-5 w-5"
+              className="h-4 w-4"
               style={{
                 color: allReady ? "oklch(0.94 0.11 88)" : "oklch(0.6 0.03 80)",
                 filter: allReady
-                  ? "drop-shadow(0 1px 0 oklch(0 0 0 / 50%)) drop-shadow(0 0 6px oklch(0.82 0.14 82 / 35%))"
+                  ? "drop-shadow(0 0 6px oklch(0.82 0.14 82 / 35%))"
                   : "none",
               }}
               strokeWidth={2.2}
               fill="currentColor"
             />
             <span
-              className="font-serif text-lg font-semibold tracking-wide"
+              className="font-serif text-base font-semibold tracking-wide"
               style={{
                 background: allReady
                   ? "linear-gradient(180deg, oklch(0.96 0.1 88), oklch(0.76 0.14 78))"
-                  : "linear-gradient(180deg, oklch(0.65 0.03 80), oklch(0.5 0.03 80))",
+                  : "linear-gradient(180deg, oklch(0.68 0.03 80), oklch(0.52 0.03 80))",
                 WebkitBackgroundClip: "text",
                 backgroundClip: "text",
                 color: "transparent",
@@ -338,9 +347,9 @@ function WaitingRoom() {
 
       <style>{`
         @keyframes capi-seat-in {
-          0% { opacity: 0; transform: translate(var(--tx, 0), var(--ty, 0)) scale(0.6); filter: blur(6px); }
+          0% { opacity: 0; transform: var(--seat-transform) scale(0.6); filter: blur(6px); }
           60% { opacity: 1; filter: blur(0); }
-          100% { opacity: 1; transform: translate(var(--tx, 0), var(--ty, 0)) scale(1); filter: blur(0); }
+          100% { opacity: 1; transform: var(--seat-transform) scale(1); filter: blur(0); }
         }
         @keyframes capi-photo-fade {
           0% { opacity: 0; transform: scale(0.9); }
@@ -351,40 +360,97 @@ function WaitingRoom() {
           60%, 100% { left: 120%; }
         }
         @keyframes capi-glow {
-          0%, 100% { box-shadow: 0 10px 22px -10px oklch(0.42 0.13 155 / 55%), 0 0 18px -4px oklch(0.6 0.18 155 / 35%), 0 1px 0 0 oklch(1 0 0 / 15%) inset, 0 -8px 16px -8px oklch(0 0 0 / 40%) inset; }
-          50%  { box-shadow: 0 10px 22px -10px oklch(0.42 0.13 155 / 65%), 0 0 34px -2px oklch(0.65 0.2 155 / 60%), 0 1px 0 0 oklch(1 0 0 / 18%) inset, 0 -8px 16px -8px oklch(0 0 0 / 40%) inset; }
+          0%, 100% { box-shadow: 0 8px 18px -10px oklch(0.42 0.13 155 / 55%), 0 0 18px -4px oklch(0.6 0.18 155 / 35%), 0 1px 0 0 oklch(1 0 0 / 12%) inset; }
+          50%  { box-shadow: 0 8px 18px -10px oklch(0.42 0.13 155 / 65%), 0 0 30px -2px oklch(0.65 0.2 155 / 55%), 0 1px 0 0 oklch(1 0 0 / 15%) inset; }
         }
       `}</style>
     </main>
   );
 }
 
-function ChipStack({
+function RoundChip({
   className,
   style,
-  colors,
+  color,
 }: {
   className?: string;
   style?: React.CSSProperties;
-  colors: string[];
+  color: string;
 }) {
   return (
-    <div className={className} style={style}>
-      <div className="relative h-6 w-8">
-        {colors.map((c, i) => (
-          <div
-            key={i}
-            className="absolute left-0 h-3 w-8 rounded-full border"
-            style={{
-              bottom: i * 3,
-              background: `radial-gradient(ellipse at 50% 30%, oklch(1 0 0 / 25%), transparent 60%), ${c}`,
-              borderColor: "oklch(0 0 0 / 60%)",
-              boxShadow:
-                "0 2px 3px oklch(0 0 0 / 55%), inset 0 -1px 0 oklch(0 0 0 / 40%), inset 0 1px 0 oklch(1 0 0 / 25%)",
-            }}
-          />
-        ))}
-      </div>
+    <div
+      className={className}
+      style={{
+        width: 26,
+        height: 26,
+        borderRadius: "9999px",
+        background: `radial-gradient(ellipse at 40% 30%, oklch(1 0 0 / 25%), transparent 60%), ${color}`,
+        border: "1px solid oklch(0 0 0 / 55%)",
+        boxShadow:
+          "0 3px 5px oklch(0 0 0 / 60%), inset 0 -2px 0 oklch(0 0 0 / 40%), inset 0 1px 0 oklch(1 0 0 / 30%)",
+        backgroundImage: `
+          repeating-conic-gradient(from 0deg, oklch(1 0 0 / 15%) 0deg 15deg, transparent 15deg 30deg),
+          radial-gradient(ellipse at 40% 30%, oklch(1 0 0 / 25%), transparent 60%)
+        `,
+        ...style,
+      }}
+    >
+      <div
+        style={{
+          position: "absolute",
+          inset: 4,
+          borderRadius: "9999px",
+          background: color,
+          border: "1px dashed oklch(1 0 0 / 40%)",
+          boxShadow: "inset 0 1px 2px oklch(0 0 0 / 40%)",
+        }}
+      />
+    </div>
+  );
+}
+
+function BarChip({
+  className,
+  style,
+  value,
+}: {
+  className?: string;
+  style?: React.CSSProperties;
+  value: 50 | 100;
+}) {
+  const base =
+    value === 100
+      ? "linear-gradient(160deg, oklch(0.5 0.15 260) 0%, oklch(0.32 0.12 260) 100%)"
+      : "linear-gradient(160deg, oklch(0.55 0.19 25) 0%, oklch(0.35 0.14 25) 100%)";
+  return (
+    <div
+      className={className}
+      style={{
+        width: 44,
+        height: 14,
+        borderRadius: 3,
+        background: base,
+        border: "1px solid oklch(0 0 0 / 60%)",
+        boxShadow:
+          "0 3px 5px oklch(0 0 0 / 60%), inset 0 -2px 0 oklch(0 0 0 / 35%), inset 0 1px 0 oklch(1 0 0 / 25%)",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        ...style,
+      }}
+    >
+      <span
+        style={{
+          fontFamily: "ui-serif, Georgia, serif",
+          fontSize: 9,
+          fontWeight: 700,
+          letterSpacing: "0.05em",
+          color: "oklch(0.94 0.1 88)",
+          textShadow: "0 1px 0 oklch(0 0 0 / 60%)",
+        }}
+      >
+        {value}
+      </span>
     </div>
   );
 }
@@ -401,21 +467,24 @@ function SeatSlot({
   delay?: number;
 }) {
   const p = seat.player;
-
-  // Compute translate to preserve existing absolute positioning
   const pos = seat.position;
-  const tx =
-    pos === "left" ? "0" : pos === "right" ? "0" : "-50%";
-  const ty =
-    pos === "top" ? "0" : pos === "bottom" ? "0" : "-50%";
+
+  // Match the translate used in className so animation keyframes preserve position
+  const seatTransform =
+    pos === "top"
+      ? "translate(-50%, -50%)"
+      : pos === "bottom"
+        ? "translate(-50%, 50%)"
+        : pos === "left"
+          ? "translate(-50%, -50%)"
+          : "translate(50%, -50%)";
 
   return (
     <div
       className={`flex flex-col items-center gap-1.5 ${className ?? ""}`}
       style={{
         // @ts-expect-error CSS var
-        "--tx": tx,
-        "--ty": ty,
+        "--seat-transform": seatTransform,
         animation: `capi-seat-in 520ms ${delay}ms cubic-bezier(.2,.8,.25,1) both`,
       }}
     >
@@ -423,21 +492,23 @@ function SeatSlot({
         <>
           <div className="relative">
             <div
-              className="h-16 w-16 overflow-hidden rounded-full border-2"
+              className="overflow-hidden rounded-full border-2"
               style={{
-                borderColor: isLocal ? "oklch(0.82 0.14 82 / 95%)" : "oklch(0.82 0.14 82 / 60%)",
+                width: 76,
+                height: 76,
+                borderColor: isLocal ? "oklch(0.82 0.14 82 / 95%)" : "oklch(0.82 0.14 82 / 65%)",
                 background:
                   "linear-gradient(160deg, oklch(0.38 0.05 40), oklch(0.24 0.04 40))",
                 boxShadow: isLocal
                   ? "0 6px 16px -6px oklch(0 0 0 / 75%), 0 0 0 3px oklch(0.82 0.14 82 / 25%), 0 0 14px -2px oklch(0.82 0.14 82 / 45%)"
-                  : "0 6px 14px -6px oklch(0 0 0 / 70%), 0 0 0 1px oklch(0 0 0 / 40%) inset",
+                  : "0 6px 14px -6px oklch(0 0 0 / 70%), 0 0 0 2px oklch(0 0 0 / 45%)",
               }}
             >
               <img
                 src={p.photo}
                 alt={p.name}
-                width={160}
-                height={160}
+                width={200}
+                height={200}
                 className="h-full w-full object-cover"
                 style={{ animation: `capi-photo-fade 700ms ${delay + 120}ms ease-out both` }}
                 loading="lazy"
@@ -478,37 +549,39 @@ function SeatSlot({
           aria-label="Inviter un joueur"
         >
           <div
-            className="relative flex h-16 w-16 items-center justify-center overflow-hidden rounded-full border"
+            className="relative flex items-center justify-center overflow-hidden rounded-full border-2"
             style={{
+              width: 76,
+              height: 76,
               background:
-                "radial-gradient(circle at 35% 25%, oklch(0.38 0.06 45), oklch(0.22 0.05 40) 70%, oklch(0.15 0.04 35) 100%)",
-              borderColor: "oklch(0.82 0.14 82 / 70%)",
+                "radial-gradient(circle at 35% 22%, oklch(0.45 0.09 45) 0%, oklch(0.28 0.07 40) 55%, oklch(0.16 0.05 35) 100%)",
+              borderColor: "oklch(0.82 0.14 82 / 75%)",
               boxShadow:
-                "0 6px 16px -6px oklch(0 0 0 / 75%), 0 0 0 3px oklch(0.82 0.14 82 / 15%), inset 0 1px 0 oklch(1 0 0 / 12%), inset 0 -6px 12px oklch(0 0 0 / 50%)",
+                "0 6px 16px -6px oklch(0 0 0 / 75%), 0 0 0 3px oklch(0.82 0.14 82 / 18%), inset 0 1px 0 oklch(1 0 0 / 15%), inset 0 -8px 14px oklch(0 0 0 / 55%)",
             }}
           >
-            {/* Leather grain */}
+            {/* Wood/leather grain */}
             <span
               className="pointer-events-none absolute inset-0 opacity-40 mix-blend-overlay"
               style={{
                 backgroundImage:
-                  "radial-gradient(oklch(0 0 0 / 40%) 1px, transparent 1px), radial-gradient(oklch(1 0 0 / 15%) 1px, transparent 1px)",
-                backgroundSize: "4px 4px, 6px 6px",
+                  "repeating-radial-gradient(circle at 50% 50%, oklch(0 0 0 / 25%) 0 1px, transparent 1px 4px), radial-gradient(oklch(1 0 0 / 12%) 1px, transparent 1px)",
+                backgroundSize: "auto, 5px 5px",
               }}
             />
             <Plus
-              className="h-7 w-7 transition-transform duration-200 group-active:scale-90"
+              className="h-8 w-8 transition-transform duration-200 group-active:scale-90"
               strokeWidth={2.4}
               style={{
-                color: "oklch(0.9 0.13 85)",
+                color: "oklch(0.92 0.13 85)",
                 filter:
-                  "drop-shadow(0 1px 0 oklch(0 0 0 / 60%)) drop-shadow(0 0 6px oklch(0.82 0.14 82 / 45%))",
+                  "drop-shadow(0 1px 0 oklch(0 0 0 / 60%)) drop-shadow(0 0 6px oklch(0.82 0.14 82 / 55%))",
               }}
             />
           </div>
           <p
             className="font-serif text-xs font-semibold tracking-wide"
-            style={{ color: "oklch(0.85 0.1 85)", textShadow: "0 1px 2px oklch(0 0 0 / 80%)" }}
+            style={{ color: "oklch(0.88 0.1 85)", textShadow: "0 1px 2px oklch(0 0 0 / 80%)" }}
           >
             Inviter
           </p>
