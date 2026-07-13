@@ -1298,16 +1298,24 @@ function CardBack() {
       {/* subtle vintage wear: soft light noise + edge darkening, never dirty */}
       <div className="pointer-events-none absolute inset-0 opacity-25 mix-blend-overlay" style={{ backgroundImage:"radial-gradient(oklch(1 0 0 / 22%) 0.5px, transparent 0.6px), radial-gradient(oklch(0 0 0 / 30%) 0.5px, transparent 0.6px)", backgroundSize:"3px 3px, 5px 5px", backgroundPosition:"0 0, 1px 2px" }} />
       <div className="pointer-events-none absolute inset-0" style={{ boxShadow:"inset 0 0 14px oklch(0 0 0 / 55%)" }} />
-      {/* CAPI monogram — larger, metallic gold */}
+      {/* CAPI emblem — centered medallion printed into the back design */}
       <div className="absolute inset-0 flex items-center justify-center">
-        <span className="font-serif font-black tracking-[0.22em]" style={{
-          fontSize: "clamp(15px, 22%, 26px)",
-          background: "linear-gradient(180deg, oklch(0.98 0.11 88) 0%, oklch(0.82 0.14 82) 45%, oklch(0.58 0.12 62) 100%)",
-          WebkitBackgroundClip: "text",
-          backgroundClip: "text",
-          color: "transparent",
-          filter: "drop-shadow(0 1px 0 oklch(0 0 0 / 70%)) drop-shadow(0 0 6px oklch(0.82 0.14 82 / 45%))",
-        }}>CAPI</span>
+        <img
+          src={capiEmblem}
+          alt=""
+          width={512}
+          height={512}
+          className="pointer-events-none"
+          style={{
+            width: "58%",
+            height: "58%",
+            objectFit: "contain",
+            filter:
+              "drop-shadow(0 1px 0 oklch(0 0 0 / 70%)) drop-shadow(0 0 5px oklch(0.82 0.14 82 / 55%))",
+            mixBlendMode: "screen",
+            opacity: 0.95,
+          }}
+        />
       </div>
     </div>
   );
