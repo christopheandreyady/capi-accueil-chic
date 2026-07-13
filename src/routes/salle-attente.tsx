@@ -143,6 +143,15 @@ function WaitingRoom() {
   const roomFull = playersCount === total;
   const localReady = seats.find((s) => s.position === "bottom")?.player?.ready ?? false;
 
+  // Auto-start once all four players are ready
+  useEffect(() => {
+    if (!allReady) return;
+    const t = setTimeout(() => navigate({ to: "/partie" }), 800);
+    return () => clearTimeout(t);
+  }, [allReady, navigate]);
+
+
+
 
   function toggleReady(pos: Position) {
     setSeats((s) =>
