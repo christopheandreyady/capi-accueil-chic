@@ -1175,7 +1175,7 @@ function PlayerBadge({
   );
 }
 
-function AnnouncementBubble({ bid, position }: { bid: Bid; position: Position }) {
+function AnnouncementBubble({ bid, position, isTaker }: { bid: Bid; position: Position; isTaker?: boolean }) {
   const isPass = bid.kind === "pass";
   const suit = bid.kind === "pass" ? null : bid.suit;
   const label =
@@ -1187,13 +1187,14 @@ function AnnouncementBubble({ bid, position }: { bid: Bid; position: Position })
     : position === "bottom" ? { bottom: "calc(100% + 8px)", left: "50%", transform: "translateX(-50%)" }
     : position === "left" ? { top: "50%", left: "calc(100% + 10px)", transform: "translateY(-50%)" }
     : { top: "50%", right: "calc(100% + 10px)", transform: "translateY(-50%)" };
+  const fontSize = isTaker ? 20 : 22;
   return (
     <div
       className="absolute whitespace-nowrap animate-scale-in"
       style={{
         ...placement,
         zIndex: 40,
-        padding: "8px 14px",
+        padding: isTaker ? "6px 12px" : "8px 14px",
         borderRadius: 12,
         background: isPass
           ? "linear-gradient(180deg, oklch(0.20 0.03 40 / 98%) 0%, oklch(0.12 0.03 40 / 98%) 100%)"
@@ -1206,9 +1207,10 @@ function AnnouncementBubble({ bid, position }: { bid: Bid; position: Position })
         color: isPass ? "oklch(0.96 0.12 85)" : "oklch(0.14 0.05 40)",
       }}
     >
-      <span className="inline-flex items-center gap-2 font-serif font-black" style={{ fontSize: 22, lineHeight: 1, letterSpacing: "0.02em" }}>
+      <span className="inline-flex items-center gap-1.5 font-serif font-black" style={{ fontSize, lineHeight: 1, letterSpacing: "0.02em" }}>
+        {isTaker && <span style={{ fontSize: fontSize - 2 }}>👑</span>}
         <span>{label}</span>
-        {suit && <SuitBadge suit={suit} size={22} />}
+        {suit && <SuitBadge suit={suit} size={fontSize} />}
       </span>
     </div>
   );
