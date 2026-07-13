@@ -473,10 +473,10 @@ function GameTable() {
     const w = size.w || 1;
     const h = size.h || 1;
     return {
-      bottom: { x: w * 0.5, y: h + 30, angle: 0 },
-      top: { x: w * 0.5, y: 28, angle: 180 },
-      left: { x: 22, y: h * 0.5, angle: 90 },
-      right: { x: w - 22, y: h * 0.5, angle: -90 },
+      bottom: { x: w * 0.5, y: h - 6, angle: 0 },
+      top: { x: w * 0.5, y: 34, angle: 180 },
+      left: { x: 26, y: h * 0.5, angle: 90 },
+      right: { x: w - 26, y: h * 0.5, angle: -90 },
     } as const;
   }, [size]);
 
@@ -591,6 +591,7 @@ function GameTable() {
         width={1024}
         height={1536}
         className="pointer-events-none absolute inset-0 h-full w-full object-cover"
+        style={{ transform: "scale(0.9)", transformOrigin: "50% 46%" }}
       />
       {/* Warm bistro key light from above, then a deep vignette that pulls
           the eye toward the table. */}
@@ -628,12 +629,13 @@ function GameTable() {
         </header>
 
 
-        <div ref={boxRef} className="relative mx-auto mt-2 w-full max-w-[520px] flex-1">
+        <div ref={boxRef} className="relative mx-auto mt-2 w-full max-w-[480px] flex-1">
           <div className="relative mx-auto aspect-square w-full">
             {/* Table surface is provided by the background artwork (bistrotTable).
                 No wooden/felt overlay is drawn here — game elements sit directly
-                on the photographed table. A soft vignette keeps focus centered. */}
-            <div className="pointer-events-none absolute inset-0" style={{ background:"radial-gradient(60% 55% at 50% 50%, transparent 0%, transparent 55%, oklch(0 0 0 / 30%) 100%)" }} />
+                on the photographed table. Soft central halo + vignette. */}
+            <div className="pointer-events-none absolute inset-0" style={{ background:"radial-gradient(38% 30% at 50% 50%, oklch(0.9 0.14 78 / 14%) 0%, oklch(0.85 0.12 72 / 6%) 45%, transparent 75%)" }} />
+            <div className="pointer-events-none absolute inset-0" style={{ background:"radial-gradient(60% 55% at 50% 50%, transparent 0%, transparent 55%, oklch(0 0 0 / 32%) 100%)" }} />
 
 
             {/* Player badges */}
@@ -1116,15 +1118,15 @@ function PlayerBadge({
   isActive?: boolean; isThinking?: boolean; announcement?: Bid | null; announcementIsTaker?: boolean;
 }) {
   const style: React.CSSProperties =
-    position === "bottom" ? { left:"50%", bottom:"2%", transform:"translate(-50%, 0)" }
-    : position === "top" ? { left:"50%", top:"2%", transform:"translate(-50%, 0)" }
-    : position === "left" ? { left:"6%", top:"50%", transform:"translate(0, -50%)" }
-    : { right:"6%", top:"50%", transform:"translate(0, -50%)" };
+    position === "bottom" ? { left:"50%", bottom:"-66px", transform:"translate(-50%, 0)" }
+    : position === "top" ? { left:"50%", top:"1%", transform:"translate(-50%, 0)" }
+    : position === "left" ? { left:"3%", top:"50%", transform:"translate(0, -50%)" }
+    : { right:"3%", top:"50%", transform:"translate(0, -50%)" };
 
 
   const team = position === "bottom" || position === "top" ? "A" : "B";
   const ring = team === "A" ? "oklch(0.72 0.16 55 / 85%)" : "oklch(0.62 0.16 240 / 85%)";
-  const avatarSize = isLocal ? 56 : 48;
+  const avatarSize = isLocal ? 58 : 46;
 
   return (
     <div className="pointer-events-none absolute z-20 flex flex-col items-center gap-1" style={style}>
@@ -1140,7 +1142,7 @@ function PlayerBadge({
           <img src={info.photo} alt={info.name} width={200} height={200} className="h-full w-full object-cover" loading="lazy" />
         </div>
         {isDealer && (
-          <span className="absolute -bottom-1 -right-1 flex h-[18px] w-[18px] items-center justify-center rounded-full text-[10px] font-bold" style={{ background:"linear-gradient(180deg, oklch(0.9 0.14 88), oklch(0.65 0.16 72))", color:"oklch(0.2 0.05 40)", boxShadow:"0 2px 4px oklch(0 0 0 / 60%), 0 0 0 1px oklch(0.4 0.08 55) inset" }} aria-label="Donneur">D</span>
+          <span className="absolute -top-1 -right-1 flex h-[19px] w-[19px] items-center justify-center rounded-full font-serif text-[10px] font-bold" style={{ background:"radial-gradient(circle at 35% 30%, oklch(0.96 0.11 88), oklch(0.72 0.16 72) 65%, oklch(0.48 0.10 55))", color:"oklch(0.18 0.05 40)", boxShadow:"0 2px 4px oklch(0 0 0 / 65%), 0 0 0 1px oklch(0.35 0.08 55) inset, 0 0 0 2px oklch(0.10 0.02 40 / 80%)" }} aria-label="Donneur">D</span>
         )}
         {isThinking && (
           <div className="absolute -top-1 -left-1 rounded-full border px-1.5 py-0.5 text-[10px]" style={{ background:"oklch(0.18 0.03 40 / 90%)", borderColor:"oklch(0.82 0.14 82 / 40%)", color:"oklch(0.94 0.1 85)" }}>
@@ -1229,7 +1231,9 @@ function CardFace({ card }: { card: Card }) {
   const red = isRedSuit(card.suit);
   const color = red ? "oklch(0.5 0.19 25)" : "oklch(0.2 0.03 260)";
   return (
-    <div className="relative h-full w-full overflow-hidden" style={{ borderRadius:9, background:"linear-gradient(180deg, oklch(0.99 0.01 90) 0%, oklch(0.93 0.015 82) 100%)", border:"1px solid oklch(0.72 0.03 82)", boxShadow:"0 10px 18px -6px oklch(0 0 0 / 75%), 0 3px 6px -1px oklch(0 0 0 / 55%), inset 0 1px 0 oklch(1 0 0 / 70%), inset 0 -1px 0 oklch(0 0 0 / 15%)" }}>
+    <div className="relative h-full w-full overflow-hidden" style={{ borderRadius:9, background:"linear-gradient(180deg, oklch(0.985 0.012 88) 0%, oklch(0.94 0.018 82) 100%)", border:"1px solid oklch(0.7 0.03 82)", boxShadow:"0 10px 18px -6px oklch(0 0 0 / 75%), 0 3px 6px -1px oklch(0 0 0 / 55%), inset 0 1px 0 oklch(1 0 0 / 75%), inset 0 -1px 0 oklch(0 0 0 / 18%), inset 0 0 12px oklch(0.5 0.06 60 / 12%)" }}>
+      {/* subtle paper wear — soft warm vignette on the edges */}
+      <div className="pointer-events-none absolute inset-0" style={{ boxShadow:"inset 0 0 10px oklch(0.35 0.05 60 / 22%)" }} />
       <div className="absolute left-1.5 top-1 flex flex-col items-center leading-none" style={{ color }}>
         <span className="font-serif text-[20px] font-bold">{card.rank}</span>
         <span className="text-[18px]">{card.suit}</span>
@@ -1247,9 +1251,25 @@ function CardFace({ card }: { card: Card }) {
 
 function CardBack() {
   return (
-    <div className="relative h-full w-full overflow-hidden" style={{ borderRadius:7, background:"linear-gradient(160deg, oklch(0.30 0.10 25) 0%, oklch(0.18 0.06 25) 100%)", border:"1px solid oklch(0.55 0.14 78 / 60%)", boxShadow:"0 8px 14px -5px oklch(0 0 0 / 75%), 0 2px 4px oklch(0 0 0 / 55%), inset 0 1px 0 oklch(1 0 0 / 18%)" }}>
-      <div className="absolute inset-1 rounded-[4px]" style={{ border:"1px solid oklch(0.72 0.14 82 / 55%)", backgroundImage:"repeating-linear-gradient(45deg, oklch(0.72 0.14 82 / 18%) 0 2px, transparent 2px 6px), repeating-linear-gradient(-45deg, oklch(0.72 0.14 82 / 12%) 0 2px, transparent 2px 6px)" }} />
-      <div className="absolute inset-0 flex items-center justify-center font-serif text-[13px] font-bold tracking-widest" style={{ color:"oklch(0.85 0.14 82)", textShadow:"0 1px 0 oklch(0 0 0 / 65%)" }}>CAPI</div>
+    <div className="relative h-full w-full overflow-hidden" style={{ borderRadius:7, background:"linear-gradient(160deg, oklch(0.32 0.11 25) 0%, oklch(0.18 0.06 25) 100%)", border:"1px solid oklch(0.55 0.14 78 / 60%)", boxShadow:"0 8px 14px -5px oklch(0 0 0 / 75%), 0 2px 4px oklch(0 0 0 / 55%), inset 0 1px 0 oklch(1 0 0 / 18%), inset 0 0 22px oklch(0 0 0 / 55%)" }}>
+      {/* diamond guilloché weave */}
+      <div className="absolute inset-1 rounded-[4px]" style={{ border:"1px solid oklch(0.72 0.14 82 / 55%)", backgroundImage:"repeating-linear-gradient(45deg, oklch(0.72 0.14 82 / 20%) 0 2px, transparent 2px 7px), repeating-linear-gradient(-45deg, oklch(0.72 0.14 82 / 14%) 0 2px, transparent 2px 7px)" }} />
+      {/* inner gold hairline frame */}
+      <div className="pointer-events-none absolute inset-[6px] rounded-[3px]" style={{ border:"1px solid oklch(0.82 0.14 82 / 45%)", boxShadow:"inset 0 0 0 1px oklch(0 0 0 / 35%)" }} />
+      {/* subtle vintage wear: soft light noise + edge darkening, never dirty */}
+      <div className="pointer-events-none absolute inset-0 opacity-25 mix-blend-overlay" style={{ backgroundImage:"radial-gradient(oklch(1 0 0 / 22%) 0.5px, transparent 0.6px), radial-gradient(oklch(0 0 0 / 30%) 0.5px, transparent 0.6px)", backgroundSize:"3px 3px, 5px 5px", backgroundPosition:"0 0, 1px 2px" }} />
+      <div className="pointer-events-none absolute inset-0" style={{ boxShadow:"inset 0 0 14px oklch(0 0 0 / 55%)" }} />
+      {/* CAPI monogram — larger, metallic gold */}
+      <div className="absolute inset-0 flex items-center justify-center">
+        <span className="font-serif font-black tracking-[0.22em]" style={{
+          fontSize: "clamp(15px, 22%, 26px)",
+          background: "linear-gradient(180deg, oklch(0.98 0.11 88) 0%, oklch(0.82 0.14 82) 45%, oklch(0.58 0.12 62) 100%)",
+          WebkitBackgroundClip: "text",
+          backgroundClip: "text",
+          color: "transparent",
+          filter: "drop-shadow(0 1px 0 oklch(0 0 0 / 70%)) drop-shadow(0 0 6px oklch(0.82 0.14 82 / 45%))",
+        }}>CAPI</span>
+      </div>
     </div>
   );
 }
