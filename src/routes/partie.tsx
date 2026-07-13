@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { ArrowLeft, RotateCcw, Shuffle, Check } from "lucide-react";
 import bistrotTable from "@/assets/capi-bistrot-table.jpg";
-import { buildDeck, isRedSuit, shuffle, type Card, type Suit } from "@/lib/deck";
+import { buildDeck, isRedSuit, shuffle, type Card, type Rank, type Suit } from "@/lib/deck";
 import {
   CLOCKWISE,
   SUITS,
@@ -40,6 +40,23 @@ export const Route = createFileRoute("/partie")({
 });
 
 const POSITIONS: Position[] = CLOCKWISE;
+
+// Fixed display suit order (alternating colors for readability).
+const SUIT_DISPLAY_ORDER: Suit[] = ["♠", "♥", "♣", "♦"];
+// Trump order strongest → weakest for display.
+const TRUMP_DISPLAY_ORDER: Rank[] = ["V", "9", "A", "10", "R", "D", "8", "7"];
+// Plain order strongest → weakest for display.
+const PLAIN_DISPLAY_ORDER: Rank[] = ["A", "10", "R", "D", "V", "9", "8", "7"];
+
+function sortHand(cards: Card[], trump: Suit | null): Card[] {
+  return [...cards].sort((a, b) => {
+    const sa = SUIT_DISPLAY_ORDER.indexOf(a.suit);
+    const sb = SUIT_DISPLAY_ORDER.indexOf(b.suit);
+    if (sa !== sb) return sa - sb;
+    const order = trump && a.suit === trump ? TRUMP_DISPLAY_ORDER : PLAIN_DISPLAY_ORDER;
+    return order.indexOf(a.rank) - order.indexOf(b.rank);
+  });
+}
 
 type PlayerInfo = { name: string; level: number; photo: string };
 
@@ -210,6 +227,7 @@ function GameTable() {
   const [displayScores, setDisplayScores] = useState<{ A: number; B: number }>({ A: 0, B: 0 });
   const [chipsSlideTo, setChipsSlideTo] = useState<Team | null>(null);
   const [chipsVisible, setChipsVisible] = useState(true);
+  const [stashes, setStashes] = useState<{ A: ChipBreakdown[]; B: ChipBreakdown[] }>({ A: [], B: [] });
 
   const cutter = prevSeat(dealer);
 
@@ -286,6 +304,7 @@ function GameTable() {
       window.setTimeout(() => {
         const h: Record<Position, Card[]> = { bottom: [], left: [], top: [], right: [] };
         for (const d of dealOrder) h[d.seat].push(d.card);
+        for (const p of POSITIONS) h[p] = sortHand(h[p], null);
         setHands(h);
         setBids([]);
         setContract(null);
@@ -307,6 +326,12 @@ function GameTable() {
           nextRound();
         } else {
           setContract(c);
+          setHands((h) => ({
+            bottom: sortHand(h.bottom, c.suit),
+            left: sortHand(h.left, c.suit),
+            top: sortHand(h.top, c.suit),
+            right: sortHand(h.right, c.suit),
+          }));
           setCurrentTrick({ leader: nextSeat(dealer), plays: [] });
           setCurrentTurn(nextSeat(dealer));
           setPhase("playing");
@@ -394,7 +419,12 @@ function GameTable() {
       };
       raf = requestAnimationFrame(tick);
     }, 1900);
-    const t3 = window.setTimeout(() => setChipsVisible(false), 3900);
+    const t3 = window.setTimeout(() => {
+      if (contract) {
+        setStashes((s) => ({ ...s, [winner]: [...s[winner], contractChipBreakdown(contract)] }));
+      }
+      setChipsVisible(false);
+    }, 3900);
     return () => {
       clearTimeout(t1);
       clearTimeout(t2);
@@ -412,7 +442,7 @@ function GameTable() {
 
 
   const playCardBy = (seat: Position, card: Card) => {
-    setHands((h) => ({ ...h, [seat]: h[seat].filter((c) => c.id !== card.id) }));
+    setHands((h) => ({ ...h, [seat]: sortHand(h[seat].filter((c) => c.id !== card.id), contract?.suit ?? null) }));
     setCurrentTrick((t) =>
       t ? { ...t, plays: [...t.plays, { seat, card } as TrickPlay] } : t,
     );
@@ -633,6 +663,9 @@ function GameTable() {
             {/* Team score zones anchored to the table */}
             <TableScoreBadge team="A" label="Nous" value={displayScores.A} pulse={chipsSlideTo === "A"} />
             <TableScoreBadge team="B" label="Eux" value={displayScores.B} pulse={chipsSlideTo === "B"} />
+
+            <TeamStash team="A" stash={stashes.A} />
+            <TeamStash team="B" stash={stashes.B} />
 
             {/* Contract chips at center of table */}
             {(phase === "bidding" || phase === "playing" || phase === "scoring") && currentContract(bids) && chipsVisible && (
@@ -907,13 +940,13 @@ function BiddingPanel({ bids, onBid }: { bids: Bid[]; onBid: (b: Bid) => void })
       <div className="flex flex-wrap items-center justify-center gap-1.5">
         <button type="button" onClick={() => onBid({ kind:"pass", seat:"bottom" })} className="rounded-xl border px-3 py-2 font-serif text-sm transition active:scale-[0.97]" style={{ background:"linear-gradient(168deg, oklch(0.24 0.04 42) 0%, oklch(0.16 0.03 40) 100%)", borderColor:"oklch(0.82 0.14 82 / 40%)", color:"oklch(0.94 0.1 85)" }}>Passer</button>
         {canBidLevel && SUITS.map((s) => (
-          <button key={s} type="button" onClick={() => onBid({ kind:"bid", seat:"bottom", points: next, suit: s })} className="rounded-xl border px-3 py-2 font-serif text-sm transition active:scale-[0.97]" style={{ background:"linear-gradient(168deg, oklch(0.36 0.10 152) 0%, oklch(0.24 0.08 152) 100%)", borderColor:"oklch(0.82 0.14 82 / 45%)", color: isRedSuit(s)?"oklch(0.85 0.16 25)":"oklch(0.94 0.1 85)" }}>
-            {next} <span className="text-base">{s}</span>
+          <button key={s} type="button" onClick={() => onBid({ kind:"bid", seat:"bottom", points: next, suit: s })} className="flex items-center gap-1.5 rounded-xl border px-3 py-2 font-serif text-sm transition active:scale-[0.97]" style={{ background:"linear-gradient(168deg, oklch(0.36 0.10 152) 0%, oklch(0.24 0.08 152) 100%)", borderColor:"oklch(0.82 0.14 82 / 45%)", color:"oklch(0.94 0.1 85)" }}>
+            {next} <SuitBadge suit={s} size={20} />
           </button>
         ))}
         {SUITS.map((s) => (
-          <button key={"c"+s} type="button" onClick={() => onBid({ kind:"capot", seat:"bottom", suit: s })} className="rounded-xl border px-2.5 py-2 font-serif text-xs transition active:scale-[0.97]" style={{ background:"linear-gradient(168deg, oklch(0.35 0.13 55) 0%, oklch(0.22 0.10 45) 100%)", borderColor:"oklch(0.82 0.14 82 / 45%)", color: isRedSuit(s)?"oklch(0.9 0.16 25)":"oklch(0.94 0.1 85)" }}>
-            Capot <span className="text-sm">{s}</span>
+          <button key={"c"+s} type="button" onClick={() => onBid({ kind:"capot", seat:"bottom", suit: s })} className="flex items-center gap-1 rounded-xl border px-2.5 py-2 font-serif text-xs transition active:scale-[0.97]" style={{ background:"linear-gradient(168deg, oklch(0.35 0.13 55) 0%, oklch(0.22 0.10 45) 100%)", borderColor:"oklch(0.82 0.14 82 / 45%)", color:"oklch(0.94 0.1 85)" }}>
+            Capot <SuitBadge suit={s} size={18} />
           </button>
         ))}
       </div>
@@ -1148,12 +1181,12 @@ function ContractChips({ contract, slideTo }: { contract: Contract; slideTo?: Te
       <div className="flex flex-col items-center gap-1.5">
         {b.largeBar > 0 && (
           <div className="animate-scale-in" style={{ animationDelay: "40ms" }}>
-            <ChipBar width={72} height={22} tone="large" value={100} />
+            <ChipBar width={72} height={17} tone="large" value={100} tilt={-5} />
           </div>
         )}
         {b.smallBar > 0 && (
           <div className="animate-scale-in" style={{ animationDelay: "120ms" }}>
-            <ChipBar width={52} height={18} tone="small" value={50} />
+            <ChipBar width={52} height={14} tone="small" value={50} tilt={4} />
           </div>
         )}
         {b.rounds > 0 && (
@@ -1199,7 +1232,7 @@ function TableScoreBadge({ team, label, value, pulse }: { team: Team; label: str
 }
 
 
-function ChipBar({ width, height, tone, value }: { width: number; height: number; tone: "large" | "small"; value: number }) {
+function ChipBar({ width, height, tone, value, tilt = 0 }: { width: number; height: number; tone: "large" | "small"; value: number; tilt?: number }) {
   const bg = tone === "large"
     ? "linear-gradient(180deg, oklch(0.58 0.19 28) 0%, oklch(0.44 0.17 28) 50%, oklch(0.3 0.13 28) 100%)"
     : "linear-gradient(180deg, oklch(0.72 0.16 240) 0%, oklch(0.55 0.15 240) 50%, oklch(0.38 0.13 240) 100%)";
@@ -1213,6 +1246,7 @@ function ChipBar({ width, height, tone, value }: { width: number; height: number
         width, height,
         background: bg,
         clipPath: clip,
+        transform: tilt ? `rotate(${tilt}deg)` : undefined,
         boxShadow: "0 4px 8px -3px oklch(0 0 0 / 55%), 0 1px 0 oklch(1 0 0 / 22%) inset, 0 -1px 0 oklch(0 0 0 / 40%) inset",
       }}
     >
@@ -1287,6 +1321,67 @@ function CapotChip({ suit, suitColor }: { suit: Suit; suitColor: string }) {
         </span>
         <span className="mt-0.5 text-[11px]" style={{ color: suitColor }}>{suit}</span>
       </div>
+    </div>
+  );
+}
+
+function SuitBadge({ suit, size = 20 }: { suit: Suit; size?: number }) {
+  const red = isRedSuit(suit);
+  return (
+    <span
+      className="inline-flex items-center justify-center rounded-md"
+      style={{
+        width: size + 6,
+        height: size + 6,
+        background: "linear-gradient(180deg, oklch(0.99 0.01 90) 0%, oklch(0.92 0.01 85) 100%)",
+        border: "1px solid oklch(0.72 0.02 85)",
+        boxShadow: "0 1px 2px oklch(0 0 0 / 45%), inset 0 1px 0 oklch(1 0 0 / 60%)",
+        color: red ? "#dc2626" : "#0a0a0a",
+        fontSize: size,
+        lineHeight: 1,
+        fontWeight: 700,
+        textShadow: red ? "0 0 1px oklch(0.45 0.2 25 / 30%)" : "none",
+      }}
+    >
+      {suit}
+    </span>
+  );
+}
+
+function TeamStash({ team, stash }: { team: Team; stash: ChipBreakdown[] }) {
+  if (stash.length === 0) return null;
+  // Position: A near bottom-center (below score badge), B near left-middle (right of score badge).
+  const style: React.CSSProperties =
+    team === "A"
+      ? { left: "50%", top: "80%", transform: "translate(-50%, -50%)", maxWidth: "70%" }
+      : { left: "18%", top: "50%", transform: "translate(-50%, -50%)", maxWidth: "22%" };
+  return (
+    <div
+      className="pointer-events-none absolute z-[22] flex flex-wrap items-center justify-center gap-1 animate-fade-in"
+      style={style}
+    >
+      {stash.map((b, i) => (
+        <div key={i} className="flex items-center gap-0.5" style={{ transform: `rotate(${((i * 37) % 11) - 5}deg)` }}>
+          {b.capot && <CapotChip suit={"♠"} suitColor="oklch(0.94 0.14 82)" />}
+          {!b.capot && b.largeBar > 0 && <ChipBar width={34} height={10} tone="large" value={100} tilt={-3} />}
+          {!b.capot && b.smallBar > 0 && <ChipBar width={26} height={9} tone="small" value={50} tilt={3} />}
+          {!b.capot && b.rounds > 0 && (
+            <div className="flex items-center gap-[1px]">
+              {Array.from({ length: b.rounds }).map((_, j) => (
+                <div
+                  key={j}
+                  style={{
+                    width: 9, height: 9, borderRadius: "50%",
+                    background: "linear-gradient(180deg, oklch(0.94 0.02 90) 0%, oklch(0.7 0.02 90) 100%)",
+                    border: "1px solid oklch(0.82 0.14 82 / 70%)",
+                    boxShadow: "0 1px 2px oklch(0 0 0 / 45%)",
+                  }}
+                />
+              ))}
+            </div>
+          )}
+        </div>
+      ))}
     </div>
   );
 }
