@@ -643,8 +643,20 @@ function GameTable() {
               </span>
             </div>
           </div>
-          <h1 className="hidden font-serif text-base font-semibold tracking-wide sm:block" style={{ background:"linear-gradient(180deg, oklch(0.95 0.1 88), oklch(0.72 0.14 78))", WebkitBackgroundClip:"text", backgroundClip:"text", color:"transparent", textShadow:"0 1px 0 oklch(0 0 0 / 40%)" }}>{phaseTitle}</h1>
-          <button type="button" onClick={nextRound} className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border transition active:scale-95" style={{ background:"oklch(0.2 0.03 40 / 60%)", borderColor:"oklch(0.82 0.14 82 / 30%)", backdropFilter:"blur(8px)", color:"oklch(0.9 0.1 85)" }} aria-label="Manche suivante"><RotateCcw className="h-4 w-4" /></button>
+          <div className="flex items-center gap-2">
+            <img
+              src={capiEmblem}
+              alt="CAPI"
+              width={1024}
+              height={1024}
+              className="h-12 w-12"
+              style={{
+                filter:
+                  "drop-shadow(0 6px 10px oklch(0 0 0 / 70%)) drop-shadow(0 0 12px oklch(0.85 0.15 82 / 40%)) contrast(1.1) saturate(1.1) brightness(1.08)",
+              }}
+            />
+            <button type="button" onClick={nextRound} className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border transition active:scale-95" style={{ background:"oklch(0.2 0.03 40 / 60%)", borderColor:"oklch(0.82 0.14 82 / 30%)", backdropFilter:"blur(8px)", color:"oklch(0.9 0.1 85)" }} aria-label="Manche suivante"><RotateCcw className="h-4 w-4" /></button>
+          </div>
         </header>
 
 
