@@ -240,7 +240,7 @@ function WaitingRoom() {
 
 
 
-      <div className="relative z-10 mx-auto flex min-h-screen w-full max-w-3xl flex-col px-2 pt-4 pb-4">
+      <div className="relative z-10 mx-auto flex min-h-screen w-full max-w-none flex-col px-2 pt-4 pb-4">
         {/* Header */}
         <header className="flex items-center justify-between">
           <Link
