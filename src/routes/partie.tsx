@@ -383,10 +383,61 @@ function GameTable() {
             </div>
           )}
 
+          {/* Mode choice — dealer picks the deal pattern before the cut */}
+          {phase === "mode" && (
+            <div
+              className="absolute left-1/2 top-1/2 z-40 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center gap-3 animate-fade-in"
+            >
+              <div
+                className="rounded-full border px-3 py-1.5 text-[11px] font-medium uppercase tracking-[0.2em]"
+                style={{
+                  background: "oklch(0.18 0.03 40 / 80%)",
+                  borderColor: "oklch(0.82 0.14 82 / 35%)",
+                  color: "oklch(0.94 0.1 85)",
+                  backdropFilter: "blur(8px)",
+                }}
+              >
+                {PLAYERS[dealer].name} distribue
+              </div>
+              <div className="flex gap-3">
+                {(["3-2-3", "2-3-3"] as DealMode[]).map((m) => (
+                  <button
+                    key={m}
+                    type="button"
+                    onClick={() => setDealMode(m)}
+                    className="rounded-2xl border px-5 py-3 font-serif text-base font-semibold tracking-wide transition active:scale-[0.97]"
+                    style={{
+                      background:
+                        "linear-gradient(168deg, oklch(0.32 0.09 152) 0%, oklch(0.22 0.07 152) 100%)",
+                      borderColor: "oklch(0.82 0.14 82 / 45%)",
+                      color: "transparent",
+                      backgroundClip: "padding-box",
+                      boxShadow:
+                        "0 10px 22px -12px oklch(0 0 0 / 70%), inset 0 1px 0 oklch(1 0 0 / 12%), inset 0 -6px 12px oklch(0 0 0 / 35%)",
+                    }}
+                  >
+                    <span
+                      style={{
+                        background: "linear-gradient(180deg, oklch(0.96 0.1 88), oklch(0.72 0.14 78))",
+                        WebkitBackgroundClip: "text",
+                        backgroundClip: "text",
+                        color: "transparent",
+                        textShadow: "0 1px 0 oklch(0 0 0 / 40%)",
+                      }}
+                    >
+                      {m}
+                    </span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
           {/* Deck (in front of dealer) — split during cut */}
-          {phase !== "done" && (
+          {phase !== "done" && phase !== "mode" && (
             <DeckStack deckPos={deckPos} cutStep={phase === "cut" ? cutStep : 2} remaining={32 - dealtCount} />
           )}
+
 
           {/* Cards */}
           {dealOrder.map((d, i) => {
