@@ -216,8 +216,10 @@ function WaitingRoom() {
     <main className="relative min-h-screen w-full overflow-hidden bg-background">
       {/* Dark bistro room backdrop — the wooden table is a bounded UI object,
           not a fullscreen wallpaper. */}
-      <div className="pointer-events-none absolute inset-0" style={{ background:"radial-gradient(120% 90% at 50% 45%, oklch(0.12 0.03 40) 0%, oklch(0.06 0.02 40) 62%, oklch(0.03 0.01 40) 100%)" }} />
-      <div className="pointer-events-none absolute inset-0" style={{ background:"radial-gradient(70% 40% at 50% -4%, oklch(0.92 0.17 76 / 38%) 0%, oklch(0.78 0.14 66 / 16%) 32%, transparent 62%)" }} />
+      <div className="pointer-events-none absolute inset-0" style={{ background:"radial-gradient(120% 90% at 50% 40%, oklch(0.14 0.03 40) 0%, oklch(0.07 0.02 40) 55%, oklch(0.03 0.01 40) 100%)" }} />
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 h-[42%]" style={{ background:"repeating-linear-gradient(92deg, oklch(0.16 0.04 40) 0 22px, oklch(0.12 0.03 38) 22px 44px, oklch(0.14 0.035 42) 44px 68px)", opacity:0.55, filter:"blur(6px)", maskImage:"linear-gradient(to top, black 0%, black 40%, transparent 100%)", WebkitMaskImage:"linear-gradient(to top, black 0%, black 40%, transparent 100%)" }} />
+      <div className="pointer-events-none absolute inset-0" style={{ background:"radial-gradient(70% 40% at 50% -4%, oklch(0.92 0.17 76 / 40%) 0%, oklch(0.78 0.14 66 / 16%) 32%, transparent 62%)" }} />
+      <div className="pointer-events-none absolute inset-0" style={{ background:"radial-gradient(75% 65% at 50% 50%, transparent 45%, oklch(0 0 0 / 55%) 100%)" }} />
 
 
       <div className="relative z-10 mx-auto flex min-h-screen w-full max-w-md flex-col px-5 pt-6 pb-8">
@@ -311,7 +313,7 @@ function WaitingRoom() {
 
         {/* Table area — the wooden bistro table image is a bounded, centered
             UI object. Seats sit around the OUTSIDE of the wooden border. */}
-        <section className="relative mx-auto my-auto w-full max-w-[400px]">
+        <section className="relative mx-auto my-auto w-full max-w-[380px] px-2 py-3">
           <div className="relative mx-auto aspect-square w-full">
             <img
               src={bistrotTable}
@@ -332,25 +334,25 @@ function WaitingRoom() {
             {/* Seats — positioned around the OUTSIDE of the wooden border */}
             <SeatSlot
               seat={seats.find((s) => s.position === "top")!}
-              style={{ left: "50%", top: "-64px", transform: "translate(-50%, 0)" }}
+              style={{ left: "50%", top: "-82px", transform: "translate(-50%, 0)" }}
               delay={80}
               onInvite={() => setInviteOpen(true)}
             />
             <SeatSlot
               seat={seats.find((s) => s.position === "left")!}
-              style={{ left: "-46px", top: "50%", transform: "translate(0, -50%)" }}
+              style={{ left: "-64px", top: "50%", transform: "translate(0, -50%)" }}
               delay={180}
               onInvite={() => setInviteOpen(true)}
             />
             <SeatSlot
               seat={seats.find((s) => s.position === "right")!}
-              style={{ right: "-46px", top: "50%", transform: "translate(0, -50%)" }}
+              style={{ right: "-64px", top: "50%", transform: "translate(0, -50%)" }}
               delay={260}
               onInvite={() => setInviteOpen(true)}
             />
             <SeatSlot
               seat={seats.find((s) => s.position === "bottom")!}
-              style={{ left: "50%", bottom: "-84px", transform: "translate(-50%, 0)" }}
+              style={{ left: "50%", bottom: "-104px", transform: "translate(-50%, 0)" }}
               isLocal
               delay={0}
               onInvite={() => setInviteOpen(true)}

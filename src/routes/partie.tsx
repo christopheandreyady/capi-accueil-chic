@@ -587,8 +587,13 @@ function GameTable() {
 
       {/* Deep bistro room background — kept dark so the wooden table becomes
           the actual UI object rather than a wallpaper. */}
-      <div className="pointer-events-none absolute inset-0" style={{ background:"radial-gradient(120% 90% at 50% 45%, oklch(0.12 0.03 40) 0%, oklch(0.06 0.02 40) 62%, oklch(0.03 0.01 40) 100%)" }} />
-      <div className="pointer-events-none absolute inset-0" style={{ background:"radial-gradient(70% 40% at 50% -4%, oklch(0.92 0.17 76 / 38%) 0%, oklch(0.78 0.14 66 / 16%) 32%, transparent 62%)" }} />
+      <div className="pointer-events-none absolute inset-0" style={{ background:"radial-gradient(120% 90% at 50% 40%, oklch(0.14 0.03 40) 0%, oklch(0.07 0.02 40) 55%, oklch(0.03 0.01 40) 100%)" }} />
+      {/* Subtle dark wooden floor at the bottom of the room — heavily blurred so it never competes with the table. */}
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 h-[42%]" style={{ background:"repeating-linear-gradient(92deg, oklch(0.16 0.04 40) 0 22px, oklch(0.12 0.03 38) 22px 44px, oklch(0.14 0.035 42) 44px 68px)", opacity:0.55, filter:"blur(6px)", maskImage:"linear-gradient(to top, black 0%, black 40%, transparent 100%)", WebkitMaskImage:"linear-gradient(to top, black 0%, black 40%, transparent 100%)" }} />
+      {/* Warm ambient bounce from above */}
+      <div className="pointer-events-none absolute inset-0" style={{ background:"radial-gradient(70% 40% at 50% -4%, oklch(0.92 0.17 76 / 40%) 0%, oklch(0.78 0.14 66 / 16%) 32%, transparent 62%)" }} />
+      {/* Deep room vignette to frame the table */}
+      <div className="pointer-events-none absolute inset-0" style={{ background:"radial-gradient(75% 65% at 50% 50%, transparent 45%, oklch(0 0 0 / 55%) 100%)" }} />
 
 
       <div className="relative z-10 mx-auto flex min-h-screen w-full max-w-md flex-col px-4 pt-4 pb-4">
@@ -621,7 +626,7 @@ function GameTable() {
         </header>
 
 
-        <div ref={boxRef} className="relative mx-auto my-auto w-full max-w-[400px]">
+        <div ref={boxRef} className="relative mx-auto my-auto w-full max-w-[380px] px-2 py-3">
           <div className="relative mx-auto aspect-square w-full">
             {/* The wooden bistro table is the central UI object. The existing
                 artwork fills this bounded square exactly — no fullscreen
@@ -1121,10 +1126,10 @@ function PlayerBadge({
   isActive?: boolean; isThinking?: boolean; announcement?: Bid | null; announcementIsTaker?: boolean;
 }) {
   const style: React.CSSProperties =
-    position === "bottom" ? { left:"50%", bottom:"-84px", transform:"translate(-50%, 0)" }
-    : position === "top" ? { left:"50%", top:"-64px", transform:"translate(-50%, 0)" }
-    : position === "left" ? { left:"-46px", top:"50%", transform:"translate(0, -50%)" }
-    : { right:"-46px", top:"50%", transform:"translate(0, -50%)" };
+    position === "bottom" ? { left:"50%", bottom:"-104px", transform:"translate(-50%, 0)" }
+    : position === "top" ? { left:"50%", top:"-82px", transform:"translate(-50%, 0)" }
+    : position === "left" ? { left:"-64px", top:"50%", transform:"translate(0, -50%)" }
+    : { right:"-64px", top:"50%", transform:"translate(0, -50%)" };
 
 
 
