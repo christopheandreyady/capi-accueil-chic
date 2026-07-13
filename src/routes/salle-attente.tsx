@@ -214,18 +214,11 @@ function WaitingRoom() {
 
   return (
     <main className="relative min-h-screen w-full overflow-hidden bg-background">
-      <img
-        src={bistrotTable}
-        alt=""
-        width={1024}
-        height={1536}
-        className="pointer-events-none absolute inset-0 h-full w-full object-cover"
-        style={{ transform: "scale(0.78)", transformOrigin: "50% 48%" }}
-      />
-      {/* Same lighting stack as /partie: warm bistro key light + vignette. */}
-      <div className="pointer-events-none absolute inset-0" style={{ background:"radial-gradient(72% 44% at 50% -6%, oklch(0.92 0.17 76 / 50%) 0%, oklch(0.78 0.14 66 / 24%) 32%, transparent 64%)" }} />
-      <div className="pointer-events-none absolute inset-0" style={{ background:"radial-gradient(130% 92% at 50% 56%, transparent 0%, oklch(0 0 0 / 60%) 62%, oklch(0.05 0.02 40 / 98%) 100%)" }} />
-      <div className="pointer-events-none absolute inset-0" style={{ background:"linear-gradient(180deg, oklch(0.08 0.03 40 / 82%) 0%, transparent 22%, transparent 58%, oklch(0.05 0.02 40 / 96%) 100%)" }} />
+      {/* Dark bistro room backdrop — the wooden table is a bounded UI object,
+          not a fullscreen wallpaper. */}
+      <div className="pointer-events-none absolute inset-0" style={{ background:"radial-gradient(120% 90% at 50% 45%, oklch(0.12 0.03 40) 0%, oklch(0.06 0.02 40) 62%, oklch(0.03 0.01 40) 100%)" }} />
+      <div className="pointer-events-none absolute inset-0" style={{ background:"radial-gradient(70% 40% at 50% -4%, oklch(0.92 0.17 76 / 38%) 0%, oklch(0.78 0.14 66 / 16%) 32%, transparent 62%)" }} />
+
 
       <div className="relative z-10 mx-auto flex min-h-screen w-full max-w-md flex-col px-5 pt-6 pb-8">
         {/* Header */}
@@ -316,47 +309,55 @@ function WaitingRoom() {
           </div>
         </div>}
 
-        {/* Table area — background artwork provides the wooden table + felt.
-            No CSS table is drawn on top; seats sit directly on the photo like
-            in /partie before the first card is dealt. */}
-        <section className="relative mx-auto mt-2 w-full max-w-[480px] flex-1">
+        {/* Table area — the wooden bistro table image is a bounded, centered
+            UI object. Seats sit around the OUTSIDE of the wooden border. */}
+        <section className="relative mx-auto my-auto w-full max-w-[400px]">
           <div className="relative mx-auto aspect-square w-full">
+            <img
+              src={bistrotTable}
+              alt=""
+              width={1024}
+              height={1024}
+              className="pointer-events-none absolute inset-0 h-full w-full rounded-[6%] object-cover"
+              style={{ boxShadow: "0 30px 60px -20px oklch(0 0 0 / 85%), 0 12px 28px -12px oklch(0 0 0 / 70%)" }}
+            />
             {/* Warm central halo + soft focus vignette on the play area */}
-            <div className="pointer-events-none absolute inset-0" style={{ background:"radial-gradient(38% 30% at 50% 50%, oklch(0.9 0.14 78 / 16%) 0%, oklch(0.85 0.12 72 / 6%) 45%, transparent 75%)" }} />
-            <div className="pointer-events-none absolute inset-0" style={{ background:"radial-gradient(60% 55% at 50% 50%, transparent 0%, transparent 55%, oklch(0 0 0 / 32%) 100%)" }} />
+            <div className="pointer-events-none absolute inset-0 rounded-[6%]" style={{ background:"radial-gradient(38% 30% at 50% 50%, oklch(0.9 0.14 78 / 16%) 0%, oklch(0.85 0.12 72 / 6%) 45%, transparent 75%)" }} />
+            <div className="pointer-events-none absolute inset-0 rounded-[6%]" style={{ background:"radial-gradient(60% 55% at 50% 50%, transparent 0%, transparent 55%, oklch(0 0 0 / 32%) 100%)" }} />
 
             {/* Ambient decorations resting on the wood — corners only, never
                 obstruct the seats or the empty center of the table. */}
             <AmbientDecor />
 
-            {/* Seats — positioned exactly like /partie's PlayerBadge */}
+            {/* Seats — positioned around the OUTSIDE of the wooden border */}
             <SeatSlot
               seat={seats.find((s) => s.position === "top")!}
-              style={{ left: "50%", top: "-2%", transform: "translate(-50%, 0)" }}
+              style={{ left: "50%", top: "-64px", transform: "translate(-50%, 0)" }}
               delay={80}
               onInvite={() => setInviteOpen(true)}
             />
             <SeatSlot
               seat={seats.find((s) => s.position === "left")!}
-              style={{ left: "0%", top: "50%", transform: "translate(0, -50%)" }}
+              style={{ left: "-46px", top: "50%", transform: "translate(0, -50%)" }}
               delay={180}
               onInvite={() => setInviteOpen(true)}
             />
             <SeatSlot
               seat={seats.find((s) => s.position === "right")!}
-              style={{ right: "0%", top: "50%", transform: "translate(0, -50%)" }}
+              style={{ right: "-46px", top: "50%", transform: "translate(0, -50%)" }}
               delay={260}
               onInvite={() => setInviteOpen(true)}
             />
             <SeatSlot
               seat={seats.find((s) => s.position === "bottom")!}
-              style={{ left: "50%", bottom: "-2%", transform: "translate(-50%, 0)" }}
+              style={{ left: "50%", bottom: "-84px", transform: "translate(-50%, 0)" }}
               isLocal
               delay={0}
               onInvite={() => setInviteOpen(true)}
             />
           </div>
         </section>
+
 
 
         {/* Bottom actions — a single "Je suis prêt" button; everything disappears when the table is fully ready */}

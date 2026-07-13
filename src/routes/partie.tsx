@@ -585,19 +585,11 @@ function GameTable() {
         @keyframes capi-think-dots { 0%,20%{opacity:.2;} 50%{opacity:1;} 80%,100%{opacity:.2;} }
       `}</style>
 
-      <img
-        src={bistrotTable}
-        alt=""
-        width={1024}
-        height={1536}
-        className="pointer-events-none absolute inset-0 h-full w-full object-cover"
-        style={{ transform: "scale(0.78)", transformOrigin: "50% 48%" }}
-      />
-      {/* Warm bistro key light from above, then a deep vignette that pulls
-          the eye toward the table. Slightly warmer, richer wood presence. */}
-      <div className="pointer-events-none absolute inset-0" style={{ background:"radial-gradient(72% 44% at 50% -6%, oklch(0.92 0.17 76 / 50%) 0%, oklch(0.78 0.14 66 / 24%) 32%, transparent 64%)" }} />
-      <div className="pointer-events-none absolute inset-0" style={{ background:"radial-gradient(130% 92% at 50% 56%, transparent 0%, oklch(0 0 0 / 60%) 62%, oklch(0.05 0.02 40 / 98%) 100%)" }} />
-      <div className="pointer-events-none absolute inset-0" style={{ background:"linear-gradient(180deg, oklch(0.08 0.03 40 / 82%) 0%, transparent 22%, transparent 58%, oklch(0.05 0.02 40 / 96%) 100%)" }} />
+      {/* Deep bistro room background — kept dark so the wooden table becomes
+          the actual UI object rather than a wallpaper. */}
+      <div className="pointer-events-none absolute inset-0" style={{ background:"radial-gradient(120% 90% at 50% 45%, oklch(0.12 0.03 40) 0%, oklch(0.06 0.02 40) 62%, oklch(0.03 0.01 40) 100%)" }} />
+      <div className="pointer-events-none absolute inset-0" style={{ background:"radial-gradient(70% 40% at 50% -4%, oklch(0.92 0.17 76 / 38%) 0%, oklch(0.78 0.14 66 / 16%) 32%, transparent 62%)" }} />
+
 
       <div className="relative z-10 mx-auto flex min-h-screen w-full max-w-md flex-col px-4 pt-4 pb-4">
         <header className="flex items-center justify-between gap-2">
@@ -629,13 +621,24 @@ function GameTable() {
         </header>
 
 
-        <div ref={boxRef} className="relative mx-auto mt-2 w-full max-w-[480px] flex-1">
+        <div ref={boxRef} className="relative mx-auto my-auto w-full max-w-[400px]">
           <div className="relative mx-auto aspect-square w-full">
-            {/* Table surface is provided by the background artwork (bistrotTable).
-                No wooden/felt overlay is drawn here — game elements sit directly
-                on the photographed table. Soft central halo + vignette. */}
-            <div className="pointer-events-none absolute inset-0" style={{ background:"radial-gradient(38% 30% at 50% 50%, oklch(0.9 0.14 78 / 14%) 0%, oklch(0.85 0.12 72 / 6%) 45%, transparent 75%)" }} />
-            <div className="pointer-events-none absolute inset-0" style={{ background:"radial-gradient(60% 55% at 50% 50%, transparent 0%, transparent 55%, oklch(0 0 0 / 32%) 100%)" }} />
+            {/* The wooden bistro table is the central UI object. The existing
+                artwork fills this bounded square exactly — no fullscreen
+                wallpaper. Everything else (avatars, decor) sits around it. */}
+            <img
+              src={bistrotTable}
+              alt=""
+              width={1024}
+              height={1024}
+              className="pointer-events-none absolute inset-0 h-full w-full rounded-[6%] object-cover"
+              style={{ boxShadow: "0 30px 60px -20px oklch(0 0 0 / 85%), 0 12px 28px -12px oklch(0 0 0 / 70%)" }}
+            />
+            {/* Soft central halo + subtle edge vignette on the felt. */}
+            <div className="pointer-events-none absolute inset-0 rounded-[6%]" style={{ background:"radial-gradient(38% 30% at 50% 50%, oklch(0.9 0.14 78 / 14%) 0%, oklch(0.85 0.12 72 / 6%) 45%, transparent 75%)" }} />
+            <div className="pointer-events-none absolute inset-0 rounded-[6%]" style={{ background:"radial-gradient(60% 55% at 50% 50%, transparent 0%, transparent 55%, oklch(0 0 0 / 32%) 100%)" }} />
+
+
 
 
             {/* Player badges */}
@@ -1118,10 +1121,11 @@ function PlayerBadge({
   isActive?: boolean; isThinking?: boolean; announcement?: Bid | null; announcementIsTaker?: boolean;
 }) {
   const style: React.CSSProperties =
-    position === "bottom" ? { left:"50%", bottom:"-78px", transform:"translate(-50%, 0)" }
-    : position === "top" ? { left:"50%", top:"-2%", transform:"translate(-50%, 0)" }
-    : position === "left" ? { left:"0%", top:"50%", transform:"translate(0, -50%)" }
-    : { right:"0%", top:"50%", transform:"translate(0, -50%)" };
+    position === "bottom" ? { left:"50%", bottom:"-84px", transform:"translate(-50%, 0)" }
+    : position === "top" ? { left:"50%", top:"-64px", transform:"translate(-50%, 0)" }
+    : position === "left" ? { left:"-46px", top:"50%", transform:"translate(0, -50%)" }
+    : { right:"-46px", top:"50%", transform:"translate(0, -50%)" };
+
 
 
   const team = position === "bottom" || position === "top" ? "A" : "B";
