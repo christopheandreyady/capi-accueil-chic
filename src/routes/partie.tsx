@@ -1203,6 +1203,9 @@ function CardBack() {
   );
 }
 
+// --- Contract chips visualization ------------------------------------------
+type ChipBreakdown = { largeBar: number; smallBar: number; rounds: number; capot: boolean };
+
 // Breakdown from an arbitrary rounded score (multiples of 10).
 // 100 = grande barrette, 50 = petite barrette, 10 = jeton rond.
 function breakdownFromScore(score: number): ChipBreakdown {
@@ -1213,9 +1216,7 @@ function breakdownFromScore(score: number): ChipBreakdown {
   rem -= smallBar * 50;
   const rounds = Math.round(rem / 10);
   return { largeBar, smallBar, rounds, capot: false };
-
-// --- Contract chips visualization ------------------------------------------
-type ChipBreakdown = { largeBar: number; smallBar: number; rounds: number; capot: boolean };
+}
 
 function contractChipBreakdown(contract: Contract): ChipBreakdown {
   if (contract.isCapot) return { largeBar: 0, smallBar: 0, rounds: 0, capot: true };
