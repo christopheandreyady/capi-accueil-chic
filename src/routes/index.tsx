@@ -17,7 +17,7 @@ export const Route = createFileRoute("/")({
       { property: "og:title", content: "CAPI — La Contrée entre amis" },
       {
         property: "og:description",
-        content: "L'app premium de Contrée : jouez, organisez des tournois, retrouvez vos amis.",
+        content: "CAPI, l'application premium pour jouer à la Contrée entre amis. Parties, tournois et classements dans une ambiance bistrot français.",
       },
     ],
   }),

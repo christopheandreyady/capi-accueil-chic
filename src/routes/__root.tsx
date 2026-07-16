@@ -80,11 +80,15 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
       { title: "CAPI — La Contrée entre amis" },
-      { name: "description", content: "CAPI, l'application premium de Contrée : jouez entre amis autour d'une véritable table de bistrot." },
+      { name: "description", content: "CAPI, l'application premium pour jouer à la Contrée entre amis. Parties, tournois et classements dans une ambiance bistrot français." },
       { property: "og:title", content: "CAPI — La Contrée entre amis" },
-      { property: "og:description", content: "L'application premium de Contrée. Jouez entre amis dans une ambiance bistrot française." },
+      { property: "og:description", content: "CAPI, l'application premium pour jouer à la Contrée entre amis. Parties, tournois et classements dans une ambiance bistrot français." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
+      { name: "twitter:title", content: "CAPI — La Contrée entre amis" },
+      { name: "twitter:description", content: "CAPI, l'application premium pour jouer à la Contrée entre amis. Parties, tournois et classements dans une ambiance bistrot français." },
+      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/2927f068-21aa-4c92-a666-1813059c0a97/id-preview-8c37f333--94011aef-c9b3-4023-8245-082a923ab29d.lovable.app-1784241764486.png" },
+      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/2927f068-21aa-4c92-a666-1813059c0a97/id-preview-8c37f333--94011aef-c9b3-4023-8245-082a923ab29d.lovable.app-1784241764486.png" },
     ],
 
     links: [
