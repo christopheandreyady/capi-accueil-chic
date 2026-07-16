@@ -678,8 +678,8 @@ function GameTable() {
               alt=""
               width={1280}
               height={1280}
-              className="pointer-events-none absolute inset-0 h-full w-full object-contain"
-              style={{ filter: "drop-shadow(0 30px 40px oklch(0 0 0 / 75%)) drop-shadow(0 10px 18px oklch(0 0 0 / 55%))" }}
+              className="pointer-events-none absolute h-full w-full object-contain"
+              style={{ inset: "-7%", filter: "drop-shadow(0 30px 40px oklch(0 0 0 / 75%)) drop-shadow(0 10px 18px oklch(0 0 0 / 55%))" }}
             />
             {/* Warm key light on the felt — masked to a circle so it never spills onto the room. */}
             <div className="pointer-events-none absolute inset-[8%] rounded-full" style={{ background:"radial-gradient(45% 38% at 50% 45%, oklch(0.92 0.15 78 / 22%) 0%, oklch(0.85 0.12 72 / 8%) 50%, transparent 78%)" }} />
