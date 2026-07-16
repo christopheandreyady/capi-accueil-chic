@@ -777,22 +777,22 @@ function GameTable() {
               <DeckStack deckPos={deckPos} cutStep={phase==="cut"?cutStep:2} remaining={32-dealtCount} />
             )}
 
-            {/* Dealing animation cards */}
+            {/* Dealing animation cards — only cards that have left the pack
+                are rendered here. Undealt cards stay hidden inside DeckStack
+                so the deck never inflates during the animation. */}
             {showDealtCards && dealOrder.map((d, i) => {
               const isDealt = i < dealtCount && phase !== "cut";
+              if (!isDealt) return null;
               if (!dealingTargetsRef.current[d.card.id]) {
                 dealingTargetsRef.current[d.card.id] = handTarget(d.seat, d.indexInHand, 8, anchors);
               }
               const target = dealingTargetsRef.current[d.card.id];
-              const x = isDealt ? target.x : deckPos.x;
-              const y = isDealt ? target.y : deckPos.y;
-              const rotate = isDealt ? target.rotate : deckPos.angle + (i%2===0?-1.5:1.5);
-              const w = isDealt ? target.w : CARD_W_DECK;
-              const h = isDealt ? target.h : CARD_H_DECK;
-              const showFace = isDealt && d.seat === "bottom";
-              const z = isDealt ? 100 + d.indexInHand + (d.seat==="bottom"?50:0) : 20 + (32-i);
+              const showFace = d.seat === "bottom";
+              const z = 100 + d.indexInHand + (d.seat==="bottom"?50:0);
+              // Cards fly from the deck position to their hand target.
+              // They start at deck size and interpolate up to hand size via CSS.
               return (
-                <div key={d.card.id} className="absolute left-0 top-0" style={{ width:w, height:h, transform:`translate3d(${x-w/2}px, ${y-h/2}px, 0) rotate(${rotate}deg)`, transition:`transform ${FLIGHT_MS}ms cubic-bezier(0.22, 0.7, 0.25, 1), width ${FLIGHT_MS}ms ease, height ${FLIGHT_MS}ms ease`, zIndex:z, willChange:"transform" }}>
+                <div key={d.card.id} className="absolute left-0 top-0" style={{ width:target.w, height:target.h, transform:`translate3d(${target.x-target.w/2}px, ${target.y-target.h/2}px, 0) rotate(${target.rotate}deg)`, transition:`transform ${FLIGHT_MS}ms cubic-bezier(0.22, 0.7, 0.25, 1)`, zIndex:z, willChange:"transform" }}>
                   {showFace ? <CardFace card={d.card} /> : <CardBack />}
                 </div>
               );
