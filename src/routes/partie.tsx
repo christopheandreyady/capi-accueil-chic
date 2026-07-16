@@ -478,9 +478,9 @@ function GameTable() {
     // The wooden rim is ~7-8% of the smaller dim. Cards must sit on the
     // felt (well inside the wood), avatars sit on the rim. Bottom hand
     // sits lower on the felt so the center emblem stays visible.
-    const insetTop = h * 0.19;
-    const insetBottom = h * 0.075;
-    const insetH = w * 0.14;
+    const insetTop = h * 0.13;
+    const insetBottom = h * 0.04;
+    const insetH = w * 0.10;
     return {
       bottom: { x: w * 0.5, y: h - insetBottom, angle: 0 },
       top: { x: w * 0.5, y: insetTop, angle: 180 },
@@ -678,8 +678,8 @@ function GameTable() {
               alt=""
               width={1280}
               height={1280}
-              className="pointer-events-none absolute inset-0 h-full w-full object-contain"
-              style={{ filter: "drop-shadow(0 30px 40px oklch(0 0 0 / 75%)) drop-shadow(0 10px 18px oklch(0 0 0 / 55%))" }}
+              className="pointer-events-none absolute h-full w-full object-contain"
+              style={{ inset: "-7%", filter: "drop-shadow(0 30px 40px oklch(0 0 0 / 75%)) drop-shadow(0 10px 18px oklch(0 0 0 / 55%))" }}
             />
             {/* Warm key light on the felt — masked to a circle so it never spills onto the room. */}
             <div className="pointer-events-none absolute inset-[8%] rounded-full" style={{ background:"radial-gradient(45% 38% at 50% 45%, oklch(0.92 0.15 78 / 22%) 0%, oklch(0.85 0.12 72 / 8%) 50%, transparent 78%)" }} />
@@ -845,9 +845,9 @@ function handTarget(seat: Position, index: number, total: number, anchors: Ancho
   // so the hand always stays visually compact with no gap where a card was.
   // Slightly wider angle + larger radius on the bottom hand → each card is
   // clearly distinguishable while keeping a natural fan shape.
-  const stepDeg = isBottom ? 9 : 2.2;
+  const stepDeg = isBottom ? 10.5 : 2.2;
   const localAngle = total > 1 ? -((total - 1) / 2) * stepDeg + stepDeg * index : 0;
-  const radius = isBottom ? 110 : 56;
+  const radius = isBottom ? 122 : 56;
   const rad = (localAngle * Math.PI) / 180;
   const lx = Math.sin(rad) * radius;
   const ly = -Math.cos(rad) * radius;
@@ -1194,10 +1194,10 @@ function PlayerBadge({
   // just inside the table edge so no avatar can visually leave the play
   // zone, and every seat scales automatically with the table.
   const style: React.CSSProperties =
-    position === "bottom" ? { left:"50%", bottom:"6%", transform:"translate(-50%, 0)" }
-    : position === "top" ? { left:"50%", top:"6%", transform:"translate(-50%, 0)" }
-    : position === "left" ? { left:"6%", top:"50%", transform:"translate(0, -50%)" }
-    : { right:"6%", top:"50%", transform:"translate(0, -50%)" };
+    position === "bottom" ? { left:"50%", bottom:"3%", transform:"translate(-50%, 0)" }
+    : position === "top" ? { left:"50%", top:"3%", transform:"translate(-50%, 0)" }
+    : position === "left" ? { left:"3%", top:"50%", transform:"translate(0, -50%)" }
+    : { right:"3%", top:"50%", transform:"translate(0, -50%)" };
 
 
 
@@ -1431,9 +1431,15 @@ function contractChipBreakdown(contract: Contract): ChipBreakdown {
 function ContractChips({ contract, slideTo }: { contract: Contract; slideTo?: Team | null }) {
   const b = contractChipBreakdown(contract);
   const suitColor = isRedSuit(contract.suit) ? "oklch(0.72 0.2 25)" : "oklch(0.18 0.02 40)";
+  const team = TEAM_OF[contract.bidder];
 
-  // Slides toward the same side as the winning team's stash so the handoff
-  // reads as one continuous motion (A → bottom-right, B → top-left).
+  // Bid chips rest on the wooden rim, on the taker's team side, then slide to
+  // the winning team's stash for the handoff (A → bottom-right, B → top-left).
+  const baseStyle: React.CSSProperties =
+    team === "A"
+      ? { top: "94%", left: "94%", transform: "translate(-50%, -50%)" }
+      : { top: "6%", left: "6%", transform: "translate(-50%, -50%)" };
+
   const slideStyle: React.CSSProperties = slideTo
     ? {
         top: slideTo === "A" ? "78%" : "22%",
@@ -1441,7 +1447,7 @@ function ContractChips({ contract, slideTo }: { contract: Contract; slideTo?: Te
         transform: "translate(-50%, -50%) scale(0.66)",
         opacity: 0.85,
       }
-    : { top: "50%", left: "50%", transform: "translate(-50%, -50%)" };
+    : baseStyle;
 
   const wrapperStyle: React.CSSProperties = {
     position: "absolute",
@@ -1646,8 +1652,8 @@ function TeamStash({ team, stash }: { team: Team; stash: ChipBreakdown[] }) {
   // rotated and offset like real chips pushed aside after a hand.
   const style: React.CSSProperties =
     team === "A"
-      ? { right: "2%", bottom: "3%", width: "30%" }
-      : { left: "2%", top: "3%", width: "30%" };
+      ? { right: "4%", bottom: "4%", width: "30%" }
+      : { left: "4%", top: "4%", width: "30%" };
   return (
     <div
       className="pointer-events-none absolute z-[22] flex flex-wrap gap-1.5"
