@@ -1437,8 +1437,8 @@ function ContractChips({ contract, slideTo }: { contract: Contract; slideTo?: Te
   // the winning team's stash for the handoff (A → bottom-right, B → top-left).
   const baseStyle: React.CSSProperties =
     team === "A"
-      ? { top: "88%", left: "90%", transform: "translate(-50%, -50%)" }
-      : { top: "12%", left: "10%", transform: "translate(-50%, -50%)" };
+      ? { top: "94%", left: "94%", transform: "translate(-50%, -50%)" }
+      : { top: "6%", left: "6%", transform: "translate(-50%, -50%)" };
 
   const slideStyle: React.CSSProperties = slideTo
     ? {
