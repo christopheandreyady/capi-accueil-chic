@@ -1652,8 +1652,8 @@ function TeamStash({ team, stash }: { team: Team; stash: ChipBreakdown[] }) {
   // rotated and offset like real chips pushed aside after a hand.
   const style: React.CSSProperties =
     team === "A"
-      ? { right: "2%", bottom: "3%", width: "30%" }
-      : { left: "2%", top: "3%", width: "30%" };
+      ? { right: "4%", bottom: "4%", width: "30%" }
+      : { left: "4%", top: "4%", width: "30%" };
   return (
     <div
       className="pointer-events-none absolute z-[22] flex flex-wrap gap-1.5"
