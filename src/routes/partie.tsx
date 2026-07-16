@@ -1431,9 +1431,15 @@ function contractChipBreakdown(contract: Contract): ChipBreakdown {
 function ContractChips({ contract, slideTo }: { contract: Contract; slideTo?: Team | null }) {
   const b = contractChipBreakdown(contract);
   const suitColor = isRedSuit(contract.suit) ? "oklch(0.72 0.2 25)" : "oklch(0.18 0.02 40)";
+  const team = TEAM_OF[contract.bidder];
 
-  // Slides toward the same side as the winning team's stash so the handoff
-  // reads as one continuous motion (A → bottom-right, B → top-left).
+  // Bid chips rest on the wooden rim, on the taker's team side, then slide to
+  // the winning team's stash for the handoff (A → bottom-right, B → top-left).
+  const baseStyle: React.CSSProperties =
+    team === "A"
+      ? { top: "88%", left: "90%", transform: "translate(-50%, -50%)" }
+      : { top: "12%", left: "10%", transform: "translate(-50%, -50%)" };
+
   const slideStyle: React.CSSProperties = slideTo
     ? {
         top: slideTo === "A" ? "78%" : "22%",
@@ -1441,7 +1447,7 @@ function ContractChips({ contract, slideTo }: { contract: Contract; slideTo?: Te
         transform: "translate(-50%, -50%) scale(0.66)",
         opacity: 0.85,
       }
-    : { top: "50%", left: "50%", transform: "translate(-50%, -50%)" };
+    : baseStyle;
 
   const wrapperStyle: React.CSSProperties = {
     position: "absolute",
