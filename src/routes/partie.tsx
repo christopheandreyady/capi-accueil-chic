@@ -479,7 +479,7 @@ function GameTable() {
     // felt (well inside the wood), avatars sit on the rim. Bottom hand
     // sits lower on the felt so the center emblem stays visible.
     const insetTop = h * 0.19;
-    const insetBottom = h * 0.11;
+    const insetBottom = h * 0.075;
     const insetH = w * 0.14;
     return {
       bottom: { x: w * 0.5, y: h - insetBottom, angle: 0 },
