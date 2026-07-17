@@ -1240,12 +1240,26 @@ function PlayerBadge({
   );
 }
 
-function AnnouncementBubble({ bid, position, isTaker }: { bid: Bid; position: Position; isTaker?: boolean }) {
+function AnnouncementBubble({
+  bid,
+  position,
+  isTaker,
+  multiplier,
+}: {
+  bid: Bid;
+  position: Position;
+  isTaker?: boolean;
+  multiplier?: 1 | 2 | 4;
+}) {
   const isPass = bid.kind === "pass";
-  const suit = bid.kind === "pass" ? null : bid.suit;
+  const isCounter = bid.kind === "contre" || bid.kind === "surcontre";
+  const suit =
+    bid.kind === "bid" || bid.kind === "capot" ? bid.suit : null;
   const label =
     bid.kind === "pass" ? "Passe"
     : bid.kind === "capot" ? "Capot"
+    : bid.kind === "contre" ? "Contre"
+    : bid.kind === "surcontre" ? "Surcontre"
     : String(bid.points);
   // Small dark ribbon integrated just under the avatar — no white box.
   const placement: React.CSSProperties =
@@ -1254,6 +1268,7 @@ function AnnouncementBubble({ bid, position, isTaker }: { bid: Bid; position: Po
       : { top: "calc(100% + 6px)", left: "50%" };
   const fontSize = isTaker ? 15 : 16;
   const tilt = position === "bottom" ? -1.4 : position === "top" ? 1.2 : position === "left" ? -2 : 2;
+  const counterBadge = multiplier && multiplier > 1 ? (multiplier === 4 ? "×4" : "×2") : null;
   return (
     <div
       className="absolute whitespace-nowrap animate-scale-in"
@@ -1263,10 +1278,14 @@ function AnnouncementBubble({ bid, position, isTaker }: { bid: Bid; position: Po
         zIndex: 40,
         padding: "3px 10px",
         borderRadius: 999,
-        background: "linear-gradient(180deg, oklch(0.22 0.04 40 / 96%) 0%, oklch(0.10 0.03 40 / 98%) 100%)",
-        border: isTaker
-          ? "1px solid oklch(0.85 0.16 82 / 85%)"
-          : "1px solid oklch(0.78 0.13 82 / 55%)",
+        background: isCounter
+          ? "linear-gradient(180deg, oklch(0.28 0.11 30 / 96%) 0%, oklch(0.14 0.09 30 / 98%) 100%)"
+          : "linear-gradient(180deg, oklch(0.22 0.04 40 / 96%) 0%, oklch(0.10 0.03 40 / 98%) 100%)",
+        border: isCounter
+          ? "1px solid oklch(0.82 0.18 40 / 90%)"
+          : isTaker
+            ? "1px solid oklch(0.85 0.16 82 / 85%)"
+            : "1px solid oklch(0.78 0.13 82 / 55%)",
         boxShadow:
           "0 6px 14px -6px oklch(0 0 0 / 85%), inset 0 1px 0 oklch(1 0 0 / 12%), inset 0 -1px 0 oklch(0 0 0 / 55%)",
         color: "oklch(0.97 0.09 85)",
@@ -1289,6 +1308,19 @@ function AnnouncementBubble({ bid, position, isTaker }: { bid: Bid; position: Po
             }}
           >
             {suit}
+          </span>
+        )}
+        {isTaker && counterBadge && (
+          <span
+            style={{
+              marginLeft: 2,
+              fontSize: fontSize - 2,
+              fontWeight: 900,
+              color: "oklch(0.92 0.18 40)",
+              textShadow: "0 1px 0 oklch(0 0 0 / 70%)",
+            }}
+          >
+            {counterBadge}
           </span>
         )}
       </span>
