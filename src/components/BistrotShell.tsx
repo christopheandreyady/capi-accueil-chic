@@ -49,7 +49,19 @@ export function BistrotShell({ title, subtitle, backTo, children, variant = "tab
         }}
       />
 
-      <div className="relative z-10 mx-auto flex min-h-screen w-full max-w-md flex-col px-5 pt-6 pb-8">
+      <div
+        className="relative z-10 mx-auto flex w-full max-w-md flex-col px-5"
+        style={
+          isScroll
+            ? {
+                minHeight: "100dvh",
+                paddingTop: "calc(env(safe-area-inset-top) + 1.5rem)",
+                paddingBottom: "calc(env(safe-area-inset-bottom) + 2rem)",
+              }
+            : { minHeight: "100vh", paddingTop: "1.5rem", paddingBottom: "2rem" }
+        }
+      >
+
         <header className="flex items-center justify-between">
           <Link
             to={backTo}
