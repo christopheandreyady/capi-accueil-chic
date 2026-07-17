@@ -289,6 +289,7 @@ function GameTable() {
     setCurrentTrick(null);
     setTricks([]);
     setRoundScore(null);
+    counterEvalRef.current = -1;
   }, [dealSeed, dealer]);
 
   // Dealing loop
