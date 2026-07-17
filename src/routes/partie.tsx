@@ -233,6 +233,7 @@ function GameTable() {
   const [chipsSlideTo, setChipsSlideTo] = useState<Team | null>(null);
   const [chipsVisible, setChipsVisible] = useState(true);
   const [stashes, setStashes] = useState<{ A: ChipBreakdown[]; B: ChipBreakdown[] }>({ A: [], B: [] });
+  const counterEvalRef = useRef(-1);
   // Last announcement stays visible above its author until a newer one arrives
   // or the bidding phase ends.
   const lastBidRef = bids.length > 0 ? bids[bids.length - 1] : null;
