@@ -9,11 +9,23 @@ type BistrotShellProps = {
   subtitle?: string;
   backTo: string;
   children: ReactNode;
+  /**
+   * "table" (default) — legacy layout with the bistro table as centered stage,
+   * used by gameplay and waiting-room screens.
+   * "scroll" — plain vertical scroll container without the table stage.
+   * Used by form/settings screens (e.g. "Créer une table") so the entire
+   * page is reachable on small viewports (iPhone Safari).
+   */
+  variant?: "table" | "scroll";
 };
 
-export function BistrotShell({ title, subtitle, backTo, children }: BistrotShellProps) {
+export function BistrotShell({ title, subtitle, backTo, children, variant = "table" }: BistrotShellProps) {
+  const isScroll = variant === "scroll";
   return (
-    <main className="relative min-h-screen w-full overflow-hidden bg-background">
+    <main
+      className={`relative w-full bg-background ${isScroll ? "min-h-[100dvh]" : "min-h-screen overflow-hidden"}`}
+    >
+
       {/* Ambient room light — full-screen atmosphere only, NEVER the table itself. */}
       <div
         className="pointer-events-none absolute inset-0"
