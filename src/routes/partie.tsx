@@ -372,7 +372,6 @@ function GameTable() {
   // out-of-turn `contre` / `surcontre` via submitBid. Validation happens
   // inside submitBid's functional setBids updater, so if multiple seats
   // fire simultaneously only the first legal action is accepted.
-  const counterEvalRef = useRef(-1);
   useEffect(() => {
     if (phase !== "bidding") return;
     if (counterEvalRef.current === bids.length) return;
