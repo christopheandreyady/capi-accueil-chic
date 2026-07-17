@@ -331,6 +331,11 @@ function GameTable() {
     if (phase !== "bidding") return;
     if (biddingClosed(bids)) {
       const c = currentContract(bids);
+      // If the closing bid was a "contre", keep a short reaction window so
+      // the bidder's team can still surcontre before the round starts.
+      const last = bids[bids.length - 1];
+      const level = counterLevel(bids);
+      const delay = last?.kind === "contre" && level === 2 ? 1600 : 900;
       const t = window.setTimeout(() => {
         if (!c) {
           // Everyone passed → redeal with next dealer
@@ -347,7 +352,7 @@ function GameTable() {
           setCurrentTurn(nextSeat(dealer));
           setPhase("playing");
         }
-      }, 900);
+      }, delay);
       return () => clearTimeout(t);
     }
     if (currentTurn === "bottom") return; // wait for human
@@ -359,9 +364,65 @@ function GameTable() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [phase, bids, currentTurn, hands]);
 
+  // --- Real-time counter / surcounter watcher ------------------------------
+  // Runs whenever bids change during the bidding phase. Each eligible AI
+  // seat rolls a probability check and, if triggered, schedules an
+  // out-of-turn `contre` / `surcontre` via submitBid. Validation happens
+  // inside submitBid's functional setBids updater, so if multiple seats
+  // fire simultaneously only the first legal action is accepted.
+  const counterEvalRef = useRef(-1);
+  useEffect(() => {
+    if (phase !== "bidding") return;
+    if (counterEvalRef.current === bids.length) return;
+    counterEvalRef.current = bids.length;
+    const contract = currentContract(bids);
+    if (!contract) return;
+    const timers: number[] = [];
+    for (const seat of POSITIONS) {
+      if (seat === "bottom") continue; // human decides via the floating button
+      const kind = canCounter(bids, seat);
+      if (!kind) continue;
+      let prob = 0;
+      if (kind === "contre") {
+        if (contract.isCapot) prob = 0.55;
+        else if (contract.points >= 140) prob = 0.45;
+        else if (contract.points >= 120) prob = 0.22;
+        else if (contract.points >= 100) prob = 0.08;
+      } else {
+        // surcontre — bidder team, high confidence on strong contracts
+        if (contract.isCapot) prob = 0.7;
+        else if (contract.points >= 140) prob = 0.6;
+        else if (contract.points >= 110) prob = 0.35;
+        else prob = 0.15;
+      }
+      if (Math.random() > prob) continue;
+      const delay = 650 + Math.random() * 900;
+      const t = window.setTimeout(() => submitBid({ kind, seat }), delay);
+      timers.push(t);
+    }
+    return () => timers.forEach(clearTimeout);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [bids, phase]);
+
+  // Authoritative submitBid — validates every action against the latest
+  // state via a functional updater. Simultaneous counters can never both
+  // be accepted because canCounter() rejects the second one.
   const submitBid = (b: Bid) => {
-    setBids((prev) => [...prev, b]);
-    setCurrentTurn((t) => nextSeat(t));
+    let accepted = false;
+    setBids((prev) => {
+      if (b.kind === "contre" || b.kind === "surcontre") {
+        if (canCounter(prev, b.seat) !== b.kind) return prev;
+        accepted = true;
+        return [...prev, b];
+      }
+      if (biddingClosed(prev)) return prev;
+      accepted = true;
+      return [...prev, b];
+    });
+    // Counters are out-of-turn reactions and never consume a turn.
+    if (accepted && b.kind !== "contre" && b.kind !== "surcontre") {
+      setCurrentTurn((t) => nextSeat(t));
+    }
   };
 
   // --- Playing loop --------------------------------------------------------
