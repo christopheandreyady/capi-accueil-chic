@@ -1251,10 +1251,11 @@ function DeckSlab({ count }: { count: number }) {
 }
 
 function PlayerBadge({
-  position, info, isDealer, isLocal, isActive, isThinking, announcement, announcementIsTaker,
+  position, info, isDealer, isLocal, isActive, isThinking, announcement, announcementIsTaker, announcementMultiplier,
 }: {
   position: Position; info: PlayerInfo; isDealer: boolean; isLocal: boolean;
   isActive?: boolean; isThinking?: boolean; announcement?: Bid | null; announcementIsTaker?: boolean;
+  announcementMultiplier?: 1 | 2 | 4;
 }) {
   // Seats are anchored to the TABLE container (percentages of the table
   // aspect-square box), never to the viewport. They sit on the wooden rim
