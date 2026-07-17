@@ -138,9 +138,11 @@ export function currentContract(bids: Bid[]): Contract | null {
     } else if (b.kind === "capot") {
       contract = { bidder: b.seat, suit: b.suit, points: 250, isCapot: true, multiplier: 1 };
     } else if (b.kind === "contre") {
-      if (contract) contract = { ...contract, multiplier: 2 };
+      const c: Contract | null = contract;
+      if (c) contract = { ...c, multiplier: 2 };
     } else if (b.kind === "surcontre") {
-      if (contract) contract = { ...contract, multiplier: 4 };
+      const c: Contract | null = contract;
+      if (c) contract = { ...c, multiplier: 4 };
     }
   }
   return contract;
