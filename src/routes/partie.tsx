@@ -780,11 +780,13 @@ function GameTable() {
               let badgeAnnounce: Bid | null =
                 phase === "bidding" && lastBid && isRecent ? lastBid : null;
               let badgeIsTaker = false;
+              let badgeMultiplier: 1 | 2 | 4 | undefined;
               if ((phase === "playing" || phase === "scoring") && contract && contract.bidder === p) {
                 badgeAnnounce = contract.isCapot
                   ? { kind: "capot", seat: p, suit: contract.suit }
                   : { kind: "bid", seat: p, points: contract.points, suit: contract.suit };
                 badgeIsTaker = true;
+                badgeMultiplier = contract.multiplier;
               }
               return (
                 <PlayerBadge
@@ -797,6 +799,7 @@ function GameTable() {
                   isThinking={isThinking}
                   announcement={badgeAnnounce}
                   announcementIsTaker={badgeIsTaker}
+                  announcementMultiplier={badgeMultiplier}
                 />
               );
             })}
