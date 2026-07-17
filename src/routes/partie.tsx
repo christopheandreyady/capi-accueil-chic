@@ -890,7 +890,70 @@ function GameTable() {
           <ScoringPanel score={roundScore} contract={contract} cumulative={cumulative} onNext={nextRound} />
         )}
       </div>
+
+      {/* Real-time counter / surcounter — floats above every other UI so
+          the player can react instantly, whether or not it's their turn. */}
+      {phase === "bidding" && (
+        <CounterButton bids={bids} onCounter={submitBid} />
+      )}
     </main>
+  );
+}
+
+// --- Real-time counter button ---------------------------------------------
+// Rendered as a fixed-position element, always visible during the bidding
+// phase whenever the local player has a legal counter to play. Pressing it
+// dispatches the action to the authoritative submitBid, which validates the
+// move against the latest bids and rejects it if another player got there
+// first. When accepted, every player's UI updates through the shared bids
+// state on the next render.
+function CounterButton({ bids, onCounter }: { bids: Bid[]; onCounter: (b: Bid) => void }) {
+  const kind = canCounter(bids, "bottom");
+  if (!kind) return null;
+  const label = kind === "contre" ? "Contrer" : "Surcontrer";
+  const multiplier = kind === "contre" ? "×2" : "×4";
+  return (
+    <div
+      className="pointer-events-none fixed z-50 flex justify-end"
+      style={{
+        right: "calc(env(safe-area-inset-right) + 14px)",
+        bottom: "calc(env(safe-area-inset-bottom) + 22px)",
+      }}
+    >
+      <button
+        type="button"
+        onClick={() => onCounter({ kind, seat: "bottom" })}
+        aria-label={label}
+        className="pointer-events-auto relative flex items-center gap-2 rounded-2xl border px-5 py-3 font-serif text-[15px] font-bold tracking-wide active:scale-[0.97]"
+        style={{
+          background:
+            "linear-gradient(168deg, oklch(0.36 0.11 152) 0%, oklch(0.22 0.09 152) 100%)",
+          borderColor: "oklch(0.85 0.16 82 / 75%)",
+          color: "oklch(0.97 0.11 88)",
+          boxShadow:
+            "0 14px 28px -14px oklch(0 0 0 / 85%), 0 0 0 1px oklch(0 0 0 / 55%), inset 0 1px 0 oklch(1 0 0 / 14%), inset 0 -1px 0 oklch(0 0 0 / 55%), 0 0 22px -8px oklch(0.85 0.16 82 / 55%)",
+          textShadow: "0 1px 0 oklch(0 0 0 / 65%)",
+          minHeight: 48,
+          minWidth: 44,
+          backdropFilter: "blur(6px)",
+        }}
+      >
+        <span>{label}</span>
+        <span
+          style={{
+            fontSize: 12,
+            fontWeight: 900,
+            padding: "2px 7px",
+            borderRadius: 999,
+            background: "oklch(0.14 0.04 40 / 78%)",
+            border: "1px solid oklch(0.85 0.16 82 / 60%)",
+            color: "oklch(0.94 0.16 82)",
+          }}
+        >
+          {multiplier}
+        </span>
+      </button>
+    </div>
   );
 }
 
