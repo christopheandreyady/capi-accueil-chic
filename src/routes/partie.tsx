@@ -11,6 +11,8 @@ import {
   aiBid,
   aiPlay,
   biddingClosed,
+  canCounter,
+  counterLevel,
   currentBidLevel,
   currentContract,
   legalMoves,
