@@ -1297,7 +1297,7 @@ function PlayerBadge({
           </div>
         )}
         {announcement && (
-          <AnnouncementBubble bid={announcement} position={position} isTaker={announcementIsTaker} />
+          <AnnouncementBubble bid={announcement} position={position} isTaker={announcementIsTaker} multiplier={announcementMultiplier} />
         )}
       </div>
       <div className="flex flex-col items-center leading-tight">
