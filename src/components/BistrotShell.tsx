@@ -9,11 +9,23 @@ type BistrotShellProps = {
   subtitle?: string;
   backTo: string;
   children: ReactNode;
+  /**
+   * "table" (default) — legacy layout with the bistro table as centered stage,
+   * used by gameplay and waiting-room screens.
+   * "scroll" — plain vertical scroll container without the table stage.
+   * Used by form/settings screens (e.g. "Créer une table") so the entire
+   * page is reachable on small viewports (iPhone Safari).
+   */
+  variant?: "table" | "scroll";
 };
 
-export function BistrotShell({ title, subtitle, backTo, children }: BistrotShellProps) {
+export function BistrotShell({ title, subtitle, backTo, children, variant = "table" }: BistrotShellProps) {
+  const isScroll = variant === "scroll";
   return (
-    <main className="relative min-h-screen w-full overflow-hidden bg-background">
+    <main
+      className={`relative w-full bg-background ${isScroll ? "min-h-[100dvh]" : "min-h-screen overflow-hidden"}`}
+    >
+
       {/* Ambient room light — full-screen atmosphere only, NEVER the table itself. */}
       <div
         className="pointer-events-none absolute inset-0"
@@ -37,7 +49,19 @@ export function BistrotShell({ title, subtitle, backTo, children }: BistrotShell
         }}
       />
 
-      <div className="relative z-10 mx-auto flex min-h-screen w-full max-w-md flex-col px-5 pt-6 pb-8">
+      <div
+        className="relative z-10 mx-auto flex w-full max-w-md flex-col px-5"
+        style={
+          isScroll
+            ? {
+                minHeight: "100dvh",
+                paddingTop: "calc(env(safe-area-inset-top) + 1.5rem)",
+                paddingBottom: "calc(env(safe-area-inset-bottom) + 2rem)",
+              }
+            : { minHeight: "100vh", paddingTop: "1.5rem", paddingBottom: "2rem" }
+        }
+      >
+
         <header className="flex items-center justify-between">
           <Link
             to={backTo}
@@ -87,31 +111,26 @@ export function BistrotShell({ title, subtitle, backTo, children }: BistrotShell
 
         </header>
 
-        {/* Table stage — the wooden bistro table is a bounded, centered UI
-            object at ~82% of the viewport width. All four corners of the
-            table are always visible (object-contain, no auto-zoom, no crop).
-            Every child of BistrotShell is positioned relative to THIS
-            container, so avatars/buttons/cards/annonces/messages/score all
-            sit around the table and not around the screen. */}
-        <section className="relative mx-auto my-auto flex w-full flex-1 items-center justify-center">
-          <div className="relative aspect-square" style={{ width: "min(82vw, calc(100dvh - 220px), 900px)" }}>
-            <img
-              src={bistrotTable}
-              alt=""
-              width={1024}
-              height={1024}
-              className="pointer-events-none absolute inset-0 h-full w-full object-contain"
-              style={{
-                filter: "drop-shadow(0 30px 40px oklch(0 0 0 / 70%)) drop-shadow(0 10px 18px oklch(0 0 0 / 50%))",
-              }}
-            />
-            {/* Children slot — absolutely positioned over the table so screens
-                can freely place avatars/buttons/cards using top/left/right/
-                bottom relative to the table itself. A centered column
-                default keeps simple stacked content (button lists) working. */}
-            <div className="absolute inset-0 flex flex-col items-center justify-center px-6">{children}</div>
-          </div>
-        </section>
+        {isScroll ? (
+          <div className="flex w-full flex-1 flex-col">{children}</div>
+        ) : (
+          <section className="relative mx-auto my-auto flex w-full flex-1 items-center justify-center">
+            <div className="relative aspect-square" style={{ width: "min(82vw, calc(100dvh - 220px), 900px)" }}>
+              <img
+                src={bistrotTable}
+                alt=""
+                width={1024}
+                height={1024}
+                className="pointer-events-none absolute inset-0 h-full w-full object-contain"
+                style={{
+                  filter: "drop-shadow(0 30px 40px oklch(0 0 0 / 70%)) drop-shadow(0 10px 18px oklch(0 0 0 / 50%))",
+                }}
+              />
+              <div className="absolute inset-0 flex flex-col items-center justify-center px-6">{children}</div>
+            </div>
+          </section>
+        )}
+
       </div>
     </main>
   );

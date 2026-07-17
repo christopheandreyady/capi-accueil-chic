@@ -42,7 +42,7 @@ function CreateTable() {
   }
 
   return (
-    <BistrotShell title="Créer une table" subtitle="Nouveau salon" backTo="/amis">
+    <BistrotShell title="Créer une table" subtitle="Nouveau salon" backTo="/amis" variant="scroll">
       <section className="mt-6 flex flex-1 flex-col gap-4 pb-2">
         {/* Identity card */}
         <Card>
