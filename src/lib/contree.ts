@@ -109,13 +109,16 @@ export function legalMoves(
 export type Bid =
   | { kind: "pass"; seat: Position }
   | { kind: "bid"; seat: Position; points: number; suit: Suit }
-  | { kind: "capot"; seat: Position; suit: Suit };
+  | { kind: "capot"; seat: Position; suit: Suit }
+  | { kind: "contre"; seat: Position }
+  | { kind: "surcontre"; seat: Position };
 
 export type Contract = {
   bidder: Position;
   suit: Suit;
   points: number; // 80..160, or 250 for capot
   isCapot: boolean;
+  multiplier: 1 | 2 | 4; // 2 after contre, 4 after surcontre
 };
 
 export function currentBidLevel(bids: Bid[]): number {
@@ -131,18 +134,64 @@ export function currentContract(bids: Bid[]): Contract | null {
   let contract: Contract | null = null;
   for (const b of bids) {
     if (b.kind === "bid") {
-      contract = { bidder: b.seat, suit: b.suit, points: b.points, isCapot: false };
+      contract = { bidder: b.seat, suit: b.suit, points: b.points, isCapot: false, multiplier: 1 };
     } else if (b.kind === "capot") {
-      contract = { bidder: b.seat, suit: b.suit, points: 250, isCapot: true };
+      contract = { bidder: b.seat, suit: b.suit, points: 250, isCapot: true, multiplier: 1 };
+    } else if (b.kind === "contre" && contract !== null) {
+      const c: Contract = contract;
+      contract = { ...c, multiplier: 2 };
+    } else if (b.kind === "surcontre" && contract !== null) {
+      const c: Contract = contract;
+      contract = { ...c, multiplier: 4 };
     }
   }
   return contract;
 }
 
-// Bidding closes after 3 consecutive passes following a bid,
-// or after 4 passes with no bid.
+// Highest counter placed on the current contract. Resets when a new bid/capot
+// supersedes the previous contract.
+export function counterLevel(bids: Bid[]): 0 | 2 | 4 {
+  let m: 0 | 2 | 4 = 0;
+  for (const b of bids) {
+    if (b.kind === "bid" || b.kind === "capot") m = 0;
+    else if (b.kind === "contre") m = 2;
+    else if (b.kind === "surcontre") m = 4;
+  }
+  return m;
+}
+
+// Who — if anyone — may react with a counter right now.
+// Returns the kind of counter that `seat` may play, or null.
+// Authoritative: call against the latest bids array to validate every action.
+export function canCounter(bids: Bid[], seat: Position): "contre" | "surcontre" | null {
+  const contract = currentContract(bids);
+  if (!contract) return null;
+  const bidderTeam = TEAM_OF[contract.bidder];
+  const seatTeam = TEAM_OF[seat];
+  const level = counterLevel(bids);
+  if (level === 0) {
+    return seatTeam !== bidderTeam ? "contre" : null;
+  }
+  if (level === 2) {
+    return seatTeam === bidderTeam ? "surcontre" : null;
+  }
+  return null;
+}
+
+// Bidding closes after:
+// - a surcontre (highest possible counter, no further reaction),
+// - a contre (bidder's team gets a short UI reaction window handled at the
+//   call site; the state itself is considered closed and the contract locked),
+// - 3 consecutive passes following a bid,
+// - 4 passes with no bid.
 export function biddingClosed(bids: Bid[]): boolean {
   if (bids.length === 0) return false;
+  for (let i = bids.length - 1; i >= 0; i--) {
+    const b = bids[i];
+    if (b.kind === "surcontre" || b.kind === "contre") return true;
+    if (b.kind === "bid" || b.kind === "capot") break;
+    // pass → keep scanning
+  }
   const contract = currentContract(bids);
   if (!contract && bids.length >= 4) return true;
   if (!contract) return false;

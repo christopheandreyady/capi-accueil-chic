@@ -11,6 +11,8 @@ import {
   aiBid,
   aiPlay,
   biddingClosed,
+  canCounter,
+  counterLevel,
   currentBidLevel,
   currentContract,
   legalMoves,
@@ -231,6 +233,7 @@ function GameTable() {
   const [chipsSlideTo, setChipsSlideTo] = useState<Team | null>(null);
   const [chipsVisible, setChipsVisible] = useState(true);
   const [stashes, setStashes] = useState<{ A: ChipBreakdown[]; B: ChipBreakdown[] }>({ A: [], B: [] });
+  const counterEvalRef = useRef(-1);
   // Last announcement stays visible above its author until a newer one arrives
   // or the bidding phase ends.
   const lastBidRef = bids.length > 0 ? bids[bids.length - 1] : null;
@@ -287,6 +290,7 @@ function GameTable() {
     setCurrentTrick(null);
     setTricks([]);
     setRoundScore(null);
+    counterEvalRef.current = -1;
   }, [dealSeed, dealer]);
 
   // Dealing loop
@@ -329,6 +333,11 @@ function GameTable() {
     if (phase !== "bidding") return;
     if (biddingClosed(bids)) {
       const c = currentContract(bids);
+      // If the closing bid was a "contre", keep a short reaction window so
+      // the bidder's team can still surcontre before the round starts.
+      const last = bids[bids.length - 1];
+      const level = counterLevel(bids);
+      const delay = last?.kind === "contre" && level === 2 ? 1600 : 900;
       const t = window.setTimeout(() => {
         if (!c) {
           // Everyone passed → redeal with next dealer
@@ -345,7 +354,7 @@ function GameTable() {
           setCurrentTurn(nextSeat(dealer));
           setPhase("playing");
         }
-      }, 900);
+      }, delay);
       return () => clearTimeout(t);
     }
     if (currentTurn === "bottom") return; // wait for human
@@ -357,9 +366,64 @@ function GameTable() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [phase, bids, currentTurn, hands]);
 
+  // --- Real-time counter / surcounter watcher ------------------------------
+  // Runs whenever bids change during the bidding phase. Each eligible AI
+  // seat rolls a probability check and, if triggered, schedules an
+  // out-of-turn `contre` / `surcontre` via submitBid. Validation happens
+  // inside submitBid's functional setBids updater, so if multiple seats
+  // fire simultaneously only the first legal action is accepted.
+  useEffect(() => {
+    if (phase !== "bidding") return;
+    if (counterEvalRef.current === bids.length) return;
+    counterEvalRef.current = bids.length;
+    const contract = currentContract(bids);
+    if (!contract) return;
+    const timers: number[] = [];
+    for (const seat of POSITIONS) {
+      if (seat === "bottom") continue; // human decides via the floating button
+      const kind = canCounter(bids, seat);
+      if (!kind) continue;
+      let prob = 0;
+      if (kind === "contre") {
+        if (contract.isCapot) prob = 0.55;
+        else if (contract.points >= 140) prob = 0.45;
+        else if (contract.points >= 120) prob = 0.22;
+        else if (contract.points >= 100) prob = 0.08;
+      } else {
+        // surcontre — bidder team, high confidence on strong contracts
+        if (contract.isCapot) prob = 0.7;
+        else if (contract.points >= 140) prob = 0.6;
+        else if (contract.points >= 110) prob = 0.35;
+        else prob = 0.15;
+      }
+      if (Math.random() > prob) continue;
+      const delay = 650 + Math.random() * 900;
+      const t = window.setTimeout(() => submitBid({ kind, seat }), delay);
+      timers.push(t);
+    }
+    return () => timers.forEach(clearTimeout);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [bids, phase]);
+
+  // Authoritative submitBid — validates every action against the latest
+  // state via a functional updater. Simultaneous counters can never both
+  // be accepted because canCounter() rejects the second one.
   const submitBid = (b: Bid) => {
-    setBids((prev) => [...prev, b]);
-    setCurrentTurn((t) => nextSeat(t));
+    let accepted = false;
+    setBids((prev) => {
+      if (b.kind === "contre" || b.kind === "surcontre") {
+        if (canCounter(prev, b.seat) !== b.kind) return prev;
+        accepted = true;
+        return [...prev, b];
+      }
+      if (biddingClosed(prev)) return prev;
+      accepted = true;
+      return [...prev, b];
+    });
+    // Counters are out-of-turn reactions and never consume a turn.
+    if (accepted && b.kind !== "contre" && b.kind !== "surcontre") {
+      setCurrentTurn((t) => nextSeat(t));
+    }
   };
 
   // --- Playing loop --------------------------------------------------------
@@ -716,11 +780,13 @@ function GameTable() {
               let badgeAnnounce: Bid | null =
                 phase === "bidding" && lastBid && isRecent ? lastBid : null;
               let badgeIsTaker = false;
+              let badgeMultiplier: 1 | 2 | 4 | undefined;
               if ((phase === "playing" || phase === "scoring") && contract && contract.bidder === p) {
                 badgeAnnounce = contract.isCapot
                   ? { kind: "capot", seat: p, suit: contract.suit }
                   : { kind: "bid", seat: p, points: contract.points, suit: contract.suit };
                 badgeIsTaker = true;
+                badgeMultiplier = contract.multiplier;
               }
               return (
                 <PlayerBadge
@@ -733,6 +799,7 @@ function GameTable() {
                   isThinking={isThinking}
                   announcement={badgeAnnounce}
                   announcementIsTaker={badgeIsTaker}
+                  announcementMultiplier={badgeMultiplier}
                 />
               );
             })}
@@ -823,7 +890,70 @@ function GameTable() {
           <ScoringPanel score={roundScore} contract={contract} cumulative={cumulative} onNext={nextRound} />
         )}
       </div>
+
+      {/* Real-time counter / surcounter — floats above every other UI so
+          the player can react instantly, whether or not it's their turn. */}
+      {phase === "bidding" && (
+        <CounterButton bids={bids} onCounter={submitBid} />
+      )}
     </main>
+  );
+}
+
+// --- Real-time counter button ---------------------------------------------
+// Rendered as a fixed-position element, always visible during the bidding
+// phase whenever the local player has a legal counter to play. Pressing it
+// dispatches the action to the authoritative submitBid, which validates the
+// move against the latest bids and rejects it if another player got there
+// first. When accepted, every player's UI updates through the shared bids
+// state on the next render.
+function CounterButton({ bids, onCounter }: { bids: Bid[]; onCounter: (b: Bid) => void }) {
+  const kind = canCounter(bids, "bottom");
+  if (!kind) return null;
+  const label = kind === "contre" ? "Contrer" : "Surcontrer";
+  const multiplier = kind === "contre" ? "×2" : "×4";
+  return (
+    <div
+      className="pointer-events-none fixed z-50 flex justify-end"
+      style={{
+        right: "calc(env(safe-area-inset-right) + 14px)",
+        bottom: "calc(env(safe-area-inset-bottom) + 22px)",
+      }}
+    >
+      <button
+        type="button"
+        onClick={() => onCounter({ kind, seat: "bottom" })}
+        aria-label={label}
+        className="pointer-events-auto relative flex items-center gap-2 rounded-2xl border px-5 py-3 font-serif text-[15px] font-bold tracking-wide active:scale-[0.97]"
+        style={{
+          background:
+            "linear-gradient(168deg, oklch(0.36 0.11 152) 0%, oklch(0.22 0.09 152) 100%)",
+          borderColor: "oklch(0.85 0.16 82 / 75%)",
+          color: "oklch(0.97 0.11 88)",
+          boxShadow:
+            "0 14px 28px -14px oklch(0 0 0 / 85%), 0 0 0 1px oklch(0 0 0 / 55%), inset 0 1px 0 oklch(1 0 0 / 14%), inset 0 -1px 0 oklch(0 0 0 / 55%), 0 0 22px -8px oklch(0.85 0.16 82 / 55%)",
+          textShadow: "0 1px 0 oklch(0 0 0 / 65%)",
+          minHeight: 48,
+          minWidth: 44,
+          backdropFilter: "blur(6px)",
+        }}
+      >
+        <span>{label}</span>
+        <span
+          style={{
+            fontSize: 12,
+            fontWeight: 900,
+            padding: "2px 7px",
+            borderRadius: 999,
+            background: "oklch(0.14 0.04 40 / 78%)",
+            border: "1px solid oklch(0.85 0.16 82 / 60%)",
+            color: "oklch(0.94 0.16 82)",
+          }}
+        >
+          {multiplier}
+        </span>
+      </button>
+    </div>
   );
 }
 
@@ -1184,10 +1314,11 @@ function DeckSlab({ count }: { count: number }) {
 }
 
 function PlayerBadge({
-  position, info, isDealer, isLocal, isActive, isThinking, announcement, announcementIsTaker,
+  position, info, isDealer, isLocal, isActive, isThinking, announcement, announcementIsTaker, announcementMultiplier,
 }: {
   position: Position; info: PlayerInfo; isDealer: boolean; isLocal: boolean;
   isActive?: boolean; isThinking?: boolean; announcement?: Bid | null; announcementIsTaker?: boolean;
+  announcementMultiplier?: 1 | 2 | 4;
 }) {
   // Seats are anchored to the TABLE container (percentages of the table
   // aspect-square box), never to the viewport. They sit on the wooden rim
@@ -1229,7 +1360,7 @@ function PlayerBadge({
           </div>
         )}
         {announcement && (
-          <AnnouncementBubble bid={announcement} position={position} isTaker={announcementIsTaker} />
+          <AnnouncementBubble bid={announcement} position={position} isTaker={announcementIsTaker} multiplier={announcementMultiplier} />
         )}
       </div>
       <div className="flex flex-col items-center leading-tight">
@@ -1240,12 +1371,26 @@ function PlayerBadge({
   );
 }
 
-function AnnouncementBubble({ bid, position, isTaker }: { bid: Bid; position: Position; isTaker?: boolean }) {
+function AnnouncementBubble({
+  bid,
+  position,
+  isTaker,
+  multiplier,
+}: {
+  bid: Bid;
+  position: Position;
+  isTaker?: boolean;
+  multiplier?: 1 | 2 | 4;
+}) {
   const isPass = bid.kind === "pass";
-  const suit = bid.kind === "pass" ? null : bid.suit;
+  const isCounter = bid.kind === "contre" || bid.kind === "surcontre";
+  const suit =
+    bid.kind === "bid" || bid.kind === "capot" ? bid.suit : null;
   const label =
     bid.kind === "pass" ? "Passe"
     : bid.kind === "capot" ? "Capot"
+    : bid.kind === "contre" ? "Contre"
+    : bid.kind === "surcontre" ? "Surcontre"
     : String(bid.points);
   // Small dark ribbon integrated just under the avatar — no white box.
   const placement: React.CSSProperties =
@@ -1254,6 +1399,7 @@ function AnnouncementBubble({ bid, position, isTaker }: { bid: Bid; position: Po
       : { top: "calc(100% + 6px)", left: "50%" };
   const fontSize = isTaker ? 15 : 16;
   const tilt = position === "bottom" ? -1.4 : position === "top" ? 1.2 : position === "left" ? -2 : 2;
+  const counterBadge = multiplier && multiplier > 1 ? (multiplier === 4 ? "×4" : "×2") : null;
   return (
     <div
       className="absolute whitespace-nowrap animate-scale-in"
@@ -1263,10 +1409,14 @@ function AnnouncementBubble({ bid, position, isTaker }: { bid: Bid; position: Po
         zIndex: 40,
         padding: "3px 10px",
         borderRadius: 999,
-        background: "linear-gradient(180deg, oklch(0.22 0.04 40 / 96%) 0%, oklch(0.10 0.03 40 / 98%) 100%)",
-        border: isTaker
-          ? "1px solid oklch(0.85 0.16 82 / 85%)"
-          : "1px solid oklch(0.78 0.13 82 / 55%)",
+        background: isCounter
+          ? "linear-gradient(180deg, oklch(0.28 0.11 30 / 96%) 0%, oklch(0.14 0.09 30 / 98%) 100%)"
+          : "linear-gradient(180deg, oklch(0.22 0.04 40 / 96%) 0%, oklch(0.10 0.03 40 / 98%) 100%)",
+        border: isCounter
+          ? "1px solid oklch(0.82 0.18 40 / 90%)"
+          : isTaker
+            ? "1px solid oklch(0.85 0.16 82 / 85%)"
+            : "1px solid oklch(0.78 0.13 82 / 55%)",
         boxShadow:
           "0 6px 14px -6px oklch(0 0 0 / 85%), inset 0 1px 0 oklch(1 0 0 / 12%), inset 0 -1px 0 oklch(0 0 0 / 55%)",
         color: "oklch(0.97 0.09 85)",
@@ -1289,6 +1439,19 @@ function AnnouncementBubble({ bid, position, isTaker }: { bid: Bid; position: Po
             }}
           >
             {suit}
+          </span>
+        )}
+        {isTaker && counterBadge && (
+          <span
+            style={{
+              marginLeft: 2,
+              fontSize: fontSize - 2,
+              fontWeight: 900,
+              color: "oklch(0.92 0.18 40)",
+              textShadow: "0 1px 0 oklch(0 0 0 / 70%)",
+            }}
+          >
+            {counterBadge}
           </span>
         )}
       </span>
