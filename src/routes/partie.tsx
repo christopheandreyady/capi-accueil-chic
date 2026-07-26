@@ -764,12 +764,11 @@ function GameTable() {
             style={
               isMobile
                 ? {
-                    // Dedicated mobile stage: the round wooden table becomes
-                    // the dominant element on screen, filling ~95% of the
-                    // width while capped by available height so the lower
-                    // seat + hand + bidding area stay reachable.
-                    width: "min(96vw, calc(100dvh - env(safe-area-inset-top) - env(safe-area-inset-bottom) - 9rem))",
-                    aspectRatio: "1 / 1",
+                    // Dedicated mobile stage: fills the smartphone screen —
+                    // ~96% of the width AND most of the vertical space so
+                    // the wooden table dominates as the main visual element.
+                    width: "96vw",
+                    height: "calc(100dvh - env(safe-area-inset-top) - env(safe-area-inset-bottom) - 8rem)",
                     marginBottom: 0,
                     overflow: "visible",
                   }
