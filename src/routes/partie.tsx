@@ -1568,20 +1568,8 @@ function CardBack() {
           boxShadow: "inset 0 0 0 1px oklch(0 0 0 / 35%)",
         }}
       />
-      {/* subtle vintage wear */}
-      <div
-        className="pointer-events-none absolute inset-0 opacity-25 mix-blend-overlay"
-        style={{
-          backgroundImage:
-            "radial-gradient(oklch(1 0 0 / 22%) 0.5px, transparent 0.6px), radial-gradient(oklch(0 0 0 / 30%) 0.5px, transparent 0.6px)",
-          backgroundSize: "3px 3px, 5px 5px",
-          backgroundPosition: "0 0, 1px 2px",
-        }}
-      />
-      <div
-        className="pointer-events-none absolute inset-0"
-        style={{ boxShadow: "inset 0 0 14px oklch(0 0 0 / 55%)" }}
-      />
+      {/* Back stays clean: no overlay texture or inner vignette that could
+          create mottled dark spots on the card surface. */}
       {/* CAPI coin — centered medallion, perfectly balanced, no wordmark */}
       <div className="absolute inset-0 flex items-center justify-center">
         <div
