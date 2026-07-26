@@ -1028,27 +1028,28 @@ type Anchors = {
 
 function handTarget(seat: Position, index: number, total: number, anchors: Anchors, isMobile = false) {
   const isBottom = seat === "bottom";
-  const cardW = isBottom ? (isMobile ? 34 : CARD_W_BIG) : CARD_W_SMALL;
-  const cardH = isBottom ? (isMobile ? 51 : CARD_H_BIG) : CARD_H_SMALL;
+  // Cards keep their original pixel dimensions on every device — no CSS
+  // scaling that would soften or clip the edges. On mobile we just reduce
+  // the overlap by narrowing the fan radius / angular step barely, and
+  // push the fan anchor down so the hand sits flush against the bottom
+  // edge of the screen.
+  const cardW = isBottom ? CARD_W_BIG : CARD_W_SMALL;
+  const cardH = isBottom ? CARD_H_BIG : CARD_H_SMALL;
   const a = anchors[seat];
   // Constant per-card angular step: the fan CLOSES as cards are played,
   // so the hand always stays visually compact with no gap where a card was.
-  // Slightly wider angle + larger radius on the bottom hand → each card is
-  // clearly distinguishable while keeping a natural fan shape.
-  // On mobile the fan is tighter, smaller and less overlapped so it never
-  // hides more than ~20% of the felt while remaining easy to tap.
-  const stepDeg = isBottom ? (isMobile ? 9 : 10.5) : 2.2;
+  const stepDeg = isBottom ? (isMobile ? 8.5 : 10.5) : 2.2;
   const localAngle = total > 1 ? -((total - 1) / 2) * stepDeg + stepDeg * index : 0;
-  const radius = isBottom ? (isMobile ? 72 : 122) : 56;
+  const radius = isBottom ? (isMobile ? 110 : 122) : 56;
   const rad = (localAngle * Math.PI) / 180;
   const lx = Math.sin(rad) * radius;
   const ly = -Math.cos(rad) * radius;
   const seatRad = (a.angle * Math.PI) / 180;
   const rx = lx * Math.cos(seatRad) - ly * Math.sin(seatRad);
   const ry = lx * Math.sin(seatRad) + ly * Math.cos(seatRad);
-  // On mobile, push the bottom hand just below the wooden rim so the felt
-  // stays visible and the fan sits naturally at the bottom of the screen.
-  const anchorYOffset = isBottom && isMobile ? 78 : 0;
+  // Push the bottom hand below its anchor so the fan sits at the very
+  // bottom of the screen, freeing the felt above for the play area.
+  const anchorYOffset = isBottom && isMobile ? 96 : 0;
   return {
     x: a.x + rx,
     y: a.y + ry + anchorYOffset,
