@@ -162,8 +162,10 @@ export function counterLevel(bids: Bid[]): 0 | 2 | 4 {
 
 // Who — if anyone — may react with a counter right now.
 // Returns the kind of counter that `seat` may play, or null.
-// Authoritative: call against the latest bids array to validate every action.
+// Counters are only legal AFTER the bidding has legally finished
+// (3 consecutive passes following a bid). They never interrupt bidding.
 export function canCounter(bids: Bid[], seat: Position): "contre" | "surcontre" | null {
+  if (!biddingClosed(bids)) return null;
   const contract = currentContract(bids);
   if (!contract) return null;
   const bidderTeam = TEAM_OF[contract.bidder];
@@ -178,30 +180,29 @@ export function canCounter(bids: Bid[], seat: Position): "contre" | "surcontre" 
   return null;
 }
 
-// Bidding closes after:
-// - a surcontre (highest possible counter, no further reaction),
-// - a contre (bidder's team gets a short UI reaction window handled at the
-//   call site; the state itself is considered closed and the contract locked),
-// - 3 consecutive passes following a bid,
-// - 4 passes with no bid.
+// Bidding closes when either:
+// - 3 consecutive passes follow a bid or capot (contract locked), or
+// - 4 consecutive passes occur with no bid (all pass → redeal).
+// Contres and surcontres are post-bidding reactions and NEVER close bidding
+// on their own — bidding must first be legally finished by 3 passes.
 export function biddingClosed(bids: Bid[]): boolean {
   if (bids.length === 0) return false;
-  for (let i = bids.length - 1; i >= 0; i--) {
-    const b = bids[i];
-    if (b.kind === "surcontre" || b.kind === "contre") return true;
-    if (b.kind === "bid" || b.kind === "capot") break;
-    // pass → keep scanning
+  let bidSeen = false;
+  let passesSinceBid = 0;
+  for (const b of bids) {
+    if (b.kind === "bid" || b.kind === "capot") {
+      bidSeen = true;
+      passesSinceBid = 0;
+    } else if (b.kind === "pass") {
+      passesSinceBid++;
+      if (bidSeen && passesSinceBid >= 3) return true;
+      if (!bidSeen && passesSinceBid >= 4) return true;
+    }
+    // contre / surcontre are ignored — they only occur after bidding is closed.
   }
-  const contract = currentContract(bids);
-  if (!contract && bids.length >= 4) return true;
-  if (!contract) return false;
-  let tail = 0;
-  for (let i = bids.length - 1; i >= 0; i--) {
-    if (bids[i].kind === "pass") tail++;
-    else break;
-  }
-  return tail >= 3;
+  return false;
 }
+
 
 // --- Scoring ---------------------------------------------------------------
 
