@@ -560,16 +560,19 @@ function GameTable() {
     // The wooden rim is ~7-8% of the smaller dim. Cards must sit on the
     // felt (well inside the wood), avatars sit on the rim. Bottom hand
     // sits lower on the felt so the center emblem stays visible.
-    const insetTop = h * 0.13;
-    const insetBottom = h * 0.04;
-    const insetH = w * 0.10;
+    const insetTop = h * (isMobile ? 0.1 : 0.13);
+    const insetBottom = h * (isMobile ? 0.05 : 0.04);
+    // The mobile table plane is 145vw and intentionally extends beyond the
+    // viewport. Keep side gameplay anchors in its visible central 69% so
+    // cards, deck and seat actions remain inside the phone's safe width.
+    const insetH = w * (isMobile ? 0.22 : 0.10);
     return {
       bottom: { x: w * 0.5, y: h - insetBottom, angle: 0 },
       top: { x: w * 0.5, y: insetTop, angle: 180 },
       left: { x: insetH, y: h * 0.5, angle: 90 },
       right: { x: w - insetH, y: h * 0.5, angle: -90 },
     } as const;
-  }, [size]);
+  }, [size, isMobile]);
 
   const deckBase = useMemo(() => {
     const holder = deckHolder ?? dealer;
@@ -851,6 +854,7 @@ function GameTable() {
                   announcement={badgeAnnounce}
                   announcementIsTaker={badgeIsTaker}
                   announcementMultiplier={badgeMultiplier}
+                  isMobile={isMobile}
                 />
               );
             })}
@@ -862,8 +866,8 @@ function GameTable() {
               </div>
             )}
 
-            <TeamStash team="A" stash={stashes.A} />
-            <TeamStash team="B" stash={stashes.B} />
+            <TeamStash team="A" stash={stashes.A} isMobile={isMobile} />
+            <TeamStash team="B" stash={stashes.B} isMobile={isMobile} />
 
             {/* Contract chips at center of table */}
             {(phase === "bidding" || phase === "playing" || phase === "scoring") && currentContract(bids) && chipsVisible && (
@@ -1374,21 +1378,23 @@ function DeckSlab({ count }: { count: number }) {
 }
 
 function PlayerBadge({
-  position, info, isDealer, isLocal, isActive, isThinking, announcement, announcementIsTaker, announcementMultiplier,
+  position, info, isDealer, isLocal, isActive, isThinking, announcement, announcementIsTaker, announcementMultiplier, isMobile,
 }: {
   position: Position; info: PlayerInfo; isDealer: boolean; isLocal: boolean;
   isActive?: boolean; isThinking?: boolean; announcement?: Bid | null; announcementIsTaker?: boolean;
   announcementMultiplier?: 1 | 2 | 4;
+  isMobile?: boolean;
 }) {
   // Seats are anchored to the TABLE container (percentages of the table
   // aspect-square box), never to the viewport. They sit on the wooden rim
   // just inside the table edge so no avatar can visually leave the play
   // zone, and every seat scales automatically with the table.
+  const sideInset = isMobile ? "21%" : "3%";
   const style: React.CSSProperties =
     position === "bottom" ? { left:"50%", bottom:"3%", transform:"translate(-50%, 0)" }
     : position === "top" ? { left:"50%", top:"3%", transform:"translate(-50%, 0)" }
-    : position === "left" ? { left:"3%", top:"50%", transform:"translate(0, -50%)" }
-    : { right:"3%", top:"50%", transform:"translate(0, -50%)" };
+    : position === "left" ? { left:sideInset, top:"50%", transform:"translate(0, -50%)" }
+    : { right:sideInset, top:"50%", transform:"translate(0, -50%)" };
 
 
 
@@ -1874,7 +1880,7 @@ function SuitBadge({ suit, size = 20 }: { suit: Suit; size?: number }) {
   );
 }
 
-function TeamStash({ team, stash }: { team: Team; stash: ChipBreakdown[] }) {
+function TeamStash({ team, stash, isMobile = false }: { team: Team; stash: ChipBreakdown[]; isMobile?: boolean }) {
   if (stash.length === 0) return null;
   // Chips sit ON THE FELT to the side of each team — well clear of the
   // trick pile and the players' cards. Team A → bottom-right of the felt,
@@ -1882,8 +1888,8 @@ function TeamStash({ team, stash }: { team: Team; stash: ChipBreakdown[] }) {
   // rotated and offset like real chips pushed aside after a hand.
   const style: React.CSSProperties =
     team === "A"
-      ? { right: "4%", bottom: "4%", width: "30%" }
-      : { left: "4%", top: "4%", width: "30%" };
+      ? { right: isMobile ? "20%" : "4%", bottom: "4%", width: isMobile ? "22%" : "30%" }
+      : { left: isMobile ? "20%" : "4%", top: "4%", width: isMobile ? "22%" : "30%" };
   return (
     <div
       className="pointer-events-none absolute z-[22] flex flex-wrap gap-1.5"
