@@ -760,21 +760,19 @@ function GameTable() {
         </header>
 
 
-        <div className={`relative mx-auto flex w-full flex-1 justify-center px-0 ${isMobile ? "items-start pt-0" : "my-auto items-center py-2"}`}>
+        <div className={`relative mx-auto flex w-full flex-1 justify-center px-0 ${isMobile ? "items-center pt-0" : "my-auto items-center py-2"}`}>
           <div
             ref={boxRef}
-            className={`relative ${isMobile ? "shrink-0" : ""}`}
+            className="relative"
             style={
               isMobile
                 ? {
-                    // Mobile has its own larger table coordinate plane. The
-                    // 145vw width is deliberately clipped by the viewport:
-                    // it increases the physical table by ~45% without
-                    // scaling cards or any fixed-size interface control.
-                    // A safe-height cap keeps the lower seat reachable on
-                    // short phones such as iPhone SE.
-                    width: "min(145vw, calc((100dvh - env(safe-area-inset-top) - env(safe-area-inset-bottom) - 4.25rem) * 0.9))",
-                    aspectRatio: "0.9 / 1",
+                    // Dedicated mobile stage: the round wooden table becomes
+                    // the dominant element on screen, filling ~95% of the
+                    // width while capped by available height so the lower
+                    // seat + hand + bidding area stay reachable.
+                    width: "min(96vw, calc(100dvh - env(safe-area-inset-top) - env(safe-area-inset-bottom) - 9rem))",
+                    aspectRatio: "1 / 1",
                     marginBottom: 0,
                     overflow: "visible",
                   }
@@ -784,17 +782,17 @@ function GameTable() {
 
 
             {/* Round wooden bistro table — a physical object floating in the
-                room. Transparent PNG so the environment stays visible around
-                its natural circular silhouette. */}
+                room. On mobile we fill the square stage with the felt so
+                the player feels immersed around the table. */}
             <img
               src={bistrotTable}
               alt=""
               width={1280}
               height={1280}
-              className={`pointer-events-none absolute h-full w-full ${isMobile ? "object-cover" : "object-contain"}`}
+              className="pointer-events-none absolute h-full w-full object-cover"
               style={
                 isMobile
-                  ? { inset: 0, objectPosition: "center", filter: "drop-shadow(0 18px 24px oklch(0 0 0 / 70%))" }
+                  ? { inset: 0, objectPosition: "center", borderRadius: "9999px", filter: "drop-shadow(0 22px 28px oklch(0 0 0 / 75%)) drop-shadow(0 8px 14px oklch(0 0 0 / 55%))" }
                   : { inset: "-7%", filter: "drop-shadow(0 30px 40px oklch(0 0 0 / 75%)) drop-shadow(0 10px 18px oklch(0 0 0 / 55%))" }
               }
             />
