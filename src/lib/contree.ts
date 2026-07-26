@@ -148,6 +148,18 @@ export function currentContract(bids: Bid[]): Contract | null {
   return contract;
 }
 
+/** Validate a normal bidding action against the authoritative turn state. */
+export function isLegalBidAction(bids: Bid[], turn: Position, action: Bid): boolean {
+  if (biddingClosed(bids) || action.seat !== turn) return false;
+  if (action.kind === "pass") return true;
+  const level = currentBidLevel(bids);
+  if (action.kind === "capot") return level < 250;
+  if (action.kind === "bid") {
+    return action.points >= 80 && action.points <= 160 && action.points % 10 === 0 && action.points > level;
+  }
+  return false;
+}
+
 // Highest counter placed on the current contract. Resets when a new bid/capot
 // supersedes the previous contract.
 export function counterLevel(bids: Bid[]): 0 | 2 | 4 {
@@ -186,21 +198,17 @@ export function canCounter(bids: Bid[], seat: Position): "contre" | "surcontre" 
 // Contres and surcontres are post-bidding reactions and NEVER close bidding
 // on their own — bidding must first be legally finished by 3 passes.
 export function biddingClosed(bids: Bid[]): boolean {
-  if (bids.length === 0) return false;
-  let bidSeen = false;
-  let passesSinceBid = 0;
-  for (const b of bids) {
-    if (b.kind === "bid" || b.kind === "capot") {
-      bidSeen = true;
-      passesSinceBid = 0;
-    } else if (b.kind === "pass") {
-      passesSinceBid++;
-      if (bidSeen && passesSinceBid >= 3) return true;
-      if (!bidSeen && passesSinceBid >= 4) return true;
-    }
-    // contre / surcontre are ignored — they only occur after bidding is closed.
+  const normalActions = bids.filter((bid) => bid.kind !== "contre" && bid.kind !== "surcontre");
+  if (normalActions.length === 0) return false;
+
+  let trailingPasses = 0;
+  for (let index = normalActions.length - 1; index >= 0; index--) {
+    if (normalActions[index].kind !== "pass") break;
+    trailingPasses++;
   }
-  return false;
+
+  const hasContract = normalActions.some((bid) => bid.kind === "bid" || bid.kind === "capot");
+  return hasContract ? trailingPasses >= 3 : trailingPasses >= 4;
 }
 
 
