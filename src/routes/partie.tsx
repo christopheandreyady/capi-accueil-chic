@@ -777,7 +777,7 @@ function GameTable() {
               className="pointer-events-none absolute h-full w-full object-cover"
               style={
                 isMobile
-                  ? { inset: 0, objectPosition: "center", filter: "drop-shadow(0 22px 28px oklch(0 0 0 / 75%)) drop-shadow(0 8px 14px oklch(0 0 0 / 55%))" }
+                  ? { inset: 0, objectPosition: "center" }
                   : { inset: "-7%", filter: "drop-shadow(0 30px 40px oklch(0 0 0 / 75%)) drop-shadow(0 10px 18px oklch(0 0 0 / 55%))" }
               }
             />
