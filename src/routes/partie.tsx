@@ -935,7 +935,7 @@ function GameTable() {
       {/* Real-time counter / surcounter — floats above every other UI so
           the player can react instantly, whether or not it's their turn. */}
       {phase === "bidding" && (
-        <CounterButton bids={bids} onCounter={submitBid} />
+        <CounterButton bids={bids} currentTurn={currentTurn} onCounter={submitBid} />
       )}
     </main>
   );
@@ -948,7 +948,8 @@ function GameTable() {
 // move against the latest bids and rejects it if another player got there
 // first. When accepted, every player's UI updates through the shared bids
 // state on the next render.
-function CounterButton({ bids, onCounter }: { bids: Bid[]; onCounter: (b: Bid) => void }) {
+function CounterButton({ bids, currentTurn, onCounter }: { bids: Bid[]; currentTurn: Position; onCounter: (b: Bid) => void }) {
+  if (currentTurn !== "bottom") return null;
   const kind = canCounter(bids, "bottom");
   if (!kind) return null;
   const label = kind === "contre" ? "Contrer" : "Surcontrer";
