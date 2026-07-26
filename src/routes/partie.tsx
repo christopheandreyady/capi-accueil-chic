@@ -757,7 +757,7 @@ function GameTable() {
         </header>
 
 
-        <div className={`relative mx-auto flex w-full flex-1 justify-center px-0 ${isMobile ? "items-start pt-0" : "my-auto items-center py-2"}`}>
+        <div className={`relative mx-auto flex w-full flex-1 justify-center px-0 ${isMobile ? "items-center pt-0" : "my-auto items-center py-2"}`}>
           <div
             ref={boxRef}
             className="relative"
@@ -765,16 +765,17 @@ function GameTable() {
               isMobile
                 ? {
                     // Mobile: table becomes the dominant visual element.
-                    // Nearly-square stage so the felt fills the top of the
-                    // screen; the fan hangs just below with tiny margin.
+                    // Near-square stage so the felt fills the top of the
+                    // screen; fan hangs just below with a tight margin.
                     width: "100vw",
-                    aspectRatio: "1.18 / 1",
-                    marginBottom: "96px",
+                    aspectRatio: "1.02 / 1",
+                    marginBottom: "110px",
                     overflow: "visible",
                   }
                 : { width: "min(100vw, calc((100dvh - 130px) * 1.55), 1020px)", aspectRatio: "3 / 2" }
             }
           >
+
             {/* Round wooden bistro table — a physical object floating in the
                 room. Transparent PNG so the environment stays visible around
                 its natural circular silhouette. */}
