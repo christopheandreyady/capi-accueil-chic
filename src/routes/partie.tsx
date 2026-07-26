@@ -760,7 +760,7 @@ function GameTable() {
         <div className={`relative mx-auto flex w-full flex-1 justify-center px-0 ${isMobile ? "items-start pt-0" : "my-auto items-center py-2"}`}>
           <div
             ref={boxRef}
-            className="relative"
+            className={`relative ${isMobile ? "shrink-0" : ""}`}
             style={
               isMobile
                 ? {
@@ -772,8 +772,6 @@ function GameTable() {
                     // short phones such as iPhone SE.
                     width: "min(145vw, calc((100dvh - env(safe-area-inset-top) - env(safe-area-inset-bottom) - 4.25rem) * 0.9))",
                     aspectRatio: "0.9 / 1",
-                    left: "50%",
-                    transform: "translateX(-50%)",
                     marginBottom: 0,
                     overflow: "visible",
                   }
