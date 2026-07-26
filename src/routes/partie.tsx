@@ -767,7 +767,7 @@ function GameTable() {
                     // Mobile: nearly-square stage sits just under the header
                     // so the felt dominates the screen; fan hangs just below.
                     width: "100vw",
-                    aspectRatio: "1 / 1",
+                    aspectRatio: "0.9 / 1",
                     marginBottom: "88px",
                     overflow: "visible",
                   }
