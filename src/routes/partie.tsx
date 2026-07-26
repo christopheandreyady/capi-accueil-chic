@@ -335,14 +335,20 @@ function GameTable() {
     if (phase !== "bidding") return;
     if (biddingClosed(bids)) {
       const c = currentContract(bids);
-      // If the closing bid was a "contre", keep a short reaction window so
-      // the bidder's team can still surcontre before the round starts.
+      // Reaction window after bidding legally closes:
+      // - no contract → everyone passed, redeal quickly
+      // - contract, no counter yet → wait for opposing team contre (~1800ms,
+      //   long enough for the AI counter watcher's max delay ~1550ms)
+      // - contre placed → wait for bidder team surcontre (~1800ms)
+      // - surcontre placed → advance to play quickly
       const last = bids[bids.length - 1];
       const level = counterLevel(bids);
-      const delay = last?.kind === "contre" && level === 2 ? 1600 : 900;
+      let delay = 1800;
+      if (!c) delay = 700;
+      else if (level === 4) delay = 700;
+      else if (last?.kind === "contre") delay = 1800;
       const t = window.setTimeout(() => {
         if (!c) {
-          // Everyone passed → redeal with next dealer
           nextRound();
         } else {
           setContract(c);
@@ -359,6 +365,7 @@ function GameTable() {
       }, delay);
       return () => clearTimeout(t);
     }
+
     if (currentTurn === "bottom") return; // wait for human
     const timer = window.setTimeout(() => {
       const decision = aiBid(hands[currentTurn], bids, currentTurn);
