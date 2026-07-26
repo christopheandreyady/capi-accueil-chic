@@ -1883,8 +1883,8 @@ function TeamStash({ team, stash, isMobile = false }: { team: Team; stash: ChipB
   // rotated and offset like real chips pushed aside after a hand.
   const style: React.CSSProperties =
     team === "A"
-      ? { right: isMobile ? "20%" : "4%", bottom: "4%", width: isMobile ? "22%" : "30%" }
-      : { left: isMobile ? "20%" : "4%", top: "4%", width: isMobile ? "22%" : "30%" };
+      ? { right: isMobile ? "6%" : "4%", bottom: "4%", width: isMobile ? "26%" : "30%" }
+      : { left: isMobile ? "6%" : "4%", top: "4%", width: isMobile ? "26%" : "30%" };
   return (
     <div
       className="pointer-events-none absolute z-[22] flex flex-wrap gap-1.5"
