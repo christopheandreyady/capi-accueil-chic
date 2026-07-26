@@ -782,9 +782,9 @@ function GameTable() {
               }
             />
 
-            {/* Warm key light on the felt — masked to a circle so it never spills onto the room. */}
-            <div className="pointer-events-none absolute inset-[8%] rounded-full" style={{ background:"radial-gradient(45% 38% at 50% 45%, oklch(0.92 0.15 78 / 22%) 0%, oklch(0.85 0.12 72 / 8%) 50%, transparent 78%)" }} />
-            <div className="pointer-events-none absolute inset-[8%] rounded-full" style={{ background:"radial-gradient(60% 55% at 50% 55%, transparent 0%, transparent 55%, oklch(0 0 0 / 32%) 100%)" }} />
+            {/* The table image itself provides all light and texture; no
+                additional circular light or vignette overlays are added on
+                top of the felt so the green surface stays clean and uniform. */}
 
             {/* CAPI emblem engraved into the felt — stronger contrast so
                 the mark reads clearly while keeping the embossed feel. */}
