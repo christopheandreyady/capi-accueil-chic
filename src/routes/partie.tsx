@@ -3,6 +3,7 @@ import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { ArrowLeft, RotateCcw, Shuffle, Check } from "lucide-react";
 import bistrotTable from "@/assets/capi-bistrot-table.jpg";
 import capiEmblem from "@/assets/capi-emblem.png";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { buildDeck, isRedSuit, shuffle, type Card, type Rank, type Suit } from "@/lib/deck";
 import {
   CLOCKWISE,
@@ -205,6 +206,7 @@ function playCutSound() {
 // --- Component -------------------------------------------------------------
 
 function GameTable() {
+  const isMobile = useIsMobile();
   const boxRef = useRef<HTMLDivElement>(null);
   const [size, setSize] = useState({ w: 0, h: 0 });
 
@@ -578,14 +580,14 @@ function GameTable() {
 
   const dealingTarget = (d: Dealt) => {
     // Used during "dealing" phase only.
-    return handTarget(d.seat, d.indexInHand, 8, anchors);
+    return handTarget(d.seat, d.indexInHand, 8, anchors, isMobile);
   };
 
   // Cache targets for the dealing animation (stable jitter)
   const dealingTargetsRef = useRef<Record<string, ReturnType<typeof handTarget>>>({});
   useEffect(() => {
     dealingTargetsRef.current = {};
-  }, [dealSeed, dealer, size.w, dealMode]);
+  }, [dealSeed, dealer, size.w, dealMode, isMobile]);
 
   const nextRound = () => {
     setDealer((d) => nextSeat(d));
@@ -685,7 +687,18 @@ function GameTable() {
 
 
 
-      <div className="relative z-10 mx-auto flex min-h-screen w-full max-w-none flex-col px-2 pt-4 pb-4">
+      <div
+        className="relative z-10 mx-auto flex w-full max-w-none flex-col px-2"
+        style={{
+          minHeight: "100dvh",
+          paddingTop: isMobile
+            ? "calc(env(safe-area-inset-top) + 0.5rem)"
+            : "1rem",
+          paddingBottom: isMobile
+            ? "calc(env(safe-area-inset-bottom) + 0.5rem)"
+            : "1rem",
+        }}
+      >
         <header className="flex items-center justify-between gap-2">
           <div className="flex items-center gap-2">
             <Link to="/salle-attente" className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border transition active:scale-95" style={{ background:"oklch(0.2 0.03 40 / 60%)", borderColor:"oklch(0.82 0.14 82 / 30%)", backdropFilter:"blur(8px)", color:"oklch(0.9 0.1 85)" }} aria-label="Retour"><ArrowLeft className="h-4 w-4" /></Link>
@@ -716,7 +729,7 @@ function GameTable() {
               alt="CAPI"
               width={1024}
               height={1024}
-              className="h-20 w-20"
+              className={isMobile ? "h-11 w-11" : "h-20 w-20"}
               style={{
                 filter:
                   "drop-shadow(0 10px 18px oklch(0 0 0 / 78%)) drop-shadow(0 0 22px oklch(0.9 0.16 82 / 70%)) drop-shadow(0 0 10px oklch(0.95 0.14 85 / 55%)) contrast(1.22) saturate(1.22) brightness(1.18)",
@@ -728,11 +741,22 @@ function GameTable() {
         </header>
 
 
-        <div className="relative mx-auto my-auto flex w-full flex-1 items-center justify-center px-1 py-2">
+        <div className={`relative mx-auto flex w-full flex-1 justify-center px-1 ${isMobile ? "items-start pt-2" : "my-auto items-center py-2"}`}>
           <div
             ref={boxRef}
             className="relative"
-            style={{ width: "min(100vw, calc((100dvh - 130px) * 1.55), 1020px)", aspectRatio: "3 / 2" }}
+            style={
+              isMobile
+                ? {
+                    // Mobile: table fills full width, fan hangs below the
+                    // wooden frame so the felt is never covered by cards.
+                    width: "min(100vw, calc((100dvh - 220px) * 1.5))",
+                    aspectRatio: "3 / 2",
+                    marginBottom: "180px",
+                    overflow: "visible",
+                  }
+                : { width: "min(100vw, calc((100dvh - 130px) * 1.55), 1020px)", aspectRatio: "3 / 2" }
+            }
           >
             {/* Round wooden bistro table — a physical object floating in the
                 room. Transparent PNG so the environment stays visible around
@@ -851,7 +875,7 @@ function GameTable() {
               const isDealt = i < dealtCount && phase !== "cut";
               if (!isDealt) return null;
               if (!dealingTargetsRef.current[d.card.id]) {
-                dealingTargetsRef.current[d.card.id] = handTarget(d.seat, d.indexInHand, 8, anchors);
+                dealingTargetsRef.current[d.card.id] = handTarget(d.seat, d.indexInHand, 8, anchors, isMobile);
               }
               const target = dealingTargetsRef.current[d.card.id];
               const showFace = d.seat === "bottom";
@@ -877,6 +901,7 @@ function GameTable() {
                 phase={phase}
                 contract={contract}
                 currentTurn={currentTurn}
+                isMobile={isMobile}
               />
             )}
           </div>
@@ -966,27 +991,32 @@ type Anchors = {
   right: { x: number; y: number; angle: number };
 };
 
-function handTarget(seat: Position, index: number, total: number, anchors: Anchors) {
+function handTarget(seat: Position, index: number, total: number, anchors: Anchors, isMobile = false) {
   const isBottom = seat === "bottom";
-  const cardW = isBottom ? CARD_W_BIG : CARD_W_SMALL;
-  const cardH = isBottom ? CARD_H_BIG : CARD_H_SMALL;
+  const cardW = isBottom ? (isMobile ? 46 : CARD_W_BIG) : CARD_W_SMALL;
+  const cardH = isBottom ? (isMobile ? 68 : CARD_H_BIG) : CARD_H_SMALL;
   const a = anchors[seat];
   // Constant per-card angular step: the fan CLOSES as cards are played,
   // so the hand always stays visually compact with no gap where a card was.
   // Slightly wider angle + larger radius on the bottom hand → each card is
   // clearly distinguishable while keeping a natural fan shape.
-  const stepDeg = isBottom ? 10.5 : 2.2;
+  // On mobile the fan is tighter and smaller so it never hides more than
+  // ~20% of the felt, while cards remain easy to tap (>44px hit target).
+  const stepDeg = isBottom ? (isMobile ? 8 : 10.5) : 2.2;
   const localAngle = total > 1 ? -((total - 1) / 2) * stepDeg + stepDeg * index : 0;
-  const radius = isBottom ? 122 : 56;
+  const radius = isBottom ? (isMobile ? 92 : 122) : 56;
   const rad = (localAngle * Math.PI) / 180;
   const lx = Math.sin(rad) * radius;
   const ly = -Math.cos(rad) * radius;
   const seatRad = (a.angle * Math.PI) / 180;
   const rx = lx * Math.cos(seatRad) - ly * Math.sin(seatRad);
   const ry = lx * Math.sin(seatRad) + ly * Math.cos(seatRad);
+  // On mobile, push the bottom hand OUTSIDE the table box so the fan hangs
+  // below the wooden frame — the felt stays fully visible.
+  const anchorYOffset = isBottom && isMobile ? 138 : 0;
   return {
     x: a.x + rx,
-    y: a.y + ry,
+    y: a.y + ry + anchorYOffset,
     rotate: localAngle + a.angle,
     w: cardW,
     h: cardH,
@@ -1033,7 +1063,7 @@ function trickTarget(
 
 function GameCards({
   hands, trick, anchors, onLocalPlay, selectedCardId, setSelectedCardId,
-  phase, contract, currentTurn,
+  phase, contract, currentTurn, isMobile,
 }: {
   hands: Record<Position, Card[]>;
   trick: Trick | null;
@@ -1044,6 +1074,7 @@ function GameCards({
   phase: Phase;
   contract: Contract | null;
   currentTurn: Position;
+  isMobile: boolean;
 }) {
   const boxRef = useRef<HTMLDivElement>(null);
   const [sz, setSz] = useState({ w: 0, h: 0 });
@@ -1074,7 +1105,7 @@ function GameCards({
       {POSITIONS.map((seat) => {
         const hand = hands[seat];
         return hand.map((card, index) => {
-          const t = handTarget(seat, index, hand.length, anchors);
+          const t = handTarget(seat, index, hand.length, anchors, isMobile);
           const isBottom = seat === "bottom";
           const showFace = isBottom;
           const clickable = isBottom && phase === "playing" && currentTurn === "bottom" && (!legalIds || legalIds.has(card.id));
