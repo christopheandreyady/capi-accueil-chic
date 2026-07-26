@@ -1384,7 +1384,7 @@ function PlayerBadge({
   // aspect-square box), never to the viewport. They sit on the wooden rim
   // just inside the table edge so no avatar can visually leave the play
   // zone, and every seat scales automatically with the table.
-  const sideInset = isMobile ? "21%" : "3%";
+  const sideInset = isMobile ? "6%" : "3%";
   const style: React.CSSProperties =
     position === "bottom" ? { left:"50%", bottom:"3%", transform:"translate(-50%, 0)" }
     : position === "top" ? { left:"50%", top:"3%", transform:"translate(-50%, 0)" }
