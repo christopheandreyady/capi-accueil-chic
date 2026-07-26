@@ -1016,27 +1016,27 @@ type Anchors = {
 
 function handTarget(seat: Position, index: number, total: number, anchors: Anchors, isMobile = false) {
   const isBottom = seat === "bottom";
-  const cardW = isBottom ? (isMobile ? 46 : CARD_W_BIG) : CARD_W_SMALL;
-  const cardH = isBottom ? (isMobile ? 68 : CARD_H_BIG) : CARD_H_SMALL;
+  const cardW = isBottom ? (isMobile ? 34 : CARD_W_BIG) : CARD_W_SMALL;
+  const cardH = isBottom ? (isMobile ? 51 : CARD_H_BIG) : CARD_H_SMALL;
   const a = anchors[seat];
   // Constant per-card angular step: the fan CLOSES as cards are played,
   // so the hand always stays visually compact with no gap where a card was.
   // Slightly wider angle + larger radius on the bottom hand → each card is
   // clearly distinguishable while keeping a natural fan shape.
-  // On mobile the fan is tighter and smaller so it never hides more than
-  // ~20% of the felt, while cards remain easy to tap (>44px hit target).
-  const stepDeg = isBottom ? (isMobile ? 8 : 10.5) : 2.2;
+  // On mobile the fan is tighter, smaller and less overlapped so it never
+  // hides more than ~20% of the felt while remaining easy to tap.
+  const stepDeg = isBottom ? (isMobile ? 9 : 10.5) : 2.2;
   const localAngle = total > 1 ? -((total - 1) / 2) * stepDeg + stepDeg * index : 0;
-  const radius = isBottom ? (isMobile ? 92 : 122) : 56;
+  const radius = isBottom ? (isMobile ? 72 : 122) : 56;
   const rad = (localAngle * Math.PI) / 180;
   const lx = Math.sin(rad) * radius;
   const ly = -Math.cos(rad) * radius;
   const seatRad = (a.angle * Math.PI) / 180;
   const rx = lx * Math.cos(seatRad) - ly * Math.sin(seatRad);
   const ry = lx * Math.sin(seatRad) + ly * Math.cos(seatRad);
-  // On mobile, push the bottom hand OUTSIDE the table box so the fan hangs
-  // below the wooden frame — the felt stays fully visible.
-  const anchorYOffset = isBottom && isMobile ? 138 : 0;
+  // On mobile, push the bottom hand just below the wooden rim so the felt
+  // stays visible and the fan sits naturally at the bottom of the screen.
+  const anchorYOffset = isBottom && isMobile ? 78 : 0;
   return {
     x: a.x + rx,
     y: a.y + ry + anchorYOffset,
@@ -1046,6 +1046,7 @@ function handTarget(seat: Position, index: number, total: number, anchors: Ancho
     seatAngle: a.angle,
   };
 }
+
 
 // Deterministic pseudo-random in [-1, 1] from seat + play index.
 function seatJitter(seat: Position, orderIndex: number, salt: number) {
