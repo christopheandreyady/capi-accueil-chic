@@ -557,12 +557,15 @@ function GameTable() {
   const anchors = useMemo(() => {
     const w = size.w || 1;
     const h = size.h || 1;
-    // The wooden rim is ~7-8% of the smaller dim. Cards must sit on the
-    // felt (well inside the wood), avatars sit on the rim. Bottom hand
-    // sits lower on the felt so the center emblem stays visible.
-    const insetTop = h * (isMobile ? 0.11 : 0.13);
-    const insetBottom = h * (isMobile ? 0.11 : 0.04);
-    const insetH = w * (isMobile ? 0.11 : 0.10);
+    // On mobile the table image is object-cover-cropped to the viewport so
+    // the felt fills the screen: place seats near the viewport edges. The
+    // bottom seat sits higher (insetBottom is large) to leave a dedicated
+    // strip at the bottom of the screen for the player's hand fan.
+    // On desktop the full round wooden table is visible: seats sit just
+    // inside the rim following the classic 13/10% insets.
+    const insetTop = h * (isMobile ? 0.055 : 0.13);
+    const insetBottom = h * (isMobile ? 0.18 : 0.04);
+    const insetH = w * (isMobile ? 0.05 : 0.10);
     return {
       bottom: { x: w * 0.5, y: h - insetBottom, angle: 0 },
       top: { x: w * 0.5, y: insetTop, angle: 180 },
