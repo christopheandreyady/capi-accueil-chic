@@ -760,29 +760,35 @@ function GameTable() {
         </header>
 
 
-        <div className={`relative mx-auto flex w-full flex-1 justify-center px-0 ${isMobile ? "items-center pt-0" : "my-auto items-center py-2"}`}>
+        <div className={`relative mx-auto flex w-full flex-1 justify-center ${isMobile ? "items-stretch px-0" : "my-auto items-center px-0 py-2"}`}>
           <div
             ref={boxRef}
             className="relative"
             style={
               isMobile
                 ? {
-                    // Dedicated mobile stage: fills the smartphone screen —
-                    // ~96% of the width AND most of the vertical space so
-                    // the wooden table dominates as the main visual element.
-                    width: "96vw",
-                    height: "calc(100dvh - env(safe-area-inset-top) - env(safe-area-inset-bottom) - 8rem)",
+                    // Dedicated full-viewport mobile stage: the table image
+                    // is object-cover-cropped so the felt fills almost the
+                    // whole screen. Wooden rim stays visible top & bottom;
+                    // sides extend just off-screen — the felt becomes the
+                    // interface. Negative margins cancel the parent px-2.
+                    width: "100vw",
+                    marginLeft: "calc(50% - 50vw)",
+                    marginRight: "calc(50% - 50vw)",
+                    height:
+                      "calc(100dvh - env(safe-area-inset-top) - env(safe-area-inset-bottom) - 3.5rem)",
                     marginBottom: 0,
-                    overflow: "visible",
+                    overflow: "hidden",
                   }
                 : { width: "min(100vw, calc((100dvh - 130px) * 1.55), 1020px)", aspectRatio: "3 / 2" }
             }
           >
 
 
-            {/* Round wooden bistro table — a physical object floating in the
-                room. On mobile we fill the square stage with the felt so
-                the player feels immersed around the table. */}
+            {/* Round wooden bistro table — on mobile the image covers the
+                whole stage so the felt dominates as the main visual element;
+                on desktop the full round table is visible as a floating
+                object in the room. */}
             <img
               src={bistrotTable}
               alt=""
@@ -791,7 +797,7 @@ function GameTable() {
               className="pointer-events-none absolute h-full w-full object-cover"
               style={
                 isMobile
-                  ? { inset: 0, objectPosition: "center", borderRadius: "9999px", filter: "drop-shadow(0 22px 28px oklch(0 0 0 / 75%)) drop-shadow(0 8px 14px oklch(0 0 0 / 55%))" }
+                  ? { inset: 0, objectPosition: "center", filter: "drop-shadow(0 22px 28px oklch(0 0 0 / 75%)) drop-shadow(0 8px 14px oklch(0 0 0 / 55%))" }
                   : { inset: "-7%", filter: "drop-shadow(0 30px 40px oklch(0 0 0 / 75%)) drop-shadow(0 10px 18px oklch(0 0 0 / 55%))" }
               }
             />
