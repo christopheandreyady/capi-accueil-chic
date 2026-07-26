@@ -118,6 +118,7 @@ const initialSeats: Seat[] = [
 
 function WaitingRoom() {
   const navigate = useNavigate();
+  const isMobile = useIsMobile();
   const [cfg, setCfg] = useState<TableConfig>(() => defaultTableConfig());
   const [seats, setSeats] = useState<Seat[]>(initialSeats);
   const [inviteOpen, setInviteOpen] = useState(false);
