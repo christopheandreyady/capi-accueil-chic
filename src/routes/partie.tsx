@@ -1620,43 +1620,50 @@ function breakdownFromScore(score: number): ChipBreakdown {
 function contractChipBreakdown(contract: Contract): ChipBreakdown {
   if (contract.isCapot) return { largeBar: 0, smallBar: 0, rounds: 0, capot: true };
   const p = contract.points;
+  // Traditional Contrée café stacking:
+  //  80  = 50 + 10 + 10 + 10
+  //  90  = 50 + 10 + 10 + 10 + 10
+  //  100 = 100
+  //  110..140 = 100 + n×10
+  //  150 = 100 + 50
+  //  160 = 100 + 50 + 10
   const largeBar = p >= 100 ? 1 : 0;
-  const smallBar = p === 150 || p === 160 ? 1 : 0;
-  let rounds = 0;
-  if (p < 100) rounds = (p - 70) / 10; // 80->1, 90->2
-  else if (p <= 140) rounds = (p - 100) / 10; // 100->0..140->4
-  else rounds = p - 150; // 150->0, 160->1
+  let rem = p - largeBar * 100;
+  const smallBar = rem >= 50 ? 1 : 0;
+  rem -= smallBar * 50;
+  const rounds = Math.max(0, Math.round(rem / 10));
   return { largeBar, smallBar, rounds, capot: false };
 }
 
 function ContractChips({ contract, slideTo }: { contract: Contract; slideTo?: Team | null }) {
   const b = contractChipBreakdown(contract);
   const suitColor = isRedSuit(contract.suit) ? "oklch(0.72 0.2 25)" : "oklch(0.18 0.02 40)";
-  const team = TEAM_OF[contract.bidder];
 
-  // Bid chips rest on the wooden rim, on the taker's team side, then slide to
-  // the winning team's stash for the handoff (A → bottom-right, B → top-left).
-  const baseStyle: React.CSSProperties =
-    team === "A"
-      ? { top: "94%", left: "94%", transform: "translate(-50%, -50%)" }
-      : { top: "6%", left: "6%", transform: "translate(-50%, -50%)" };
+  // The announced contract sits at the CENTER of the felt for the whole hand,
+  // like real chips laid down in the middle of a bistrot table. When the hand
+  // ends they slide toward the winning team's single representative pile
+  // (team A → bottom-right, team B → top-left). Lower z-index than cards so
+  // the trick play never gets obstructed by the chips.
+  const baseStyle: React.CSSProperties = { top: "50%", left: "50%", transform: "translate(-50%, -50%)" };
 
   const slideStyle: React.CSSProperties = slideTo
     ? {
-        top: slideTo === "A" ? "78%" : "22%",
-        left: slideTo === "A" ? "82%" : "18%",
-        transform: "translate(-50%, -50%) scale(0.66)",
-        opacity: 0.85,
+        top: slideTo === "A" ? "88%" : "12%",
+        left: slideTo === "A" ? "88%" : "12%",
+        transform: "translate(-50%, -50%) scale(0.68)",
+        opacity: 0.9,
       }
     : baseStyle;
 
   const wrapperStyle: React.CSSProperties = {
     position: "absolute",
     ...slideStyle,
-    transition: "transform 1200ms cubic-bezier(0.32, 0.72, 0.28, 1), top 1200ms cubic-bezier(0.32, 0.72, 0.28, 1), left 1200ms cubic-bezier(0.32, 0.72, 0.28, 1), opacity 800ms ease",
-    zIndex: 30,
+    transition:
+      "transform 1200ms cubic-bezier(0.32, 0.72, 0.28, 1), top 1200ms cubic-bezier(0.32, 0.72, 0.28, 1), left 1200ms cubic-bezier(0.32, 0.72, 0.28, 1), opacity 800ms ease",
+    zIndex: 12,
     pointerEvents: "none",
   };
+
 
   if (b.capot) {
     return (
