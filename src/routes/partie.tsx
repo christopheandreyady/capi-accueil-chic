@@ -560,12 +560,9 @@ function GameTable() {
     // The wooden rim is ~7-8% of the smaller dim. Cards must sit on the
     // felt (well inside the wood), avatars sit on the rim. Bottom hand
     // sits lower on the felt so the center emblem stays visible.
-    const insetTop = h * (isMobile ? 0.1 : 0.13);
-    const insetBottom = h * (isMobile ? 0.05 : 0.04);
-    // The mobile table plane is 145vw and intentionally extends beyond the
-    // viewport. Keep side gameplay anchors in its visible central 69% so
-    // cards, deck and seat actions remain inside the phone's safe width.
-    const insetH = w * (isMobile ? 0.22 : 0.10);
+    const insetTop = h * (isMobile ? 0.11 : 0.13);
+    const insetBottom = h * (isMobile ? 0.11 : 0.04);
+    const insetH = w * (isMobile ? 0.11 : 0.10);
     return {
       bottom: { x: w * 0.5, y: h - insetBottom, angle: 0 },
       top: { x: w * 0.5, y: insetTop, angle: 180 },
@@ -760,21 +757,18 @@ function GameTable() {
         </header>
 
 
-        <div className={`relative mx-auto flex w-full flex-1 justify-center px-0 ${isMobile ? "items-start pt-0" : "my-auto items-center py-2"}`}>
+        <div className={`relative mx-auto flex w-full flex-1 justify-center px-0 ${isMobile ? "items-center pt-0" : "my-auto items-center py-2"}`}>
           <div
             ref={boxRef}
-            className={`relative ${isMobile ? "shrink-0" : ""}`}
+            className="relative"
             style={
               isMobile
                 ? {
-                    // Mobile has its own larger table coordinate plane. The
-                    // 145vw width is deliberately clipped by the viewport:
-                    // it increases the physical table by ~45% without
-                    // scaling cards or any fixed-size interface control.
-                    // A safe-height cap keeps the lower seat reachable on
-                    // short phones such as iPhone SE.
-                    width: "min(145vw, calc((100dvh - env(safe-area-inset-top) - env(safe-area-inset-bottom) - 4.25rem) * 0.9))",
-                    aspectRatio: "0.9 / 1",
+                    // Dedicated mobile stage: fills the smartphone screen —
+                    // ~96% of the width AND most of the vertical space so
+                    // the wooden table dominates as the main visual element.
+                    width: "96vw",
+                    height: "calc(100dvh - env(safe-area-inset-top) - env(safe-area-inset-bottom) - 8rem)",
                     marginBottom: 0,
                     overflow: "visible",
                   }
@@ -784,17 +778,17 @@ function GameTable() {
 
 
             {/* Round wooden bistro table — a physical object floating in the
-                room. Transparent PNG so the environment stays visible around
-                its natural circular silhouette. */}
+                room. On mobile we fill the square stage with the felt so
+                the player feels immersed around the table. */}
             <img
               src={bistrotTable}
               alt=""
               width={1280}
               height={1280}
-              className={`pointer-events-none absolute h-full w-full ${isMobile ? "object-cover" : "object-contain"}`}
+              className="pointer-events-none absolute h-full w-full object-cover"
               style={
                 isMobile
-                  ? { inset: 0, objectPosition: "center", filter: "drop-shadow(0 18px 24px oklch(0 0 0 / 70%))" }
+                  ? { inset: 0, objectPosition: "center", borderRadius: "9999px", filter: "drop-shadow(0 22px 28px oklch(0 0 0 / 75%)) drop-shadow(0 8px 14px oklch(0 0 0 / 55%))" }
                   : { inset: "-7%", filter: "drop-shadow(0 30px 40px oklch(0 0 0 / 75%)) drop-shadow(0 10px 18px oklch(0 0 0 / 55%))" }
               }
             />
@@ -1389,7 +1383,7 @@ function PlayerBadge({
   // aspect-square box), never to the viewport. They sit on the wooden rim
   // just inside the table edge so no avatar can visually leave the play
   // zone, and every seat scales automatically with the table.
-  const sideInset = isMobile ? "21%" : "3%";
+  const sideInset = isMobile ? "6%" : "3%";
   const style: React.CSSProperties =
     position === "bottom" ? { left:"50%", bottom:"3%", transform:"translate(-50%, 0)" }
     : position === "top" ? { left:"50%", top:"3%", transform:"translate(-50%, 0)" }
@@ -1888,8 +1882,8 @@ function TeamStash({ team, stash, isMobile = false }: { team: Team; stash: ChipB
   // rotated and offset like real chips pushed aside after a hand.
   const style: React.CSSProperties =
     team === "A"
-      ? { right: isMobile ? "20%" : "4%", bottom: "4%", width: isMobile ? "22%" : "30%" }
-      : { left: isMobile ? "20%" : "4%", top: "4%", width: isMobile ? "22%" : "30%" };
+      ? { right: isMobile ? "6%" : "4%", bottom: "4%", width: isMobile ? "26%" : "30%" }
+      : { left: isMobile ? "6%" : "4%", top: "4%", width: isMobile ? "26%" : "30%" };
   return (
     <div
       className="pointer-events-none absolute z-[22] flex flex-wrap gap-1.5"

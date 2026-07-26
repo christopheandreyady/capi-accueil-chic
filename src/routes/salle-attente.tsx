@@ -1,5 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { Plus, ArrowLeft, Crown, Check, Copy, QrCode, Share2, UserPlus } from "lucide-react";
 import bistrotTable from "@/assets/capi-bistrot-table.jpg";
 import capiEmblem from "@/assets/capi-emblem.png";
@@ -117,6 +118,7 @@ const initialSeats: Seat[] = [
 
 function WaitingRoom() {
   const navigate = useNavigate();
+  const isMobile = useIsMobile();
   const [cfg, setCfg] = useState<TableConfig>(() => defaultTableConfig());
   const [seats, setSeats] = useState<Seat[]>(initialSeats);
   const [inviteOpen, setInviteOpen] = useState(false);
@@ -335,15 +337,26 @@ function WaitingRoom() {
         <section className="relative mx-auto my-auto flex w-full flex-1 items-center justify-center px-1 py-2">
           <div
             className="relative"
-            style={{ width: "min(100vw, calc((100dvh - 130px) * 1.55), 1020px)", aspectRatio: "3 / 2" }}
+            style={
+              isMobile
+                ? {
+                    width: "96vw",
+                    height: "calc(100dvh - env(safe-area-inset-top) - env(safe-area-inset-bottom) - 8rem)",
+                  }
+                : { width: "min(100vw, calc((100dvh - 130px) * 1.55), 1020px)", aspectRatio: "3 / 2" }
+            }
           >
             <img
               src={bistrotTable}
               alt=""
               width={1280}
               height={1280}
-              className="pointer-events-none absolute inset-0 h-full w-full object-contain"
-              style={{ filter: "drop-shadow(0 30px 40px oklch(0 0 0 / 75%)) drop-shadow(0 10px 18px oklch(0 0 0 / 55%))" }}
+              className={`pointer-events-none absolute inset-0 h-full w-full ${isMobile ? "object-cover" : "object-contain"}`}
+              style={
+                isMobile
+                  ? { borderRadius: "9999px", filter: "drop-shadow(0 22px 28px oklch(0 0 0 / 75%)) drop-shadow(0 8px 14px oklch(0 0 0 / 55%))" }
+                  : { filter: "drop-shadow(0 30px 40px oklch(0 0 0 / 75%)) drop-shadow(0 10px 18px oklch(0 0 0 / 55%))" }
+              }
             />
             {/* Warm key light on the felt — masked to the round felt area only. */}
             <div className="pointer-events-none absolute inset-[8%] rounded-full" style={{ background:"radial-gradient(45% 38% at 50% 45%, oklch(0.92 0.15 78 / 22%) 0%, oklch(0.85 0.12 72 / 8%) 50%, transparent 78%)" }} />
