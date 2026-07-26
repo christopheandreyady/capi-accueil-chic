@@ -340,8 +340,8 @@ function WaitingRoom() {
             style={
               isMobile
                 ? {
-                    width: "min(96vw, calc(100dvh - env(safe-area-inset-top) - env(safe-area-inset-bottom) - 9rem))",
-                    aspectRatio: "1 / 1",
+                    width: "96vw",
+                    height: "calc(100dvh - env(safe-area-inset-top) - env(safe-area-inset-bottom) - 8rem)",
                   }
                 : { width: "min(100vw, calc((100dvh - 130px) * 1.55), 1020px)", aspectRatio: "3 / 2" }
             }
