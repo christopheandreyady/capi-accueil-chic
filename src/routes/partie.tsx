@@ -757,23 +757,25 @@ function GameTable() {
         </header>
 
 
-        <div className={`relative mx-auto flex w-full flex-1 justify-center px-1 ${isMobile ? "items-start pt-2" : "my-auto items-center py-2"}`}>
+        <div className={`relative mx-auto flex w-full flex-1 justify-center px-0 ${isMobile ? "items-start pt-1" : "my-auto items-center py-2"}`}>
           <div
             ref={boxRef}
             className="relative"
             style={
               isMobile
                 ? {
-                    // Mobile: table fills full width, fan hangs below the
-                    // wooden frame so the felt is never covered by cards.
-                    width: "min(100vw, calc((100dvh - 220px) * 1.5))",
-                    aspectRatio: "3 / 2",
-                    marginBottom: "180px",
+                    // Mobile: nearly-square stage sits just under the header
+                    // so the felt dominates the screen; fan hangs just below.
+                    width: "100vw",
+                    aspectRatio: "0.9 / 1",
+                    marginBottom: "88px",
                     overflow: "visible",
                   }
                 : { width: "min(100vw, calc((100dvh - 130px) * 1.55), 1020px)", aspectRatio: "3 / 2" }
             }
           >
+
+
             {/* Round wooden bistro table — a physical object floating in the
                 room. Transparent PNG so the environment stays visible around
                 its natural circular silhouette. */}
@@ -782,9 +784,14 @@ function GameTable() {
               alt=""
               width={1280}
               height={1280}
-              className="pointer-events-none absolute h-full w-full object-contain"
-              style={{ inset: "-7%", filter: "drop-shadow(0 30px 40px oklch(0 0 0 / 75%)) drop-shadow(0 10px 18px oklch(0 0 0 / 55%))" }}
+              className={`pointer-events-none absolute h-full w-full ${isMobile ? "object-cover" : "object-contain"}`}
+              style={
+                isMobile
+                  ? { inset: 0, objectPosition: "center", filter: "drop-shadow(0 18px 24px oklch(0 0 0 / 70%))" }
+                  : { inset: "-7%", filter: "drop-shadow(0 30px 40px oklch(0 0 0 / 75%)) drop-shadow(0 10px 18px oklch(0 0 0 / 55%))" }
+              }
             />
+
             {/* Warm key light on the felt — masked to a circle so it never spills onto the room. */}
             <div className="pointer-events-none absolute inset-[8%] rounded-full" style={{ background:"radial-gradient(45% 38% at 50% 45%, oklch(0.92 0.15 78 / 22%) 0%, oklch(0.85 0.12 72 / 8%) 50%, transparent 78%)" }} />
             <div className="pointer-events-none absolute inset-[8%] rounded-full" style={{ background:"radial-gradient(60% 55% at 50% 55%, transparent 0%, transparent 55%, oklch(0 0 0 / 32%) 100%)" }} />
@@ -1010,27 +1017,27 @@ type Anchors = {
 
 function handTarget(seat: Position, index: number, total: number, anchors: Anchors, isMobile = false) {
   const isBottom = seat === "bottom";
-  const cardW = isBottom ? (isMobile ? 46 : CARD_W_BIG) : CARD_W_SMALL;
-  const cardH = isBottom ? (isMobile ? 68 : CARD_H_BIG) : CARD_H_SMALL;
+  const cardW = isBottom ? (isMobile ? 34 : CARD_W_BIG) : CARD_W_SMALL;
+  const cardH = isBottom ? (isMobile ? 51 : CARD_H_BIG) : CARD_H_SMALL;
   const a = anchors[seat];
   // Constant per-card angular step: the fan CLOSES as cards are played,
   // so the hand always stays visually compact with no gap where a card was.
   // Slightly wider angle + larger radius on the bottom hand → each card is
   // clearly distinguishable while keeping a natural fan shape.
-  // On mobile the fan is tighter and smaller so it never hides more than
-  // ~20% of the felt, while cards remain easy to tap (>44px hit target).
-  const stepDeg = isBottom ? (isMobile ? 8 : 10.5) : 2.2;
+  // On mobile the fan is tighter, smaller and less overlapped so it never
+  // hides more than ~20% of the felt while remaining easy to tap.
+  const stepDeg = isBottom ? (isMobile ? 9 : 10.5) : 2.2;
   const localAngle = total > 1 ? -((total - 1) / 2) * stepDeg + stepDeg * index : 0;
-  const radius = isBottom ? (isMobile ? 92 : 122) : 56;
+  const radius = isBottom ? (isMobile ? 72 : 122) : 56;
   const rad = (localAngle * Math.PI) / 180;
   const lx = Math.sin(rad) * radius;
   const ly = -Math.cos(rad) * radius;
   const seatRad = (a.angle * Math.PI) / 180;
   const rx = lx * Math.cos(seatRad) - ly * Math.sin(seatRad);
   const ry = lx * Math.sin(seatRad) + ly * Math.cos(seatRad);
-  // On mobile, push the bottom hand OUTSIDE the table box so the fan hangs
-  // below the wooden frame — the felt stays fully visible.
-  const anchorYOffset = isBottom && isMobile ? 138 : 0;
+  // On mobile, push the bottom hand just below the wooden rim so the felt
+  // stays visible and the fan sits naturally at the bottom of the screen.
+  const anchorYOffset = isBottom && isMobile ? 78 : 0;
   return {
     x: a.x + rx,
     y: a.y + ry + anchorYOffset,
@@ -1040,6 +1047,7 @@ function handTarget(seat: Position, index: number, total: number, anchors: Ancho
     seatAngle: a.angle,
   };
 }
+
 
 // Deterministic pseudo-random in [-1, 1] from seat + play index.
 function seatJitter(seat: Position, orderIndex: number, salt: number) {
