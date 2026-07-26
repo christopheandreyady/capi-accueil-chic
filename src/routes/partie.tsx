@@ -757,18 +757,19 @@ function GameTable() {
         </header>
 
 
-        <div className={`relative mx-auto flex w-full flex-1 justify-center px-1 ${isMobile ? "items-start pt-2" : "my-auto items-center py-2"}`}>
+        <div className={`relative mx-auto flex w-full flex-1 justify-center px-0 ${isMobile ? "items-start pt-0" : "my-auto items-center py-2"}`}>
           <div
             ref={boxRef}
             className="relative"
             style={
               isMobile
                 ? {
-                    // Mobile: table fills full width, fan hangs below the
-                    // wooden frame so the felt is never covered by cards.
-                    width: "min(100vw, calc((100dvh - 220px) * 1.5))",
-                    aspectRatio: "3 / 2",
-                    marginBottom: "180px",
+                    // Mobile: table becomes the dominant visual element.
+                    // Nearly-square stage so the felt fills the top of the
+                    // screen; the fan hangs just below with tiny margin.
+                    width: "100vw",
+                    aspectRatio: "1.18 / 1",
+                    marginBottom: "96px",
                     overflow: "visible",
                   }
                 : { width: "min(100vw, calc((100dvh - 130px) * 1.55), 1020px)", aspectRatio: "3 / 2" }
@@ -782,9 +783,14 @@ function GameTable() {
               alt=""
               width={1280}
               height={1280}
-              className="pointer-events-none absolute h-full w-full object-contain"
-              style={{ inset: "-7%", filter: "drop-shadow(0 30px 40px oklch(0 0 0 / 75%)) drop-shadow(0 10px 18px oklch(0 0 0 / 55%))" }}
+              className={`pointer-events-none absolute h-full w-full ${isMobile ? "object-cover" : "object-contain"}`}
+              style={
+                isMobile
+                  ? { inset: 0, objectPosition: "center", filter: "drop-shadow(0 18px 24px oklch(0 0 0 / 70%))" }
+                  : { inset: "-7%", filter: "drop-shadow(0 30px 40px oklch(0 0 0 / 75%)) drop-shadow(0 10px 18px oklch(0 0 0 / 55%))" }
+              }
             />
+
             {/* Warm key light on the felt — masked to a circle so it never spills onto the room. */}
             <div className="pointer-events-none absolute inset-[8%] rounded-full" style={{ background:"radial-gradient(45% 38% at 50% 45%, oklch(0.92 0.15 78 / 22%) 0%, oklch(0.85 0.12 72 / 8%) 50%, transparent 78%)" }} />
             <div className="pointer-events-none absolute inset-[8%] rounded-full" style={{ background:"radial-gradient(60% 55% at 50% 55%, transparent 0%, transparent 55%, oklch(0 0 0 / 32%) 100%)" }} />
