@@ -557,12 +557,15 @@ function GameTable() {
   const anchors = useMemo(() => {
     const w = size.w || 1;
     const h = size.h || 1;
-    // The wooden rim is ~7-8% of the smaller dim. Cards must sit on the
-    // felt (well inside the wood), avatars sit on the rim. Bottom hand
-    // sits lower on the felt so the center emblem stays visible.
-    const insetTop = h * (isMobile ? 0.11 : 0.13);
-    const insetBottom = h * (isMobile ? 0.11 : 0.04);
-    const insetH = w * (isMobile ? 0.11 : 0.10);
+    // On mobile the table image is object-cover-cropped to the viewport so
+    // the felt fills the screen: place seats near the viewport edges. The
+    // bottom seat sits higher (insetBottom is large) to leave a dedicated
+    // strip at the bottom of the screen for the player's hand fan.
+    // On desktop the full round wooden table is visible: seats sit just
+    // inside the rim following the classic 13/10% insets.
+    const insetTop = h * (isMobile ? 0.055 : 0.13);
+    const insetBottom = h * (isMobile ? 0.18 : 0.04);
+    const insetH = w * (isMobile ? 0.05 : 0.10);
     return {
       bottom: { x: w * 0.5, y: h - insetBottom, angle: 0 },
       top: { x: w * 0.5, y: insetTop, angle: 180 },
@@ -757,29 +760,35 @@ function GameTable() {
         </header>
 
 
-        <div className={`relative mx-auto flex w-full flex-1 justify-center px-0 ${isMobile ? "items-center pt-0" : "my-auto items-center py-2"}`}>
+        <div className={`relative mx-auto flex w-full flex-1 justify-center ${isMobile ? "items-stretch px-0" : "my-auto items-center px-0 py-2"}`}>
           <div
             ref={boxRef}
             className="relative"
             style={
               isMobile
                 ? {
-                    // Dedicated mobile stage: fills the smartphone screen —
-                    // ~96% of the width AND most of the vertical space so
-                    // the wooden table dominates as the main visual element.
-                    width: "96vw",
-                    height: "calc(100dvh - env(safe-area-inset-top) - env(safe-area-inset-bottom) - 8rem)",
+                    // Dedicated full-viewport mobile stage: the table image
+                    // is object-cover-cropped so the felt fills almost the
+                    // whole screen. Wooden rim stays visible top & bottom;
+                    // sides extend just off-screen — the felt becomes the
+                    // interface. Negative margins cancel the parent px-2.
+                    width: "100vw",
+                    marginLeft: "calc(50% - 50vw)",
+                    marginRight: "calc(50% - 50vw)",
+                    height:
+                      "calc(100dvh - env(safe-area-inset-top) - env(safe-area-inset-bottom) - 3.5rem)",
                     marginBottom: 0,
-                    overflow: "visible",
+                    overflow: "hidden",
                   }
                 : { width: "min(100vw, calc((100dvh - 130px) * 1.55), 1020px)", aspectRatio: "3 / 2" }
             }
           >
 
 
-            {/* Round wooden bistro table — a physical object floating in the
-                room. On mobile we fill the square stage with the felt so
-                the player feels immersed around the table. */}
+            {/* Round wooden bistro table — on mobile the image covers the
+                whole stage so the felt dominates as the main visual element;
+                on desktop the full round table is visible as a floating
+                object in the room. */}
             <img
               src={bistrotTable}
               alt=""
@@ -788,7 +797,7 @@ function GameTable() {
               className="pointer-events-none absolute h-full w-full object-cover"
               style={
                 isMobile
-                  ? { inset: 0, objectPosition: "center", borderRadius: "9999px", filter: "drop-shadow(0 22px 28px oklch(0 0 0 / 75%)) drop-shadow(0 8px 14px oklch(0 0 0 / 55%))" }
+                  ? { inset: 0, objectPosition: "center", filter: "drop-shadow(0 22px 28px oklch(0 0 0 / 75%)) drop-shadow(0 8px 14px oklch(0 0 0 / 55%))" }
                   : { inset: "-7%", filter: "drop-shadow(0 30px 40px oklch(0 0 0 / 75%)) drop-shadow(0 10px 18px oklch(0 0 0 / 55%))" }
               }
             />
@@ -1019,27 +1028,28 @@ type Anchors = {
 
 function handTarget(seat: Position, index: number, total: number, anchors: Anchors, isMobile = false) {
   const isBottom = seat === "bottom";
-  const cardW = isBottom ? (isMobile ? 34 : CARD_W_BIG) : CARD_W_SMALL;
-  const cardH = isBottom ? (isMobile ? 51 : CARD_H_BIG) : CARD_H_SMALL;
+  // Cards keep their original pixel dimensions on every device — no CSS
+  // scaling that would soften or clip the edges. On mobile we just reduce
+  // the overlap by narrowing the fan radius / angular step barely, and
+  // push the fan anchor down so the hand sits flush against the bottom
+  // edge of the screen.
+  const cardW = isBottom ? CARD_W_BIG : CARD_W_SMALL;
+  const cardH = isBottom ? CARD_H_BIG : CARD_H_SMALL;
   const a = anchors[seat];
   // Constant per-card angular step: the fan CLOSES as cards are played,
   // so the hand always stays visually compact with no gap where a card was.
-  // Slightly wider angle + larger radius on the bottom hand → each card is
-  // clearly distinguishable while keeping a natural fan shape.
-  // On mobile the fan is tighter, smaller and less overlapped so it never
-  // hides more than ~20% of the felt while remaining easy to tap.
-  const stepDeg = isBottom ? (isMobile ? 9 : 10.5) : 2.2;
+  const stepDeg = isBottom ? (isMobile ? 8.5 : 10.5) : 2.2;
   const localAngle = total > 1 ? -((total - 1) / 2) * stepDeg + stepDeg * index : 0;
-  const radius = isBottom ? (isMobile ? 72 : 122) : 56;
+  const radius = isBottom ? (isMobile ? 110 : 122) : 56;
   const rad = (localAngle * Math.PI) / 180;
   const lx = Math.sin(rad) * radius;
   const ly = -Math.cos(rad) * radius;
   const seatRad = (a.angle * Math.PI) / 180;
   const rx = lx * Math.cos(seatRad) - ly * Math.sin(seatRad);
   const ry = lx * Math.sin(seatRad) + ly * Math.cos(seatRad);
-  // On mobile, push the bottom hand just below the wooden rim so the felt
-  // stays visible and the fan sits naturally at the bottom of the screen.
-  const anchorYOffset = isBottom && isMobile ? 78 : 0;
+  // Push the bottom hand below its anchor so the fan sits at the very
+  // bottom of the screen, freeing the felt above for the play area.
+  const anchorYOffset = isBottom && isMobile ? 96 : 0;
   return {
     x: a.x + rx,
     y: a.y + ry + anchorYOffset,
