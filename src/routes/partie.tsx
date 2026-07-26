@@ -757,18 +757,24 @@ function GameTable() {
         </header>
 
 
-        <div className={`relative mx-auto flex w-full flex-1 justify-center px-0 ${isMobile ? "items-start pt-1" : "my-auto items-center py-2"}`}>
+        <div className={`relative mx-auto flex w-full flex-1 justify-center px-0 ${isMobile ? "items-start pt-0" : "my-auto items-center py-2"}`}>
           <div
             ref={boxRef}
             className="relative"
             style={
               isMobile
                 ? {
-                    // Mobile: nearly-square stage sits just under the header
-                    // so the felt dominates the screen; fan hangs just below.
-                    width: "100vw",
+                    // Mobile has its own larger table coordinate plane. The
+                    // 145vw width is deliberately clipped by the viewport:
+                    // it increases the physical table by ~45% without
+                    // scaling cards or any fixed-size interface control.
+                    // A safe-height cap keeps the lower seat reachable on
+                    // short phones such as iPhone SE.
+                    width: "min(145vw, calc((100dvh - env(safe-area-inset-top) - env(safe-area-inset-bottom) - 4.25rem) * 0.9))",
                     aspectRatio: "0.9 / 1",
-                    marginBottom: "88px",
+                    left: "50%",
+                    transform: "translateX(-50%)",
+                    marginBottom: 0,
                     overflow: "visible",
                   }
                 : { width: "min(100vw, calc((100dvh - 130px) * 1.55), 1020px)", aspectRatio: "3 / 2" }
