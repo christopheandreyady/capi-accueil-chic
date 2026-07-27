@@ -30,6 +30,7 @@ import {
   type Team,
   type Trick,
   type TrickPlay,
+  cardPoints,
 } from "@/lib/contree";
 
 export const Route = createFileRoute("/partie")({
