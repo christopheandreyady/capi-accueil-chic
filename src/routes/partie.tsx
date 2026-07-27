@@ -677,6 +677,9 @@ function GameTable() {
         @keyframes capi-riffle-tick { 0%,30%,60%{transform:translateY(0);} 10%,40%,70%{transform:translateY(-4px) rotate(-1.5deg);} 20%,50%,80%{transform:translateY(0);} }
         @keyframes capi-turn-pulse { 0%,100%{box-shadow:0 0 0 0 oklch(0.85 0.14 82 / 60%), 0 6px 14px -6px oklch(0 0 0 / 75%);} 50%{box-shadow:0 0 0 8px oklch(0.85 0.14 82 / 0%), 0 6px 14px -6px oklch(0 0 0 / 75%);} }
         @keyframes capi-think-dots { 0%,20%{opacity:.2;} 50%{opacity:1;} 80%,100%{opacity:.2;} }
+        @keyframes capi-turn-countdown { 0%{transform:scaleX(1);} 100%{transform:scaleX(0);} }
+        @keyframes capi-turn-glow { 0%,100%{opacity:.85; transform:scaleX(1);} 50%{opacity:1; transform:scaleX(0.92);} }
+
       `}</style>
 
       {/* On mobile the table image fills the screen and carries the whole
