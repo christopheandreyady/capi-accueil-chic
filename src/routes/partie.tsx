@@ -914,12 +914,13 @@ function GameTable() {
               height={512}
               className="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-[5]"
               style={{
-                width: "26%",
+                width: isMobile ? "20%" : "26%",
                 height: "auto",
-                opacity: 0.52,
+                opacity: isMobile ? 0.28 : 0.5,
                 mixBlendMode: "overlay",
-                filter: "drop-shadow(0 1px 0 oklch(0 0 0 / 75%)) drop-shadow(0 -1px 0 oklch(1 0 0 / 22%)) contrast(1.32)",
+                filter: "drop-shadow(0 1px 0 oklch(0 0 0 / 60%)) contrast(1.2)",
               }}
+
             />
 
 
