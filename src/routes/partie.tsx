@@ -112,6 +112,7 @@ const TRICK_HOLD_MS = 1100;
 type DealMode = "3-2-3" | "2-3-3" | "3-3-2";
 type Phase =
   | "seating"
+  | "draw"
   | "shuffle"
   | "shuffling"
   | "cut"
@@ -366,6 +367,18 @@ function GameTable() {
   const [deckHolder, setDeckHolder] = useState<Position | null>(null);
   const [dealMode, setDealMode] = useState<DealMode | null>(null);
 
+  // First-dealer draw (once per game). Each player draws a card; the lowest
+  // rank wins the right to designate the first dealer. Ties re-draw only
+  // between tied seats.
+  const drawDoneRef = useRef(false);
+  const [drawCards, setDrawCards] = useState<Record<Position, Card | null>>({
+    bottom: null, left: null, top: null, right: null,
+  });
+  const [drawEligible, setDrawEligible] = useState<Position[]>([]);
+  const [drawWinner, setDrawWinner] = useState<Position | null>(null);
+  const [drawSelecting, setDrawSelecting] = useState(false);
+  const [drawChosen, setDrawChosen] = useState<Position | null>(null);
+
   // Game state
   const [hands, setHands] = useState<Record<Position, Card[]>>({
     bottom: [], left: [], top: [], right: [],
@@ -502,14 +515,14 @@ function GameTable() {
       window.setTimeout(() => {
         setSeated({ bottom: true, left: true, top: true, right: true });
         introDoneRef.current = true;
-        setPhase("shuffle");
+        setPhase(drawDoneRef.current ? "shuffle" : "draw");
       }, 700 + order.length * 950 + 700),
     );
     const skip = () => {
       timers.forEach(clearTimeout);
       setSeated({ bottom: true, left: true, top: true, right: true });
       introDoneRef.current = true;
-      setPhase("shuffle");
+      setPhase(drawDoneRef.current ? "shuffle" : "draw");
     };
     window.addEventListener("pointerdown", skip, { once: true });
     return () => {
@@ -517,6 +530,81 @@ function GameTable() {
       window.removeEventListener("pointerdown", skip);
     };
   }, [phase]);
+
+  // --- First-dealer draw ---------------------------------------------------
+  // Each eligible player draws one card. Lowest rank (7 < 8 < 9 < V < D < R
+  // < 10 < A) wins. Ties re-draw between tied seats. The winner then picks
+  // (or, for bots, is auto-assigned) the first dealer. Runs once per game.
+  useEffect(() => {
+    if (phase !== "draw") return;
+    if (drawWinner) return;
+    const eligible: Position[] =
+      drawEligible.length > 0 ? drawEligible : (POSITIONS as Position[]);
+    if (drawEligible.length === 0) setDrawEligible(eligible);
+    const deck = shuffle(buildDeck());
+    const picks: Record<Position, Card | null> = {
+      bottom: null, left: null, top: null, right: null,
+    };
+    for (const p of POSITIONS) {
+      picks[p] = eligible.includes(p) ? null : drawCards[p];
+    }
+    const timers: number[] = [];
+    timers.push(window.setTimeout(() => {
+      const next: Record<Position, Card | null> = { ...picks };
+      eligible.forEach((s, i) => { next[s] = deck[i]; });
+      setDrawCards(next);
+    }, 450));
+    timers.push(window.setTimeout(() => {
+      const RANK_ORDER: Rank[] = ["7", "8", "9", "V", "D", "R", "10", "A"];
+      const currentPicks: Record<Position, Card> = {} as Record<Position, Card>;
+      eligible.forEach((s, i) => { currentPicks[s] = deck[i]; });
+      let minIdx = 999;
+      for (const s of eligible) {
+        minIdx = Math.min(minIdx, RANK_ORDER.indexOf(currentPicks[s].rank));
+      }
+      const winners = eligible.filter(
+        (s) => RANK_ORDER.indexOf(currentPicks[s].rank) === minIdx,
+      );
+      if (winners.length === 1) {
+        setDrawWinner(winners[0]);
+      } else {
+        setDrawEligible(winners);
+      }
+    }, 2100));
+    return () => timers.forEach(clearTimeout);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [phase, drawEligible]);
+
+  // After a winner is designated, either open the seat picker for the human
+  // or let the bot auto-pick a first dealer.
+  useEffect(() => {
+    if (phase !== "draw" || !drawWinner || drawChosen) return;
+    if (drawWinner === "bottom") {
+      const t = window.setTimeout(() => setDrawSelecting(true), 1400);
+      return () => clearTimeout(t);
+    }
+    const t = window.setTimeout(() => {
+      const pick = POSITIONS[Math.floor(Math.random() * 4)];
+      commitFirstDealer(pick);
+    }, 1800);
+    return () => clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [drawWinner, phase, drawChosen]);
+
+  const commitFirstDealer = (seat: Position) => {
+    setDrawSelecting(false);
+    setDrawChosen(seat);
+    window.setTimeout(() => {
+      drawDoneRef.current = true;
+      setDrawCards({ bottom: null, left: null, top: null, right: null });
+      setDrawEligible([]);
+      setDrawWinner(null);
+      setDrawChosen(null);
+      if (seat === dealer) setDealSeed((s) => s + 1);
+      else setDealer(seat);
+    }, 1700);
+  };
+
 
 
   // Dealing loop
@@ -1252,6 +1340,18 @@ function GameTable() {
 
             {phase === "shuffling" && size.w > 0 && <ShuffleAnimation deckPos={deckBase} />}
 
+            {phase === "draw" && size.w > 0 && (
+              <DrawOverlay
+                anchors={anchors}
+                cards={drawCards}
+                winner={drawWinner}
+                chosen={drawChosen}
+                selecting={drawSelecting}
+                players={PLAYERS}
+                onSelect={commitFirstDealer}
+              />
+            )}
+
             {phase === "shuffle" && size.w > 0 && (
               <ChoicePanel
                 title={`${PLAYERS[dealer].name} distribue`}
@@ -1730,6 +1830,100 @@ function ShuffleAnimation({ deckPos }: { deckPos: { x: number; y: number; angle:
     </div>
   );
 }
+
+// --- First-dealer draw overlay --------------------------------------------
+function DrawOverlay({
+  anchors, cards, winner, chosen, selecting, players, onSelect,
+}: {
+  anchors: Anchors;
+  cards: Record<Position, Card | null>;
+  winner: Position | null;
+  chosen: Position | null;
+  selecting: boolean;
+  players: Record<Position, PlayerInfo>;
+  onSelect: (seat: Position) => void;
+}) {
+  const cardW = 58;
+  const cardH = 82;
+  const cx = anchors.bottom.x;
+  const cy = (anchors.top.y + anchors.bottom.y) / 2;
+  const bannerTitle = chosen
+    ? "Premier donneur"
+    : winner
+      ? "Tirage au sort"
+      : "Tirage de la plus petite carte";
+  const bannerSubtitle = chosen
+    ? `${players[chosen].name} distribuera la première donne.`
+    : winner
+      ? `${players[winner].name} a tiré la plus petite carte.`
+      : "Chaque joueur pioche une carte…";
+  return (
+    <>
+      {(Object.keys(cards) as Position[]).map((seat) => {
+        const c = cards[seat];
+        if (!c) return null;
+        const a = anchors[seat];
+        const dx = a.x - cx;
+        const dy = a.y - cy;
+        const len = Math.hypot(dx, dy) || 1;
+        const nx = dx / len;
+        const ny = dy / len;
+        const dist = 78;
+        const x = a.x - nx * dist;
+        const y = a.y - ny * dist;
+        const isMin = winner === seat;
+        return (
+          <div
+            key={seat}
+            className="pointer-events-none absolute z-30 animate-fade-in"
+            style={{
+              width: cardW,
+              height: cardH,
+              transform: `translate3d(${x - cardW / 2}px, ${y - cardH / 2}px, 0) rotate(${a.angle}deg)`,
+              transition: "transform 400ms ease",
+              filter: isMin ? "drop-shadow(0 0 12px oklch(0.85 0.16 82 / 85%))" : undefined,
+            }}
+          >
+            <CardFace card={c} />
+          </div>
+        );
+      })}
+
+      <div className="pointer-events-none absolute left-1/2 top-[36%] z-40 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center gap-2 animate-fade-in">
+        <div className="rounded-full border px-3 py-1.5 text-[10px] font-medium uppercase tracking-[0.22em]" style={{ background:"oklch(0.18 0.03 40 / 88%)", borderColor:"oklch(0.82 0.14 82 / 40%)", color:"oklch(0.94 0.1 85)", backdropFilter:"blur(8px)" }}>
+          {bannerTitle}
+        </div>
+        <div className="max-w-[80vw] text-center text-[13px] font-medium" style={{ color:"oklch(0.94 0.08 85)", textShadow:"0 1px 2px oklch(0 0 0 / 75%)" }}>
+          {bannerSubtitle}
+        </div>
+        {selecting && !chosen && (
+          <div className="pointer-events-auto mt-2 flex flex-col items-center gap-2 rounded-2xl border px-3 py-3" style={{ background:"oklch(0.16 0.03 40 / 92%)", borderColor:"oklch(0.82 0.14 82 / 45%)", backdropFilter:"blur(10px)" }}>
+            <div className="text-[11px] uppercase tracking-[0.22em]" style={{ color:"oklch(0.88 0.08 82)" }}>Choisissez le premier donneur</div>
+            <div className="flex flex-wrap justify-center gap-1.5">
+              {(POSITIONS as Position[]).map((s) => (
+                <button
+                  key={s}
+                  type="button"
+                  onClick={() => onSelect(s)}
+                  className="rounded-xl border px-3 py-2 font-serif text-[13px] font-semibold transition active:scale-[0.97]"
+                  style={{
+                    background: "linear-gradient(168deg, oklch(0.36 0.10 152) 0%, oklch(0.24 0.08 152) 100%)",
+                    borderColor: "oklch(0.82 0.14 82 / 55%)",
+                    color: "oklch(0.96 0.11 88)",
+                    boxShadow: "0 8px 18px -10px oklch(0 0 0 / 70%), inset 0 1px 0 oklch(1 0 0 / 12%)",
+                  }}
+                >
+                  {players[s].name}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+    </>
+  );
+}
+
 
 function ChoicePanel({
   title, subtitle, options,
