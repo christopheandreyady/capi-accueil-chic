@@ -1873,7 +1873,7 @@ function ContractChips({ contract, slideTo }: { contract: Contract; slideTo?: Te
     position: "absolute",
     ...slideStyle,
     transition:
-      "transform 1200ms cubic-bezier(0.32, 0.72, 0.28, 1), top 1200ms cubic-bezier(0.32, 0.72, 0.28, 1), left 1200ms cubic-bezier(0.32, 0.72, 0.28, 1), opacity 800ms ease",
+      "transform 1200ms cubic-bezier(0.32, 0.72, 0.28, 1), top 1200ms cubic-bezier(0.32, 0.72, 0.28, 1), left 1200ms cubic-bezier(0.32, 0.72, 0.28, 1), right 1200ms cubic-bezier(0.32, 0.72, 0.28, 1), bottom 1200ms cubic-bezier(0.32, 0.72, 0.28, 1), opacity 800ms ease",
     zIndex: 12,
     pointerEvents: "none",
   };
