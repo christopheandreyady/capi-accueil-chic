@@ -225,6 +225,33 @@ function playCutSound() {
   src.stop(now + dur);
 }
 
+// Discreet "chair drawn to the table" thud + soft felt whoosh.
+function playChairSound() {
+  const ctx = getCtx();
+  if (!ctx) return;
+  const now = ctx.currentTime;
+  const dur = 0.42;
+  const buffer = ctx.createBuffer(1, Math.floor(ctx.sampleRate * dur), ctx.sampleRate);
+  const data = buffer.getChannelData(0);
+  for (let i = 0; i < data.length; i++) {
+    const t = i / data.length;
+    const env = Math.pow(1 - t, 1.6) * (0.6 + Math.sin(Math.PI * t) * 0.4);
+    data[i] = (Math.random() * 2 - 1) * env;
+  }
+  const src = ctx.createBufferSource();
+  src.buffer = buffer;
+  const lp = ctx.createBiquadFilter();
+  lp.type = "lowpass";
+  lp.frequency.value = 520;
+  lp.Q.value = 0.7;
+  const g = ctx.createGain();
+  g.gain.setValueAtTime(0.14, now);
+  g.gain.exponentialRampToValueAtTime(0.0005, now + dur);
+  src.connect(lp).connect(g).connect(ctx.destination);
+  src.start(now);
+  src.stop(now + dur);
+}
+
 // --- Component -------------------------------------------------------------
 
 function GameTable() {
