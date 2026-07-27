@@ -675,10 +675,12 @@ function GameTable() {
         @keyframes capi-riffle { 0%{transform:translate(-42px,0) rotate(-6deg);} 18%{transform:translate(-42px,-8px) rotate(-6deg);} 32%{transform:translate(-6px,-2px) rotate(-1deg);} 50%{transform:translate(2px,0);} 62%{transform:translate(-38px,-6px) rotate(-4deg);} 78%{transform:translate(-4px,-1px);} 100%{transform:translate(0,0);} }
         @keyframes capi-riffle-r { 0%{transform:translate(42px,0) rotate(6deg);} 18%{transform:translate(42px,-8px) rotate(6deg);} 32%{transform:translate(6px,-2px) rotate(1deg);} 50%{transform:translate(-2px,0);} 62%{transform:translate(38px,-6px) rotate(4deg);} 78%{transform:translate(4px,-1px);} 100%{transform:translate(0,0);} }
         @keyframes capi-riffle-tick { 0%,30%,60%{transform:translateY(0);} 10%,40%,70%{transform:translateY(-4px) rotate(-1.5deg);} 20%,50%,80%{transform:translateY(0);} }
-        @keyframes capi-turn-pulse { 0%,100%{box-shadow:0 0 0 0 oklch(0.85 0.14 82 / 60%), 0 6px 14px -6px oklch(0 0 0 / 75%);} 50%{box-shadow:0 0 0 8px oklch(0.85 0.14 82 / 0%), 0 6px 14px -6px oklch(0 0 0 / 75%);} }
+        @keyframes capi-turn-pulse { 0%,100%{box-shadow:0 0 0 0 oklch(0.88 0.16 82 / 85%), 0 0 22px 2px oklch(0.85 0.16 82 / 55%), 0 6px 14px -6px oklch(0 0 0 / 75%);} 50%{box-shadow:0 0 0 14px oklch(0.88 0.16 82 / 0%), 0 0 34px 6px oklch(0.85 0.16 82 / 30%), 0 6px 14px -6px oklch(0 0 0 / 75%);} }
         @keyframes capi-think-dots { 0%,20%{opacity:.2;} 50%{opacity:1;} 80%,100%{opacity:.2;} }
         @keyframes capi-turn-countdown { 0%{transform:scaleX(1);} 100%{transform:scaleX(0);} }
-        @keyframes capi-turn-glow { 0%,100%{opacity:.85; transform:scaleX(1);} 50%{opacity:1; transform:scaleX(0.92);} }
+        @keyframes capi-turn-glow { 0%,100%{opacity:.9; transform:scaleX(1);} 50%{opacity:1; transform:scaleX(0.94);} }
+        @keyframes capi-turn-halo { 0%,100%{opacity:.55; transform:translate(-50%,-50%) scale(1);} 50%{opacity:.95; transform:translate(-50%,-50%) scale(1.14);} }
+        @keyframes capi-turn-ring { 0%{transform:translate(-50%,-50%) scale(1); opacity:.7;} 100%{transform:translate(-50%,-50%) scale(1.35); opacity:0;} }
 
       `}</style>
 
@@ -1436,14 +1438,47 @@ function PlayerBadge({
 
   return (
     <div className="pointer-events-none absolute z-20 flex flex-col items-center gap-1" style={style}>
-      <div className="relative">
-        <div className="overflow-hidden rounded-full border-2" style={{
-          width: avatarSize, height: avatarSize, borderColor: ring,
+      <div className="relative" style={{
+        transition: "transform 320ms cubic-bezier(.22,1,.36,1)",
+        transform: isActive ? "scale(1.08)" : "scale(1)",
+      }}>
+        {/* Breathing gold halo behind the active avatar */}
+        {isActive && (
+          <>
+            <div
+              aria-hidden
+              className="absolute left-1/2 top-1/2 rounded-full"
+              style={{
+                width: avatarSize + 34,
+                height: avatarSize + 34,
+                transform: "translate(-50%,-50%)",
+                background:
+                  "radial-gradient(circle, oklch(0.90 0.17 82 / 55%) 0%, oklch(0.85 0.16 82 / 25%) 45%, oklch(0.85 0.16 82 / 0%) 72%)",
+                filter: "blur(2px)",
+                animation: "capi-turn-halo 1.8s ease-in-out infinite",
+              }}
+            />
+            <div
+              aria-hidden
+              className="absolute left-1/2 top-1/2 rounded-full"
+              style={{
+                width: avatarSize + 10,
+                height: avatarSize + 10,
+                transform: "translate(-50%,-50%)",
+                border: "1.5px solid oklch(0.90 0.16 82 / 75%)",
+                animation: "capi-turn-ring 1.8s ease-out infinite",
+              }}
+            />
+          </>
+        )}
+        <div className="relative overflow-hidden rounded-full border-2" style={{
+          width: avatarSize, height: avatarSize,
+          borderColor: isActive ? "oklch(0.92 0.16 82 / 95%)" : ring,
           background:"linear-gradient(160deg, oklch(0.38 0.05 40), oklch(0.24 0.04 40))",
           boxShadow: isActive
-            ? `0 0 0 2px oklch(0 0 0 / 45%), 0 0 0 4px oklch(0.85 0.14 82 / 75%), 0 0 18px -2px oklch(0.85 0.14 82 / 70%)`
+            ? `0 0 0 2px oklch(0 0 0 / 45%), 0 0 0 4px oklch(0.88 0.16 82 / 90%), 0 0 26px 2px oklch(0.85 0.16 82 / 70%)`
             : `0 6px 14px -6px oklch(0 0 0 / 75%), 0 0 0 2px oklch(0 0 0 / 45%), 0 0 10px -3px ${ring.replace("85%", "40%")}`,
-          animation: isActive ? "capi-turn-pulse 1.4s ease-in-out infinite" : undefined,
+          animation: isActive ? "capi-turn-pulse 1.6s ease-in-out infinite" : undefined,
         }}>
           <img src={info.photo} alt={info.name} width={200} height={200} className="h-full w-full object-cover" loading="lazy" />
         </div>
@@ -1461,25 +1496,34 @@ function PlayerBadge({
           <AnnouncementBubble bid={announcement} position={position} isTaker={announcementIsTaker} multiplier={announcementMultiplier} />
         )}
       </div>
-      <div className="flex flex-col items-center leading-tight">
-        <span className="font-serif text-[11px] font-semibold tracking-wide" style={{ color:"oklch(0.95 0.08 85)", textShadow:"0 1px 2px oklch(0 0 0 / 80%)" }}>{info.name}</span>
+      <div className="flex flex-col items-center leading-tight" style={{ transition: "color 200ms ease" }}>
+        <span className="font-serif text-[11px] font-semibold tracking-wide" style={{
+          color: isActive ? "oklch(0.97 0.14 85)" : "oklch(0.95 0.08 85)",
+          textShadow: isActive
+            ? "0 0 8px oklch(0.88 0.18 82 / 70%), 0 1px 2px oklch(0 0 0 / 80%)"
+            : "0 1px 2px oklch(0 0 0 / 80%)",
+        }}>{info.name}</span>
         <span className="text-[9px] uppercase tracking-[0.2em]" style={{ color:"oklch(0.82 0.08 82 / 85%)" }}>Niv. {info.level}</span>
-        {/* Turn indicator: gold luminous bar under the name for the active
-            seat. For AI seats it drains over `turnCountdownMs` (reflection
-            time). For the human seat it stays lit and pulses. */}
+        {/* Turn indicator: thicker luminous gold bar under the name for the
+            active seat. For AI seats it drains over `turnCountdownMs`
+            (reflection time). For the human seat it stays lit and breathes. */}
         {isActive && (
-          <div className="relative mt-1 overflow-hidden rounded-full" style={{ width: 44, height: 3, background: "oklch(0.18 0.03 40 / 75%)", boxShadow: "inset 0 0 0 1px oklch(0 0 0 / 55%)" }}>
+          <div className="relative mt-1.5 overflow-hidden rounded-full" style={{
+            width: 58, height: 5,
+            background: "oklch(0.18 0.03 40 / 80%)",
+            boxShadow: "inset 0 0 0 1px oklch(0 0 0 / 60%), 0 0 10px oklch(0.85 0.16 82 / 45%)",
+          }}>
             <div
               key={`turn-${position}-${turnCountdownMs}`}
               className="absolute inset-y-0 left-0"
               style={{
                 width: "100%",
-                background: "linear-gradient(90deg, oklch(0.96 0.15 82) 0%, oklch(0.82 0.18 72) 100%)",
-                boxShadow: "0 0 8px oklch(0.88 0.18 78 / 90%)",
+                background: "linear-gradient(90deg, oklch(0.98 0.16 85) 0%, oklch(0.86 0.19 72) 100%)",
+                boxShadow: "0 0 12px oklch(0.90 0.19 78 / 95%), 0 0 4px oklch(1 0.15 85 / 90%) inset",
                 animation:
                   turnCountdownMs > 0
                     ? `capi-turn-countdown ${turnCountdownMs}ms linear forwards`
-                    : "capi-turn-glow 1.4s ease-in-out infinite",
+                    : "capi-turn-glow 1.6s ease-in-out infinite",
                 transformOrigin: "left center",
               }}
             />
