@@ -112,6 +112,7 @@ const TRICK_HOLD_MS = 1100;
 type DealMode = "3-2-3" | "2-3-3" | "3-3-2";
 type Phase =
   | "seating"
+  | "draw"
   | "shuffle"
   | "shuffling"
   | "cut"
