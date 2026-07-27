@@ -80,7 +80,8 @@ export function loadTableConfig(): TableConfig | null {
   try {
     const raw = sessionStorage.getItem(KEY);
     if (!raw) return null;
-    return JSON.parse(raw) as TableConfig;
+    const parsed = JSON.parse(raw) as TableConfig;
+    return { ...parsed, scoring: { ...defaultScoringRules(), ...(parsed.scoring ?? {}) } };
   } catch {
     return null;
   }
