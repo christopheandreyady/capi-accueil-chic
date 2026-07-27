@@ -841,12 +841,21 @@ function GameTable() {
             {POSITIONS.map((p) => {
               const isActive = (phase === "bidding" || phase === "playing") && currentTurn === p;
               const isThinking = isActive && p !== "bottom";
-              const lastBid = [...bids].reverse().find((b) => b.seat === p);
-              const isRecent = recentBid?.seat === p;
-              let badgeAnnounce: Bid | null =
-                phase === "bidding" && lastBid && isRecent ? lastBid : null;
+              // During bidding, always show a persistent badge on the seat that
+              // currently holds the best bid so every player can see who leads,
+              // in which suit, and for how many points. When someone raises,
+              // the badge automatically moves to the new leader.
+              const liveContract = phase === "bidding" ? currentContract(bids) : null;
+              let badgeAnnounce: Bid | null = null;
               let badgeIsTaker = false;
               let badgeMultiplier: 1 | 2 | 4 | undefined;
+              if (liveContract && liveContract.bidder === p) {
+                badgeAnnounce = liveContract.isCapot
+                  ? { kind: "capot", seat: p, suit: liveContract.suit }
+                  : { kind: "bid", seat: p, points: liveContract.points, suit: liveContract.suit };
+                badgeIsTaker = true;
+                badgeMultiplier = liveContract.multiplier;
+              }
               if ((phase === "playing" || phase === "scoring") && contract && contract.bidder === p) {
                 badgeAnnounce = contract.isCapot
                   ? { kind: "capot", seat: p, suit: contract.suit }
@@ -854,6 +863,10 @@ function GameTable() {
                 badgeIsTaker = true;
                 badgeMultiplier = contract.multiplier;
               }
+              // Countdown bar: for AI seats we use the think duration so the
+              // user perceives the reflection time. Adjust AI_THINK_MS to
+              // slow down or speed up AI reflection.
+              const turnCountdownMs = isActive && p !== "bottom" ? AI_THINK_MS : 0;
               return (
                 <PlayerBadge
                   key={p}
@@ -867,9 +880,11 @@ function GameTable() {
                   announcementIsTaker={badgeIsTaker}
                   announcementMultiplier={badgeMultiplier}
                   isMobile={isMobile}
+                  turnCountdownMs={turnCountdownMs}
                 />
               );
             })}
+
 
             {/* Cut label */}
             {phase === "cut" && (
