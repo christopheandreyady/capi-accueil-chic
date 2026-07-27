@@ -1406,12 +1406,13 @@ function DeckSlab({ count }: { count: number }) {
 }
 
 function PlayerBadge({
-  position, info, isDealer, isLocal, isActive, isThinking, announcement, announcementIsTaker, announcementMultiplier, isMobile,
+  position, info, isDealer, isLocal, isActive, isThinking, announcement, announcementIsTaker, announcementMultiplier, isMobile, turnCountdownMs = 0,
 }: {
   position: Position; info: PlayerInfo; isDealer: boolean; isLocal: boolean;
   isActive?: boolean; isThinking?: boolean; announcement?: Bid | null; announcementIsTaker?: boolean;
   announcementMultiplier?: 1 | 2 | 4;
   isMobile?: boolean;
+  turnCountdownMs?: number;
 }) {
   // Seats are anchored to the TABLE container (percentages of the table
   // aspect-square box), never to the viewport. They sit on the wooden rim
@@ -1460,10 +1461,33 @@ function PlayerBadge({
       <div className="flex flex-col items-center leading-tight">
         <span className="font-serif text-[11px] font-semibold tracking-wide" style={{ color:"oklch(0.95 0.08 85)", textShadow:"0 1px 2px oklch(0 0 0 / 80%)" }}>{info.name}</span>
         <span className="text-[9px] uppercase tracking-[0.2em]" style={{ color:"oklch(0.82 0.08 82 / 85%)" }}>Niv. {info.level}</span>
+        {/* Turn indicator: gold luminous bar under the name for the active
+            seat. For AI seats it drains over `turnCountdownMs` (reflection
+            time). For the human seat it stays lit and pulses. */}
+        {isActive && (
+          <div className="relative mt-1 overflow-hidden rounded-full" style={{ width: 44, height: 3, background: "oklch(0.18 0.03 40 / 75%)", boxShadow: "inset 0 0 0 1px oklch(0 0 0 / 55%)" }}>
+            <div
+              key={`turn-${position}-${turnCountdownMs}`}
+              className="absolute inset-y-0 left-0"
+              style={{
+                width: "100%",
+                background: "linear-gradient(90deg, oklch(0.96 0.15 82) 0%, oklch(0.82 0.18 72) 100%)",
+                boxShadow: "0 0 8px oklch(0.88 0.18 78 / 90%)",
+                animation:
+                  turnCountdownMs > 0
+                    ? `capi-turn-countdown ${turnCountdownMs}ms linear forwards`
+                    : "capi-turn-glow 1.4s ease-in-out infinite",
+                transformOrigin: "left center",
+              }}
+            />
+          </div>
+        )}
       </div>
     </div>
   );
 }
+
+
 
 function AnnouncementBubble({
   bid,
