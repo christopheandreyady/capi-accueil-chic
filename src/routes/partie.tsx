@@ -1323,6 +1323,78 @@ function GameTable() {
               onSpeakingChange={setLocalSpeaking}
               isMobile={isMobile}
             />
+
+            {/* CONTRÉ ! reaction overlays — remount on every counter via
+                counterFx.id so the CSS keyframes restart cleanly. Sits above
+                cards and chips but below the fixed counter button. */}
+            {counterFx && (
+              <div key={counterFx.id} className="pointer-events-none absolute inset-0 z-[60]">
+                {/* Warm subtle flash */}
+                <div
+                  className="absolute inset-0"
+                  style={{
+                    background:
+                      "radial-gradient(60% 55% at 50% 50%, oklch(0.95 0.14 78 / 55%) 0%, oklch(0.9 0.14 72 / 22%) 40%, transparent 75%)",
+                    mixBlendMode: "screen",
+                    animation: "capi-contre-flash 200ms ease-out both",
+                  }}
+                />
+                {/* Shockwave ring rippling across the felt */}
+                <div
+                  className="absolute left-1/2 top-1/2 rounded-full"
+                  style={{
+                    width: "42%",
+                    aspectRatio: "1",
+                    border: "2px solid oklch(0.92 0.16 82 / 70%)",
+                    boxShadow: "0 0 24px 6px oklch(0.9 0.16 82 / 35%)",
+                    animation: "capi-contre-shockwave 620ms ease-out both",
+                  }}
+                />
+                {/* Centered banner */}
+                <div
+                  className="absolute left-1/2 top-1/2 flex flex-col items-center gap-2"
+                  style={{ animation: "capi-contre-banner 950ms cubic-bezier(0.22, 0.9, 0.3, 1.2) both" }}
+                >
+                  <div
+                    className="rounded-2xl border px-6 py-3 font-serif text-3xl font-black tracking-widest"
+                    style={{
+                      background:
+                        "linear-gradient(168deg, oklch(0.22 0.14 30) 0%, oklch(0.14 0.09 30) 100%)",
+                      borderColor: "oklch(0.9 0.17 82 / 80%)",
+                      color: "oklch(0.98 0.14 85)",
+                      boxShadow:
+                        "0 22px 40px -14px oklch(0 0 0 / 85%), inset 0 1px 0 oklch(1 0 0 / 18%), 0 0 30px -6px oklch(0.9 0.16 82 / 70%)",
+                      textShadow:
+                        "0 1px 0 oklch(0 0 0 / 75%), 0 0 18px oklch(0.9 0.16 82 / 65%)",
+                      letterSpacing: "0.14em",
+                    }}
+                  >
+                    {counterFx.kind === "surcontre" ? "SURCONTRÉ !" : "CONTRÉ !"}
+                  </div>
+                  <div
+                    className="flex items-center gap-2 rounded-full border px-3 py-1 font-serif text-[13px]"
+                    style={{
+                      background: "oklch(0.12 0.03 40 / 88%)",
+                      borderColor: "oklch(0.85 0.16 82 / 55%)",
+                      color: "oklch(0.94 0.11 85)",
+                      backdropFilter: "blur(8px)",
+                    }}
+                  >
+                    <span
+                      aria-hidden
+                      className="inline-block rounded-full"
+                      style={{
+                        width: 22,
+                        height: 22,
+                        background: `url(${PLAYERS[counterFx.seat].avatar}) center/cover`,
+                        border: "1px solid oklch(0.85 0.16 82 / 70%)",
+                      }}
+                    />
+                    <span className="font-semibold">{PLAYERS[counterFx.seat].name}</span>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         </div>
 
