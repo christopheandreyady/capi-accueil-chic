@@ -677,6 +677,9 @@ function GameTable() {
         @keyframes capi-riffle-tick { 0%,30%,60%{transform:translateY(0);} 10%,40%,70%{transform:translateY(-4px) rotate(-1.5deg);} 20%,50%,80%{transform:translateY(0);} }
         @keyframes capi-turn-pulse { 0%,100%{box-shadow:0 0 0 0 oklch(0.85 0.14 82 / 60%), 0 6px 14px -6px oklch(0 0 0 / 75%);} 50%{box-shadow:0 0 0 8px oklch(0.85 0.14 82 / 0%), 0 6px 14px -6px oklch(0 0 0 / 75%);} }
         @keyframes capi-think-dots { 0%,20%{opacity:.2;} 50%{opacity:1;} 80%,100%{opacity:.2;} }
+        @keyframes capi-turn-countdown { 0%{transform:scaleX(1);} 100%{transform:scaleX(0);} }
+        @keyframes capi-turn-glow { 0%,100%{opacity:.85; transform:scaleX(1);} 50%{opacity:1; transform:scaleX(0.92);} }
+
       `}</style>
 
       {/* On mobile the table image fills the screen and carries the whole
@@ -841,12 +844,21 @@ function GameTable() {
             {POSITIONS.map((p) => {
               const isActive = (phase === "bidding" || phase === "playing") && currentTurn === p;
               const isThinking = isActive && p !== "bottom";
-              const lastBid = [...bids].reverse().find((b) => b.seat === p);
-              const isRecent = recentBid?.seat === p;
-              let badgeAnnounce: Bid | null =
-                phase === "bidding" && lastBid && isRecent ? lastBid : null;
+              // During bidding, always show a persistent badge on the seat that
+              // currently holds the best bid so every player can see who leads,
+              // in which suit, and for how many points. When someone raises,
+              // the badge automatically moves to the new leader.
+              const liveContract = phase === "bidding" ? currentContract(bids) : null;
+              let badgeAnnounce: Bid | null = null;
               let badgeIsTaker = false;
               let badgeMultiplier: 1 | 2 | 4 | undefined;
+              if (liveContract && liveContract.bidder === p) {
+                badgeAnnounce = liveContract.isCapot
+                  ? { kind: "capot", seat: p, suit: liveContract.suit }
+                  : { kind: "bid", seat: p, points: liveContract.points, suit: liveContract.suit };
+                badgeIsTaker = true;
+                badgeMultiplier = liveContract.multiplier;
+              }
               if ((phase === "playing" || phase === "scoring") && contract && contract.bidder === p) {
                 badgeAnnounce = contract.isCapot
                   ? { kind: "capot", seat: p, suit: contract.suit }
@@ -854,6 +866,10 @@ function GameTable() {
                 badgeIsTaker = true;
                 badgeMultiplier = contract.multiplier;
               }
+              // Countdown bar: for AI seats we use the think duration so the
+              // user perceives the reflection time. Adjust AI_THINK_MS to
+              // slow down or speed up AI reflection.
+              const turnCountdownMs = isActive && p !== "bottom" ? AI_THINK_MS : 0;
               return (
                 <PlayerBadge
                   key={p}
@@ -867,9 +883,11 @@ function GameTable() {
                   announcementIsTaker={badgeIsTaker}
                   announcementMultiplier={badgeMultiplier}
                   isMobile={isMobile}
+                  turnCountdownMs={turnCountdownMs}
                 />
               );
             })}
+
 
             {/* Cut label */}
             {phase === "cut" && (
@@ -1391,12 +1409,13 @@ function DeckSlab({ count }: { count: number }) {
 }
 
 function PlayerBadge({
-  position, info, isDealer, isLocal, isActive, isThinking, announcement, announcementIsTaker, announcementMultiplier, isMobile,
+  position, info, isDealer, isLocal, isActive, isThinking, announcement, announcementIsTaker, announcementMultiplier, isMobile, turnCountdownMs = 0,
 }: {
   position: Position; info: PlayerInfo; isDealer: boolean; isLocal: boolean;
   isActive?: boolean; isThinking?: boolean; announcement?: Bid | null; announcementIsTaker?: boolean;
   announcementMultiplier?: 1 | 2 | 4;
   isMobile?: boolean;
+  turnCountdownMs?: number;
 }) {
   // Seats are anchored to the TABLE container (percentages of the table
   // aspect-square box), never to the viewport. They sit on the wooden rim
@@ -1445,10 +1464,33 @@ function PlayerBadge({
       <div className="flex flex-col items-center leading-tight">
         <span className="font-serif text-[11px] font-semibold tracking-wide" style={{ color:"oklch(0.95 0.08 85)", textShadow:"0 1px 2px oklch(0 0 0 / 80%)" }}>{info.name}</span>
         <span className="text-[9px] uppercase tracking-[0.2em]" style={{ color:"oklch(0.82 0.08 82 / 85%)" }}>Niv. {info.level}</span>
+        {/* Turn indicator: gold luminous bar under the name for the active
+            seat. For AI seats it drains over `turnCountdownMs` (reflection
+            time). For the human seat it stays lit and pulses. */}
+        {isActive && (
+          <div className="relative mt-1 overflow-hidden rounded-full" style={{ width: 44, height: 3, background: "oklch(0.18 0.03 40 / 75%)", boxShadow: "inset 0 0 0 1px oklch(0 0 0 / 55%)" }}>
+            <div
+              key={`turn-${position}-${turnCountdownMs}`}
+              className="absolute inset-y-0 left-0"
+              style={{
+                width: "100%",
+                background: "linear-gradient(90deg, oklch(0.96 0.15 82) 0%, oklch(0.82 0.18 72) 100%)",
+                boxShadow: "0 0 8px oklch(0.88 0.18 78 / 90%)",
+                animation:
+                  turnCountdownMs > 0
+                    ? `capi-turn-countdown ${turnCountdownMs}ms linear forwards`
+                    : "capi-turn-glow 1.4s ease-in-out infinite",
+                transformOrigin: "left center",
+              }}
+            />
+          </div>
+        )}
       </div>
     </div>
   );
 }
+
+
 
 function AnnouncementBubble({
   bid,
@@ -1677,12 +1719,13 @@ function ContractChips({ contract, slideTo }: { contract: Contract; slideTo?: Te
 
   const slideStyle: React.CSSProperties = slideTo
     ? {
-        top: slideTo === "A" ? "88%" : "12%",
-        left: slideTo === "A" ? "88%" : "12%",
+        top: slideTo === "A" ? "78%" : "22%",
+        left: slideTo === "A" ? "74%" : "26%",
         transform: "translate(-50%, -50%) scale(0.68)",
         opacity: 0.9,
       }
     : baseStyle;
+
 
   const wrapperStyle: React.CSSProperties = {
     position: "absolute",
@@ -1883,30 +1926,38 @@ function SuitBadge({ suit, size = 20 }: { suit: Suit; size?: number }) {
 
 function TeamStash({ team, stash, isMobile = false }: { team: Team; stash: ChipBreakdown[]; isMobile?: boolean }) {
   if (stash.length === 0) return null;
-  // Chips sit ON THE FELT to the side of each team — well clear of the
-  // trick pile and the players' cards. Team A → bottom-right of the felt,
-  // Team B → top-left. Each round adds a small scattered pile, slightly
-  // rotated and offset like real chips pushed aside after a hand.
-  const style: React.CSSProperties =
+  // A single growing pile of chips sits ON THE FELT near one of the team's
+  // players, well inside the wooden rim so it never leaves the tapis nor
+  // sticks to the screen edge. Each round's chips are added on top of the
+  // pile with a small natural jitter — like real chips stacked in front of
+  // you at a home game. Team A → next to the bottom player (right of them);
+  // Team B → next to the top player (left of them).
+  const anchor: React.CSSProperties =
     team === "A"
-      ? { right: isMobile ? "6%" : "4%", bottom: "4%", width: isMobile ? "26%" : "30%" }
-      : { left: isMobile ? "6%" : "4%", top: "4%", width: isMobile ? "26%" : "30%" };
+      ? { right: isMobile ? "22%" : "24%", bottom: isMobile ? "18%" : "16%" }
+      : { left: isMobile ? "22%" : "24%", top: isMobile ? "18%" : "16%" };
+  const pileWidth = isMobile ? 70 : 82;
+  const pileHeight = isMobile ? 66 : 78;
   return (
     <div
-      className="pointer-events-none absolute z-[22] flex flex-wrap gap-1.5"
-      style={{ ...style, justifyContent: team === "A" ? "flex-end" : "flex-start" }}
+      className="pointer-events-none absolute z-[22]"
+      style={{ ...anchor, width: pileWidth, height: pileHeight }}
     >
       {stash.map((b, i) => {
-        const tilt = ((i * 53) % 17) - 8;
-        const dx = seatJitter(team === "A" ? "bottom" : "top", i, 21) * 5;
-        const dy = seatJitter(team === "A" ? "bottom" : "top", i, 23) * 4 - (i % 3) * 2;
+        // Stack each round's chips on top of the previous one with a tiny
+        // random offset so the pile grows visibly through the game.
+        const jitterSeat = team === "A" ? "bottom" : "top";
+        const dx = seatJitter(jitterSeat, i, 21) * 6;
+        const dy = -i * 3 + seatJitter(jitterSeat, i, 23) * 3;
+        const tilt = ((i * 53) % 15) - 7;
         return (
           <div
             key={i}
-            className="flex flex-col items-center animate-scale-in"
+            className="absolute left-1/2 bottom-0 flex flex-col items-center animate-scale-in"
             style={{
               gap: 2,
-              transform: `translate(${dx}px, ${dy}px) rotate(${tilt}deg)`,
+              transform: `translate(calc(-50% + ${dx}px), ${dy}px) rotate(${tilt}deg)`,
+              transition: "transform 400ms cubic-bezier(0.32,0.72,0.28,1)",
             }}
           >
             {b.capot && <CapotChip suit={"♠"} suitColor="oklch(0.94 0.14 82)" />}
@@ -1931,3 +1982,4 @@ function TeamStash({ team, stash, isMobile = false }: { team: Team; stash: ChipB
     </div>
   );
 }
+
