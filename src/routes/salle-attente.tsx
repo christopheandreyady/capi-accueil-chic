@@ -92,7 +92,7 @@ function WaitingRoom() {
   const navigate = useNavigate();
   const isMobile = useIsMobile();
   const [cfg, setCfg] = useState<TableConfig>(() => defaultTableConfig());
-  const [seats, setSeats] = useState<Seat[]>(initialSeats);
+  const [seats, setSeats] = useState<Seat[]>(() => buildInitialSeats([]));
   const [inviteOpen, setInviteOpen] = useState(false);
   const [qrOpen, setQrOpen] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -101,22 +101,12 @@ function WaitingRoom() {
   useEffect(() => {
     const stored = loadTableConfig();
     if (stored) setCfg(stored);
-    // Dev helper: auto-fill any empty seat with a ready AI bot so we can
-    // start a game without waiting for real players. Skip the bottom seat
-    // (that's always the human using the app).
-    setSeats((prev) =>
-      prev.map((seat) => {
-        if (seat.position === "bottom") return seat;
-        if (seat.player) {
-          return seat.player.isBot && !seat.player.ready
-            ? { ...seat, player: { ...seat.player, ready: true } }
-            : seat;
-        }
-        const bot = DEV_BOTS[seat.position];
-        return bot ? { ...seat, player: { ...bot, ready: true } } : seat;
-      }),
-    );
+    // Pick a fresh trio of bots for this game so opponents change from one
+    // session to the next. Persisted so the game screen uses the same three.
+    const bots = refreshBots(3);
+    setSeats(buildInitialSeats(bots));
   }, []);
+
 
   const inviteLink = useMemo(() => buildInviteLink(cfg.code), [cfg.code]);
   const total = 4;
