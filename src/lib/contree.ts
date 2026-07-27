@@ -235,7 +235,29 @@ export type RoundScore = {
   beloteTeam: Team | null;
 };
 
-export function scoreRound(contract: Contract, tricks: Trick[]): RoundScore {
+export type ScoringRules = {
+  capotAnnonce: boolean;
+  capotNonAnnonce: boolean;
+  contre: boolean;
+  surcontre: boolean;
+  capotContre: boolean;
+  capotSurcontre: boolean;
+};
+
+export const DEFAULT_SCORING_RULES: ScoringRules = {
+  capotAnnonce: true,
+  capotNonAnnonce: true,
+  contre: true,
+  surcontre: true,
+  capotContre: true,
+  capotSurcontre: true,
+};
+
+export function scoreRound(
+  contract: Contract,
+  tricks: Trick[],
+  rules: ScoringRules = DEFAULT_SCORING_RULES,
+): RoundScore {
   const trump = contract.suit;
   const bidTeam: Team = TEAM_OF[contract.bidder];
   const defTeam: Team = bidTeam === "A" ? "B" : "A";
@@ -268,7 +290,6 @@ export function scoreRound(contract: Contract, tricks: Trick[]): RoundScore {
     }
   });
 
-
   const contractPts = contract.points;
   const beloteBonusForBid = beloteTeam === bidTeam ? 20 : 0;
   let contractMet: boolean;
@@ -279,17 +300,66 @@ export function scoreRound(contract: Contract, tricks: Trick[]): RoundScore {
   }
 
   const roundTo10 = (n: number) => Math.round(n / 10) * 10;
+  const mult = contract.multiplier;
   const finalScore: Record<Team, number> = { A: 0, B: 0 };
-  if (contractMet) {
-    // Belote is only added as bonus if the contract was met WITHOUT it.
-    const bidBonus =
-      beloteTeam === bidTeam && cardPts[bidTeam] >= contractPts ? 20 : 0;
-    const defBonus = beloteTeam === defTeam ? 20 : 0;
-    finalScore[bidTeam] = roundTo10(cardPts[bidTeam]) + bidBonus;
-    finalScore[defTeam] = roundTo10(cardPts[defTeam]) + defBonus;
+
+  // Fixed-point payouts for contré/surcontré and announced capots.
+  const capotContreValue =
+    mult === 4 && rules.capotSurcontre
+      ? 2000
+      : mult === 2 && rules.capotContre
+        ? 1000
+        : null;
+  const contractContreValue =
+    mult === 4 && rules.surcontre
+      ? 640
+      : mult === 2 && rules.contre
+        ? 320
+        : null;
+
+  if (contract.isCapot) {
+    // Announced capot.
+    const baseValue = rules.capotAnnonce ? 500 : 250;
+    const payout = capotContreValue ?? baseValue;
+    if (contractMet) {
+      const bonus = beloteTeam === bidTeam ? 20 : 0;
+      const defBonus = beloteTeam === defTeam ? 20 : 0;
+      finalScore[bidTeam] = payout + bonus;
+      finalScore[defTeam] = defBonus;
+    } else {
+      const defBonus = beloteTeam === defTeam ? 20 : 0;
+      finalScore[bidTeam] = 0;
+      finalScore[defTeam] = payout + defBonus;
+    }
+  } else if (contractContreValue !== null) {
+    // Contré / Surcontré on a normal contract.
+    if (contractMet) {
+      const bonus = beloteTeam === bidTeam ? 20 : 0;
+      const defBonus = beloteTeam === defTeam ? 20 : 0;
+      finalScore[bidTeam] = contractContreValue + bonus;
+      finalScore[defTeam] = defBonus;
+    } else {
+      const defBonus = beloteTeam === defTeam ? 20 : 0;
+      finalScore[bidTeam] = 0;
+      finalScore[defTeam] = contractContreValue + defBonus;
+    }
+  } else if (contractMet) {
+    // Un-announced capot bonus: bidding team took all 8 tricks.
+    if (rules.capotNonAnnonce && trickWonBy[bidTeam] === 8) {
+      const bonus = beloteTeam === bidTeam ? 20 : 0;
+      const defBonus = beloteTeam === defTeam ? 20 : 0;
+      finalScore[bidTeam] = 250 + bonus;
+      finalScore[defTeam] = defBonus;
+    } else {
+      // Belote is only added as bonus if the contract was met WITHOUT it.
+      const bidBonus =
+        beloteTeam === bidTeam && cardPts[bidTeam] >= contractPts ? 20 : 0;
+      const defBonus = beloteTeam === defTeam ? 20 : 0;
+      finalScore[bidTeam] = roundTo10(cardPts[bidTeam]) + bidBonus;
+      finalScore[defTeam] = roundTo10(cardPts[defTeam]) + defBonus;
+    }
   } else {
-    // Contract lost — belote is lost for the bidding team, but the defending
-    // team still keeps its belote bonus if it held it.
+    // Contract lost — belote lost for the bidding team.
     const defBonus = beloteTeam === defTeam ? 20 : 0;
     finalScore[bidTeam] = 0;
     finalScore[defTeam] = 160 + defBonus;
@@ -303,8 +373,8 @@ export function scoreRound(contract: Contract, tricks: Trick[]): RoundScore {
     contractMet,
     beloteTeam,
   };
-
 }
+
 
 // --- AI --------------------------------------------------------------------
 
