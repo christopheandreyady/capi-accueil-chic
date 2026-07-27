@@ -1272,7 +1272,7 @@ function GameCards({
                 width: t.w, height: t.h,
                 transform: `translate3d(${t.x - t.w/2}px, ${t.y - t.h/2}px, 0) rotate(${t.rotate}deg)`,
                 transition: `transform 380ms cubic-bezier(0.22, 0.7, 0.25, 1)`,
-                zIndex: 100 + index + (isBottom ? 50 : 0),
+                zIndex: isBottom ? 100 + index + 50 : 5 + index,
                 opacity: 1,
               }}
             >
