@@ -1925,30 +1925,38 @@ function SuitBadge({ suit, size = 20 }: { suit: Suit; size?: number }) {
 
 function TeamStash({ team, stash, isMobile = false }: { team: Team; stash: ChipBreakdown[]; isMobile?: boolean }) {
   if (stash.length === 0) return null;
-  // Chips sit ON THE FELT to the side of each team — well clear of the
-  // trick pile and the players' cards. Team A → bottom-right of the felt,
-  // Team B → top-left. Each round adds a small scattered pile, slightly
-  // rotated and offset like real chips pushed aside after a hand.
-  const style: React.CSSProperties =
+  // A single growing pile of chips sits ON THE FELT near one of the team's
+  // players, well inside the wooden rim so it never leaves the tapis nor
+  // sticks to the screen edge. Each round's chips are added on top of the
+  // pile with a small natural jitter — like real chips stacked in front of
+  // you at a home game. Team A → next to the bottom player (right of them);
+  // Team B → next to the top player (left of them).
+  const anchor: React.CSSProperties =
     team === "A"
-      ? { right: isMobile ? "6%" : "4%", bottom: "4%", width: isMobile ? "26%" : "30%" }
-      : { left: isMobile ? "6%" : "4%", top: "4%", width: isMobile ? "26%" : "30%" };
+      ? { right: isMobile ? "22%" : "24%", bottom: isMobile ? "18%" : "16%" }
+      : { left: isMobile ? "22%" : "24%", top: isMobile ? "18%" : "16%" };
+  const pileWidth = isMobile ? 70 : 82;
+  const pileHeight = isMobile ? 66 : 78;
   return (
     <div
-      className="pointer-events-none absolute z-[22] flex flex-wrap gap-1.5"
-      style={{ ...style, justifyContent: team === "A" ? "flex-end" : "flex-start" }}
+      className="pointer-events-none absolute z-[22]"
+      style={{ ...anchor, width: pileWidth, height: pileHeight }}
     >
       {stash.map((b, i) => {
-        const tilt = ((i * 53) % 17) - 8;
-        const dx = seatJitter(team === "A" ? "bottom" : "top", i, 21) * 5;
-        const dy = seatJitter(team === "A" ? "bottom" : "top", i, 23) * 4 - (i % 3) * 2;
+        // Stack each round's chips on top of the previous one with a tiny
+        // random offset so the pile grows visibly through the game.
+        const jitterSeat = team === "A" ? "bottom" : "top";
+        const dx = seatJitter(jitterSeat, i, 21) * 6;
+        const dy = -i * 3 + seatJitter(jitterSeat, i, 23) * 3;
+        const tilt = ((i * 53) % 15) - 7;
         return (
           <div
             key={i}
-            className="flex flex-col items-center animate-scale-in"
+            className="absolute left-1/2 bottom-0 flex flex-col items-center animate-scale-in"
             style={{
               gap: 2,
-              transform: `translate(${dx}px, ${dy}px) rotate(${tilt}deg)`,
+              transform: `translate(calc(-50% + ${dx}px), ${dy}px) rotate(${tilt}deg)`,
+              transition: "transform 400ms cubic-bezier(0.32,0.72,0.28,1)",
             }}
           >
             {b.capot && <CapotChip suit={"♠"} suitColor="oklch(0.94 0.14 82)" />}
@@ -1973,3 +1981,4 @@ function TeamStash({ team, stash, isMobile = false }: { team: Team; stash: ChipB
     </div>
   );
 }
+
