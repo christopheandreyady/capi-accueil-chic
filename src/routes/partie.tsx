@@ -391,8 +391,18 @@ function GameTable() {
   // therefore stays untouched. Toggle for testing:
   //   sessionStorage.setItem("capi-multiplayer","1")
   const [isMultiplayer, setIsMultiplayer] = useState(false);
+  // Rule variant: "Contre à la volée" lets any opposing player counter as soon
+  // as a contract is announced, without waiting for their turn of speech.
+  const [contreVolee, setContreVolee] = useState(true);
   useEffect(() => {
     try { setIsMultiplayer(sessionStorage.getItem("capi-multiplayer") === "1"); } catch { /* ignore */ }
+    try {
+      const raw = sessionStorage.getItem("capi.table.config");
+      if (raw) {
+        const cfg = JSON.parse(raw) as { contreVolee?: boolean };
+        if (typeof cfg.contreVolee === "boolean") setContreVolee(cfg.contreVolee);
+      }
+    } catch { /* ignore */ }
   }, []);
   const [emote, setEmote] = useState<EmotePayload | null>(null);
   const [localSpeaking, setLocalSpeaking] = useState(false);
@@ -603,48 +613,54 @@ function GameTable() {
   }, [phase, bids, currentTurn, hands]);
 
   // --- Real-time counter / surcounter watcher ------------------------------
-  // Runs after normal bidding has closed. Only the seat holding the reaction
-  // turn may counter or surcounter; these actions never interrupt bidding.
+  // Two modes:
+  // - Classical (contreVolee=false): only the seat holding the reaction turn
+  //   may counter, and only once bidding has closed by 3 passes.
+  // - On the fly (contreVolee=true): any opposing AI seat may contre as soon
+  //   as a contract has been announced, even mid-bidding. Same for surcontre
+  //   from the bidder team after a contre lands.
   useEffect(() => {
     if (phase !== "bidding") return;
-    if (!biddingClosed(bids)) return;
     if (counterEvalRef.current === bids.length) return;
     counterEvalRef.current = bids.length;
     const contract = currentContract(bids);
     if (!contract) return;
-    const seat = currentTurn;
-    if (seat === "bottom") return;
-    const kind = canCounter(bids, seat);
-    if (!kind) return;
-    let prob = 0;
-    if (kind === "contre") {
-      if (contract.isCapot) prob = 0.55;
-      else if (contract.points >= 140) prob = 0.45;
-      else if (contract.points >= 120) prob = 0.22;
-      else if (contract.points >= 100) prob = 0.08;
-    } else if (contract.isCapot) prob = 0.7;
-    else if (contract.points >= 140) prob = 0.6;
-    else if (contract.points >= 110) prob = 0.35;
-    else prob = 0.15;
-    if (Math.random() > prob) return;
-    const timer = window.setTimeout(() => submitBid({ kind, seat }), 650 + Math.random() * 900);
-    return () => clearTimeout(timer);
+    // Candidate AI seats (never the local human).
+    const seats: Position[] = contreVolee
+      ? (CLOCKWISE.filter((s) => s !== "bottom") as Position[])
+      : (currentTurn !== "bottom" && biddingClosed(bids) ? [currentTurn] : []);
+    for (const seat of seats) {
+      const kind = canCounter(bids, seat, { onTheFly: contreVolee, turn: currentTurn });
+      if (!kind) continue;
+      let prob = 0;
+      if (kind === "contre") {
+        if (contract.isCapot) prob = 0.55;
+        else if (contract.points >= 140) prob = 0.45;
+        else if (contract.points >= 120) prob = 0.22;
+        else if (contract.points >= 100) prob = 0.08;
+      } else if (contract.isCapot) prob = 0.7;
+      else if (contract.points >= 140) prob = 0.6;
+      else if (contract.points >= 110) prob = 0.35;
+      else prob = 0.15;
+      if (Math.random() > prob) continue;
+      const timer = window.setTimeout(() => submitBid({ kind, seat }), 650 + Math.random() * 900);
+      return () => clearTimeout(timer);
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [bids, phase, currentTurn]);
+  }, [bids, phase, currentTurn, contreVolee]);
 
   // Authoritative submission keeps bids and turn advancement atomic. Stale
   // AI timers and out-of-turn actions are rejected against the same snapshot.
   const submitBid = (b: Bid) => {
     const snapshot = biddingStateRef.current;
     if (b.kind === "contre" || b.kind === "surcontre") {
-      // Counter/surcounter are post-bidding reactions. The local player must
-      // always be able to press "Contrer" as soon as the rules allow it, so
-      // for the bottom seat we only check that the counter itself is legal
-      // (bidding closed, right team, right level) and skip the strict turn
-      // gate — the button never has to wait for its own turn to reach it.
-      const legal = canCounter(snapshot.bids, b.seat) === b.kind;
+      // The local player must always be able to press "Contrer" as soon as
+      // the rules allow it, so for the bottom seat we only check that the
+      // counter itself is legal (right team, right level, correct variant).
+      const legal = canCounter(snapshot.bids, b.seat, { onTheFly: contreVolee, turn: snapshot.turn }) === b.kind;
       if (!legal) return;
-      if (b.seat !== "bottom" && b.seat !== snapshot.turn) return;
+      // In classical mode, non-human seats still respect the turn gate.
+      if (!contreVolee && b.seat !== "bottom" && b.seat !== snapshot.turn) return;
       const nextBids = [...snapshot.bids, b];
       const nextTurn = b.kind === "contre" ? currentContract(nextBids)?.bidder ?? snapshot.turn : snapshot.turn;
       biddingStateRef.current = { bids: nextBids, turn: nextTurn };
@@ -1410,23 +1426,19 @@ function GameTable() {
       {/* Real-time counter / surcounter — floats above every other UI so
           the player can react instantly, whether or not it's their turn. */}
       {phase === "bidding" && (
-        <CounterButton bids={bids} currentTurn={currentTurn} onCounter={submitBid} />
+        <CounterButton bids={bids} currentTurn={currentTurn} onTheFly={contreVolee} onCounter={submitBid} />
       )}
     </main>
   );
 }
 
 // --- Real-time counter button ---------------------------------------------
-// Rendered as a fixed-position element, always visible during the bidding
-// phase whenever the local player has a legal counter to play. Pressing it
-// dispatches the action to the authoritative submitBid, which validates the
-// move against the latest bids and rejects it if another player got there
-// first. When accepted, every player's UI updates through the shared bids
-// state on the next render.
-function CounterButton({ bids, onCounter }: { bids: Bid[]; currentTurn?: Position; onCounter: (b: Bid) => void }) {
-  // Available for the local player as soon as the rules allow a counter,
-  // independent of whose turn it is — pressing it is a reaction, not a bid.
-  const kind = canCounter(bids, "bottom");
+// Rendered as a fixed-position element, visible during the bidding phase
+// whenever the local player has a legal counter to play. In "contre à la
+// volée" mode it appears the moment a contract exists; in classical mode it
+// only appears during the local player's own turn of speech.
+function CounterButton({ bids, currentTurn, onTheFly, onCounter }: { bids: Bid[]; currentTurn?: Position; onTheFly: boolean; onCounter: (b: Bid) => void }) {
+  const kind = canCounter(bids, "bottom", { onTheFly, turn: currentTurn });
   if (!kind) return null;
   const label = kind === "contre" ? "Contrer" : "Surcontrer";
   const multiplier = kind === "contre" ? "×2" : "×4";

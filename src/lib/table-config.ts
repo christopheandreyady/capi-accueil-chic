@@ -5,6 +5,7 @@ export type TableConfig = {
   announcements: boolean;
   contrer: boolean;
   surcontrer: boolean;
+  contreVolee: boolean;
   shuffle: boolean;
   maxSpectators: 0 | 2 | 4 | 8;
   code: string;
@@ -29,6 +30,7 @@ export function defaultTableConfig(): TableConfig {
     announcements: true,
     contrer: true,
     surcontrer: false,
+    contreVolee: true,
     shuffle: true,
     maxSpectators: 2,
     code: generateInviteCode(),
