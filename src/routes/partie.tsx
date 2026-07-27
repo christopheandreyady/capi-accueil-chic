@@ -253,6 +253,94 @@ function playChairSound() {
   src.stop(now + dur);
 }
 
+// "CONTRÉ !" — sharp hand slap on the felt, muffled chip rattle, thin card
+// rustle, and a short warm room-tone tail for a subtle reverb impression.
+// Entirely procedural — no assets, no network.
+function playContreSound() {
+  const ctx = getCtx();
+  if (!ctx) return;
+  const now = ctx.currentTime;
+
+  // 1. Hand slap — very short low-mid transient (~90ms)
+  {
+    const dur = 0.14;
+    const buf = ctx.createBuffer(1, Math.floor(ctx.sampleRate * dur), ctx.sampleRate);
+    const data = buf.getChannelData(0);
+    for (let i = 0; i < data.length; i++) {
+      const t = i / data.length;
+      const env = Math.pow(1 - t, 2.2);
+      data[i] = (Math.random() * 2 - 1) * env;
+    }
+    const src = ctx.createBufferSource(); src.buffer = buf;
+    const lp = ctx.createBiquadFilter(); lp.type = "lowpass"; lp.frequency.value = 380; lp.Q.value = 0.9;
+    const g = ctx.createGain(); g.gain.setValueAtTime(0.55, now); g.gain.exponentialRampToValueAtTime(0.001, now + dur);
+    src.connect(lp).connect(g).connect(ctx.destination);
+    src.start(now); src.stop(now + dur);
+  }
+  // Slap "click" upper harmonic
+  {
+    const dur = 0.05;
+    const buf = ctx.createBuffer(1, Math.floor(ctx.sampleRate * dur), ctx.sampleRate);
+    const data = buf.getChannelData(0);
+    for (let i = 0; i < data.length; i++) {
+      const t = i / data.length;
+      data[i] = (Math.random() * 2 - 1) * Math.pow(1 - t, 1.4);
+    }
+    const src = ctx.createBufferSource(); src.buffer = buf;
+    const bp = ctx.createBiquadFilter(); bp.type = "bandpass"; bp.frequency.value = 2400; bp.Q.value = 1.1;
+    const g = ctx.createGain(); g.gain.setValueAtTime(0.22, now); g.gain.exponentialRampToValueAtTime(0.001, now + dur);
+    src.connect(bp).connect(g).connect(ctx.destination);
+    src.start(now); src.stop(now + dur);
+  }
+  // 2. Chip rattle — fast metallic-ish clicks (~180ms)
+  {
+    const dur = 0.22;
+    const buf = ctx.createBuffer(1, Math.floor(ctx.sampleRate * dur), ctx.sampleRate);
+    const data = buf.getChannelData(0);
+    for (let i = 0; i < data.length; i++) {
+      const t = i / data.length;
+      const tickPhase = (t * 55) % 1;
+      const tick = tickPhase < 0.06 ? 1 - tickPhase / 0.06 : 0;
+      data[i] = (Math.random() * 2 - 1) * (0.25 + tick * 0.9) * Math.pow(1 - t, 1.2);
+    }
+    const src = ctx.createBufferSource(); src.buffer = buf;
+    const bp = ctx.createBiquadFilter(); bp.type = "bandpass"; bp.frequency.value = 4200; bp.Q.value = 1.3;
+    const g = ctx.createGain(); g.gain.setValueAtTime(0.001, now + 0.05); g.gain.linearRampToValueAtTime(0.16, now + 0.08); g.gain.exponentialRampToValueAtTime(0.001, now + 0.05 + dur);
+    src.connect(bp).connect(g).connect(ctx.destination);
+    src.start(now + 0.05); src.stop(now + 0.05 + dur);
+  }
+  // 3. Card rustle — brief airy noise (~140ms)
+  {
+    const dur = 0.16;
+    const buf = ctx.createBuffer(1, Math.floor(ctx.sampleRate * dur), ctx.sampleRate);
+    const data = buf.getChannelData(0);
+    for (let i = 0; i < data.length; i++) {
+      const t = i / data.length;
+      data[i] = (Math.random() * 2 - 1) * Math.sin(Math.PI * t) * 0.7;
+    }
+    const src = ctx.createBufferSource(); src.buffer = buf;
+    const hp = ctx.createBiquadFilter(); hp.type = "highpass"; hp.frequency.value = 3500;
+    const g = ctx.createGain(); g.gain.setValueAtTime(0.001, now + 0.04); g.gain.linearRampToValueAtTime(0.06, now + 0.07); g.gain.exponentialRampToValueAtTime(0.001, now + 0.04 + dur);
+    src.connect(hp).connect(g).connect(ctx.destination);
+    src.start(now + 0.04); src.stop(now + 0.04 + dur);
+  }
+  // 4. Reverb tail — filtered noise decay, "room" impression (~450ms)
+  {
+    const dur = 0.5;
+    const buf = ctx.createBuffer(1, Math.floor(ctx.sampleRate * dur), ctx.sampleRate);
+    const data = buf.getChannelData(0);
+    for (let i = 0; i < data.length; i++) {
+      const t = i / data.length;
+      data[i] = (Math.random() * 2 - 1) * Math.pow(1 - t, 2.6);
+    }
+    const src = ctx.createBufferSource(); src.buffer = buf;
+    const lp = ctx.createBiquadFilter(); lp.type = "lowpass"; lp.frequency.value = 900;
+    const g = ctx.createGain(); g.gain.setValueAtTime(0.14, now); g.gain.exponentialRampToValueAtTime(0.0005, now + dur);
+    src.connect(lp).connect(g).connect(ctx.destination);
+    src.start(now); src.stop(now + dur);
+  }
+}
+
 // --- Component -------------------------------------------------------------
 
 function GameTable() {
