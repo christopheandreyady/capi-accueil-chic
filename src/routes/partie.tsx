@@ -554,10 +554,16 @@ function GameTable() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [phase, roundScore]);
 
-  // Keep displayScores synced outside scoring
+  // Keep displayScores synced outside scoring: cumulative game total +
+  // provisional card points of the current donne, updated after each trick.
   useEffect(() => {
-    if (phase !== "scoring") setDisplayScores(cumulative);
-  }, [cumulative, phase]);
+    if (phase !== "scoring") {
+      setDisplayScores({
+        A: cumulative.A + liveRound.A,
+        B: cumulative.B + liveRound.B,
+      });
+    }
+  }, [cumulative, liveRound, phase]);
 
 
 
