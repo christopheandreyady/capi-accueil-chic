@@ -30,6 +30,7 @@ import {
   type Team,
   type Trick,
   type TrickPlay,
+  cardPoints,
 } from "@/lib/contree";
 
 export const Route = createFileRoute("/partie")({
@@ -246,6 +247,9 @@ function GameTable() {
   const [tricks, setTricks] = useState<Trick[]>([]);
   const [roundScore, setRoundScore] = useState<RoundScore | null>(null);
   const [cumulative, setCumulative] = useState<{ A: number; B: number }>({ A: 0, B: 0 });
+  // Running (provisional) card points collected during the current donne.
+  // Updated after each trick so players see the score evolve in real time.
+  const [liveRound, setLiveRound] = useState<{ A: number; B: number }>({ A: 0, B: 0 });
   const [selectedCardId, setSelectedCardId] = useState<string | null>(null);
   const [displayScores, setDisplayScores] = useState<{ A: number; B: number }>({ A: 0, B: 0 });
   const [chipsSlideTo, setChipsSlideTo] = useState<Team | null>(null);
@@ -310,6 +314,7 @@ function GameTable() {
     setCurrentTrick(null);
     setTricks([]);
     setRoundScore(null);
+    setLiveRound({ A: 0, B: 0 });
     counterEvalRef.current = -1;
     biddingStateRef.current = { bids: [], turn: nextSeat(dealer) };
     reactionContractRef.current = null;
@@ -467,7 +472,14 @@ function GameTable() {
     if (currentTrick.plays.length === 4) {
       const t = window.setTimeout(() => {
         const winner = trickWinner(currentTrick, contract.suit);
+        const winnerTeam = TEAM_OF[winner];
         const done = tricks.length + 1;
+        // Provisional card points for this trick (+ dix de der on the last one)
+        const trickPts = currentTrick.plays.reduce(
+          (sum, p) => sum + cardPoints(p.card, contract.suit),
+          0,
+        ) + (done === 8 ? 10 : 0);
+        setLiveRound((prev) => ({ ...prev, [winnerTeam]: prev[winnerTeam] + trickPts }));
         setTricks((prev) => [...prev, currentTrick]);
         if (done >= 8) {
           // Finalize round — cumulative gets updated later, via animated counter
@@ -542,10 +554,16 @@ function GameTable() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [phase, roundScore]);
 
-  // Keep displayScores synced outside scoring
+  // Keep displayScores synced outside scoring: cumulative game total +
+  // provisional card points of the current donne, updated after each trick.
   useEffect(() => {
-    if (phase !== "scoring") setDisplayScores(cumulative);
-  }, [cumulative, phase]);
+    if (phase !== "scoring") {
+      setDisplayScores({
+        A: cumulative.A + liveRound.A,
+        B: cumulative.B + liveRound.B,
+      });
+    }
+  }, [cumulative, liveRound, phase]);
 
 
 
