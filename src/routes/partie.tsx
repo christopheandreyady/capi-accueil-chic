@@ -343,7 +343,9 @@ function GameTable() {
 
   // Reset round when dealer/seed changes
   useEffect(() => {
-    setPhase("shuffle");
+    // On the very first hand of the game, hold on "seating" so the intro
+    // effect below can run. Every subsequent hand starts on shuffle as before.
+    setPhase(introDoneRef.current ? "shuffle" : "seating");
     setCutStep(0);
     setDeckHolder(null);
     setDealtCount(0);
@@ -360,6 +362,43 @@ function GameTable() {
     biddingStateRef.current = { bids: [], turn: nextSeat(dealer) };
     reactionContractRef.current = null;
   }, [dealSeed, dealer]);
+
+  // Seating intro: the three other players walk in one by one (~900ms
+  // apart). Their avatar, name and back-of-hand fade in as they sit down.
+  // A discreet chair-thud accompanies each arrival. The whole sequence is
+  // capped ~4.5s and can be skipped instantly by tapping anywhere.
+  useEffect(() => {
+    if (phase !== "seating") return;
+    const order: Position[] = ["left", "top", "right"];
+    const timers: number[] = [];
+    order.forEach((seat, i) => {
+      timers.push(
+        window.setTimeout(() => {
+          setSeated((s) => ({ ...s, [seat]: true }));
+          playChairSound();
+        }, 700 + i * 950),
+      );
+    });
+    timers.push(
+      window.setTimeout(() => {
+        setSeated({ bottom: true, left: true, top: true, right: true });
+        introDoneRef.current = true;
+        setPhase("shuffle");
+      }, 700 + order.length * 950 + 700),
+    );
+    const skip = () => {
+      timers.forEach(clearTimeout);
+      setSeated({ bottom: true, left: true, top: true, right: true });
+      introDoneRef.current = true;
+      setPhase("shuffle");
+    };
+    window.addEventListener("pointerdown", skip, { once: true });
+    return () => {
+      timers.forEach(clearTimeout);
+      window.removeEventListener("pointerdown", skip);
+    };
+  }, [phase]);
+
 
   // Dealing loop
   useEffect(() => {
