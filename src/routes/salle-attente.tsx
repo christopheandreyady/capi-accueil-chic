@@ -376,10 +376,9 @@ function WaitingRoom() {
                 safe 5% away from viewport edges. */}
             <SeatSlot
               seat={seats.find((s) => s.position === "top")!}
-              style={{ left: "50%", top: "0%", transform: "translate(-50%, -100%)" }}
+              style={{ left: "50%", top: "14%", transform: "translate(-50%, 0)" }}
               delay={80}
               onInvite={() => setInviteOpen(true)}
-              textAbove
             />
             <SeatSlot
               seat={seats.find((s) => s.position === "left")!}
@@ -395,7 +394,7 @@ function WaitingRoom() {
             />
             <SeatSlot
               seat={seats.find((s) => s.position === "bottom")!}
-              style={{ left: "50%", bottom: "0%", transform: "translate(-50%, 100%)" }}
+              style={{ left: "50%", bottom: "14%", transform: "translate(-50%, 0)" }}
               isLocal
               delay={0}
               onInvite={() => setInviteOpen(true)}
