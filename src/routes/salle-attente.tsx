@@ -747,12 +747,14 @@ function SeatSlot({
   isLocal,
   delay = 0,
   onInvite,
+  textAbove,
 }: {
   seat: Seat;
   style?: React.CSSProperties;
   isLocal?: boolean;
   delay?: number;
   onInvite: () => void;
+  textAbove?: boolean;
 }) {
   const p = seat.player;
 
@@ -763,7 +765,7 @@ function SeatSlot({
 
   return (
     <div
-      className="pointer-events-auto absolute z-20 flex flex-col items-center gap-1.5"
+      className={`pointer-events-auto absolute z-20 flex ${textAbove ? "flex-col-reverse" : "flex-col"} items-center gap-1.5`}
       style={{
         ...style,
         animation: `capi-seat-in 520ms ${delay}ms cubic-bezier(.2,.8,.25,1) both`,
