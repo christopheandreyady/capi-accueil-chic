@@ -40,34 +40,7 @@ type Player = {
   isBot?: boolean;
 };
 
-// Dev-only bots used to fill empty seats so a table can be tested solo.
-// Ordered by seat position; index matches an empty seat's slot when filling.
-const DEV_BOTS: Record<Exclude<Position, "bottom">, Player> = {
-  top: {
-    name: "Bot Jean-Luc",
-    level: 18,
-    photo: "https://i.pravatar.cc/200?img=68",
-    online: true,
-    ready: true,
-    isBot: true,
-  },
-  left: {
-    name: "Bot Margaux",
-    level: 15,
-    photo: "https://i.pravatar.cc/200?img=47",
-    online: true,
-    ready: true,
-    isBot: true,
-  },
-  right: {
-    name: "Bot Alex",
-    level: 12,
-    photo: "https://i.pravatar.cc/200?img=15",
-    online: true,
-    ready: true,
-    isBot: true,
-  },
-};
+import { refreshBots, type Bot } from "@/lib/bots";
 
 type Seat = {
   position: Position;
@@ -75,46 +48,45 @@ type Seat = {
   player: Player | null;
 };
 
-// Teams: bottom + top = A, left + right = B (partner is across the table)
-const initialSeats: Seat[] = [
-  {
-    position: "bottom",
-    team: "A",
-    player: {
-      name: "Vous",
-      level: 22,
-      photo: "https://i.pravatar.cc/200?img=12",
-      online: true,
-      ready: false,
-      host: true,
+// Build the initial seat layout using 3 bots picked from the bot library.
+// Bottom seat is always the human profile. Bots rotate each new game.
+function buildInitialSeats(bots: Bot[]): Seat[] {
+  const seatOrder: Exclude<Position, "bottom">[] = ["top", "left", "right"];
+  const botSeats: Seat[] = seatOrder.map((position, idx) => {
+    const bot = bots[idx];
+    const team: Team = position === "top" ? "A" : "B";
+    return {
+      position,
+      team,
+      player: bot
+        ? {
+            name: bot.name,
+            level: bot.level,
+            photo: bot.photo,
+            online: true,
+            ready: true,
+            isBot: true,
+          }
+        : null,
+    };
+  });
+  return [
+    {
+      position: "bottom",
+      team: "A",
+      player: {
+        name: "Vous",
+        level: 22,
+        photo: "https://i.pravatar.cc/200?img=12",
+        online: true,
+        ready: false,
+        host: true,
+      },
     },
-  },
-  {
-    position: "top",
-    team: "A",
-    player: {
-      name: "Jean-Luc",
-      level: 27,
-      photo: "https://i.pravatar.cc/200?img=68",
-      online: true,
-      ready: true,
-      isBot: true,
-    },
-  },
-  {
-    position: "left",
-    team: "B",
-    player: {
-      name: "Margaux",
-      level: 14,
-      photo: "https://i.pravatar.cc/200?img=47",
-      online: true,
-      ready: true,
-      isBot: true,
-    },
-  },
-  { position: "right", team: "B", player: null },
-];
+    ...botSeats,
+  ];
+}
+
 
 function WaitingRoom() {
   const navigate = useNavigate();
