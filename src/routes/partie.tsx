@@ -1831,6 +1831,100 @@ function ShuffleAnimation({ deckPos }: { deckPos: { x: number; y: number; angle:
   );
 }
 
+// --- First-dealer draw overlay --------------------------------------------
+function DrawOverlay({
+  anchors, cards, winner, chosen, selecting, players, onSelect,
+}: {
+  anchors: Anchors;
+  cards: Record<Position, Card | null>;
+  winner: Position | null;
+  chosen: Position | null;
+  selecting: boolean;
+  players: Record<Position, PlayerInfo>;
+  onSelect: (seat: Position) => void;
+}) {
+  const cardW = 58;
+  const cardH = 82;
+  const cx = anchors.bottom.x;
+  const cy = (anchors.top.y + anchors.bottom.y) / 2;
+  const bannerTitle = chosen
+    ? "Premier donneur"
+    : winner
+      ? "Tirage au sort"
+      : "Tirage de la plus petite carte";
+  const bannerSubtitle = chosen
+    ? `${players[chosen].name} distribuera la première donne.`
+    : winner
+      ? `${players[winner].name} a tiré la plus petite carte.`
+      : "Chaque joueur pioche une carte…";
+  return (
+    <>
+      {(Object.keys(cards) as Position[]).map((seat) => {
+        const c = cards[seat];
+        if (!c) return null;
+        const a = anchors[seat];
+        const dx = a.x - cx;
+        const dy = a.y - cy;
+        const len = Math.hypot(dx, dy) || 1;
+        const nx = dx / len;
+        const ny = dy / len;
+        const dist = 78;
+        const x = a.x - nx * dist;
+        const y = a.y - ny * dist;
+        const isMin = winner === seat;
+        return (
+          <div
+            key={seat}
+            className="pointer-events-none absolute z-30 animate-fade-in"
+            style={{
+              width: cardW,
+              height: cardH,
+              transform: `translate3d(${x - cardW / 2}px, ${y - cardH / 2}px, 0) rotate(${a.angle}deg)`,
+              transition: "transform 400ms ease",
+              filter: isMin ? "drop-shadow(0 0 12px oklch(0.85 0.16 82 / 85%))" : undefined,
+            }}
+          >
+            <CardFace card={c} />
+          </div>
+        );
+      })}
+
+      <div className="pointer-events-none absolute left-1/2 top-[36%] z-40 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center gap-2 animate-fade-in">
+        <div className="rounded-full border px-3 py-1.5 text-[10px] font-medium uppercase tracking-[0.22em]" style={{ background:"oklch(0.18 0.03 40 / 88%)", borderColor:"oklch(0.82 0.14 82 / 40%)", color:"oklch(0.94 0.1 85)", backdropFilter:"blur(8px)" }}>
+          {bannerTitle}
+        </div>
+        <div className="max-w-[80vw] text-center text-[13px] font-medium" style={{ color:"oklch(0.94 0.08 85)", textShadow:"0 1px 2px oklch(0 0 0 / 75%)" }}>
+          {bannerSubtitle}
+        </div>
+        {selecting && !chosen && (
+          <div className="pointer-events-auto mt-2 flex flex-col items-center gap-2 rounded-2xl border px-3 py-3" style={{ background:"oklch(0.16 0.03 40 / 92%)", borderColor:"oklch(0.82 0.14 82 / 45%)", backdropFilter:"blur(10px)" }}>
+            <div className="text-[11px] uppercase tracking-[0.22em]" style={{ color:"oklch(0.88 0.08 82)" }}>Choisissez le premier donneur</div>
+            <div className="flex flex-wrap justify-center gap-1.5">
+              {(POSITIONS as Position[]).map((s) => (
+                <button
+                  key={s}
+                  type="button"
+                  onClick={() => onSelect(s)}
+                  className="rounded-xl border px-3 py-2 font-serif text-[13px] font-semibold transition active:scale-[0.97]"
+                  style={{
+                    background: "linear-gradient(168deg, oklch(0.36 0.10 152) 0%, oklch(0.24 0.08 152) 100%)",
+                    borderColor: "oklch(0.82 0.14 82 / 55%)",
+                    color: "oklch(0.96 0.11 88)",
+                    boxShadow: "0 8px 18px -10px oklch(0 0 0 / 70%), inset 0 1px 0 oklch(1 0 0 / 12%)",
+                  }}
+                >
+                  {players[s].name}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+    </>
+  );
+}
+
+
 function ChoicePanel({
   title, subtitle, options,
 }: {
