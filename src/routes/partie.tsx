@@ -407,13 +407,29 @@ function GameTable() {
   // Rule variant: "Contre à la volée" lets any opposing player counter as soon
   // as a contract is announced, without waiting for their turn of speech.
   const [contreVolee, setContreVolee] = useState(true);
+  // Scoring variant selected in creer-table. Frozen at game start and passed
+  // to scoreRound so every round uses the same rule set.
+  const [scoringRules, setScoringRules] = useState<import("@/lib/contree").ScoringRules>(
+    () => ({
+      capotAnnonce: true,
+      capotNonAnnonce: true,
+      contre: true,
+      surcontre: true,
+      capotContre: true,
+      capotSurcontre: true,
+    }),
+  );
   useEffect(() => {
     try { setIsMultiplayer(sessionStorage.getItem("capi-multiplayer") === "1"); } catch { /* ignore */ }
     try {
       const raw = sessionStorage.getItem("capi.table.config");
       if (raw) {
-        const cfg = JSON.parse(raw) as { contreVolee?: boolean };
+        const cfg = JSON.parse(raw) as {
+          contreVolee?: boolean;
+          scoring?: Partial<import("@/lib/contree").ScoringRules>;
+        };
         if (typeof cfg.contreVolee === "boolean") setContreVolee(cfg.contreVolee);
+        if (cfg.scoring) setScoringRules((r) => ({ ...r, ...cfg.scoring }));
       }
     } catch { /* ignore */ }
   }, []);
