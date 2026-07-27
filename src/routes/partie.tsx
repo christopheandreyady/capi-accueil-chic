@@ -1340,6 +1340,18 @@ function GameTable() {
 
             {phase === "shuffling" && size.w > 0 && <ShuffleAnimation deckPos={deckBase} />}
 
+            {phase === "draw" && size.w > 0 && (
+              <DrawOverlay
+                anchors={anchors}
+                cards={drawCards}
+                winner={drawWinner}
+                chosen={drawChosen}
+                selecting={drawSelecting}
+                players={PLAYERS}
+                onSelect={commitFirstDealer}
+              />
+            )}
+
             {phase === "shuffle" && size.w > 0 && (
               <ChoicePanel
                 title={`${PLAYERS[dealer].name} distribue`}
