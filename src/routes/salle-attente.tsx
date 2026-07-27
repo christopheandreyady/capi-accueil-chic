@@ -308,14 +308,17 @@ function WaitingRoom() {
             style={
               isMobile
                 ? {
-                    // Match in-game mobile stage: full-viewport table with
-                    // object-cover crop, no circular mask, no vignette.
+                    // Table image occupies the mobile screen but leaves a
+                    // reserved strip above and below so the four avatars can
+                    // sit OUTSIDE the wooden rim — never covering the
+                    // "La Contrée Royale" / "Esprit d'équipe" plates.
                     width: "100vw",
-                    height: "calc(100dvh - env(safe-area-inset-top) - env(safe-area-inset-bottom) - 8rem)",
+                    height: "calc(100dvh - env(safe-area-inset-top) - env(safe-area-inset-bottom) - 17rem)",
                     marginLeft: "calc(50% - 50vw)",
                     marginRight: "calc(50% - 50vw)",
                   }
-                : { width: "min(100vw, calc((100dvh - 130px) * 1.55), 1020px)", aspectRatio: "3 / 2" }
+                : { width: "min(94vw, calc((100dvh - 220px) * 1.55), 1020px)", aspectRatio: "3 / 2" }
+
             }
           >
             <img
