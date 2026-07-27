@@ -92,8 +92,9 @@ const PLAYERS: Record<Position, PlayerInfo> = buildPlayers();
 // ranks and suits read at a glance on both mobile and desktop.
 const CARD_W_BIG = 76;
 const CARD_H_BIG = 112;
-const CARD_W_SMALL = 46;
-const CARD_H_SMALL = 68;
+const CARD_W_SMALL = 56;
+const CARD_H_SMALL = 82;
+
 
 const CARD_W_TRICK = 60;
 const CARD_H_TRICK = 88;
