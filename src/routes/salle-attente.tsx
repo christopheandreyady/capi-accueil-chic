@@ -216,29 +216,35 @@ function WaitingRoom() {
 
   return (
     <main className="relative min-h-screen w-full overflow-hidden bg-background">
-      {/* Ambient bistro atmosphere — identical stack to the homepage /
-          BistrotShell so the waiting room shares the same visual identity. */}
-      <div
-        className="pointer-events-none absolute inset-0"
-        style={{
-          background:
-            "radial-gradient(60% 35% at 50% 0%, oklch(0.85 0.14 75 / 32%) 0%, oklch(0.7 0.12 65 / 12%) 40%, transparent 70%)",
-        }}
-      />
-      <div
-        className="pointer-events-none absolute inset-0"
-        style={{
-          background:
-            "radial-gradient(120% 80% at 50% 50%, transparent 0%, oklch(0 0 0 / 45%) 60%, oklch(0.08 0.02 40 / 94%) 100%)",
-        }}
-      />
-      <div
-        className="pointer-events-none absolute inset-0"
-        style={{
-          background:
-            "linear-gradient(180deg, oklch(0.12 0.03 40 / 75%) 0%, transparent 22%, transparent 55%, oklch(0.08 0.02 40 / 92%) 100%)",
-        }}
-      />
+      {/* Ambient bistro atmosphere — matches the in-game layout exactly. On
+          mobile the table image fills the screen and carries the whole
+          atmosphere, so no full-screen vignette/radial overlay is added.
+          On desktop the original ambient bistro lighting stack is preserved. */}
+      {!isMobile && (
+        <>
+          <div
+            className="pointer-events-none absolute inset-0"
+            style={{
+              background:
+                "radial-gradient(60% 35% at 50% 0%, oklch(0.85 0.14 75 / 32%) 0%, oklch(0.7 0.12 65 / 12%) 40%, transparent 70%)",
+            }}
+          />
+          <div
+            className="pointer-events-none absolute inset-0"
+            style={{
+              background:
+                "radial-gradient(120% 80% at 50% 50%, transparent 0%, oklch(0 0 0 / 45%) 60%, oklch(0.08 0.02 40 / 94%) 100%)",
+            }}
+          />
+          <div
+            className="pointer-events-none absolute inset-0"
+            style={{
+              background:
+                "linear-gradient(180deg, oklch(0.12 0.03 40 / 75%) 0%, transparent 22%, transparent 55%, oklch(0.08 0.02 40 / 92%) 100%)",
+            }}
+          />
+        </>
+      )}
 
 
 
