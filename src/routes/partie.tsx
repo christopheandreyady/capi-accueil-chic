@@ -1330,8 +1330,9 @@ function GameTable() {
 // move against the latest bids and rejects it if another player got there
 // first. When accepted, every player's UI updates through the shared bids
 // state on the next render.
-function CounterButton({ bids, currentTurn, onCounter }: { bids: Bid[]; currentTurn: Position; onCounter: (b: Bid) => void }) {
-  if (currentTurn !== "bottom") return null;
+function CounterButton({ bids, onCounter }: { bids: Bid[]; currentTurn?: Position; onCounter: (b: Bid) => void }) {
+  // Available for the local player as soon as the rules allow a counter,
+  // independent of whose turn it is — pressing it is a reaction, not a bid.
   const kind = canCounter(bids, "bottom");
   if (!kind) return null;
   const label = kind === "contre" ? "Contrer" : "Surcontrer";
