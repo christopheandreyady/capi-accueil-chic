@@ -828,7 +828,7 @@ function GameTable() {
         if (done >= 8) {
           // Finalize round — cumulative gets updated later, via animated counter
           const allTricks = [...tricks, currentTrick];
-          const rs = scoreRound(contract, allTricks);
+          const rs = scoreRound(contract, allTricks, scoringRules);
           setRoundScore(rs);
           setCurrentTrick(null);
           setPhase("scoring");
