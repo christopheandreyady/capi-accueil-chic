@@ -404,6 +404,10 @@ function GameTable() {
   const counterEvalRef = useRef(-1);
   const biddingStateRef = useRef<{ bids: Bid[]; turn: Position }>({ bids: [], turn: "bottom" });
   const reactionContractRef = useRef<string | null>(null);
+  // Premium "CONTRÉ !" reaction — id changes each time so overlays/animations
+  // remount and re-trigger their CSS keyframes.
+  const [counterFx, setCounterFx] = useState<{ seat: Position; kind: "contre" | "surcontre"; id: number } | null>(null);
+  const counterFxIdRef = useRef(0);
   // Last announcement stays visible above its author until a newer one arrives
   // or the bidding phase ends.
   const lastBidRef = bids.length > 0 ? bids[bids.length - 1] : null;
