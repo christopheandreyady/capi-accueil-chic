@@ -367,6 +367,18 @@ function GameTable() {
   const [deckHolder, setDeckHolder] = useState<Position | null>(null);
   const [dealMode, setDealMode] = useState<DealMode | null>(null);
 
+  // First-dealer draw (once per game). Each player draws a card; the lowest
+  // rank wins the right to designate the first dealer. Ties re-draw only
+  // between tied seats.
+  const drawDoneRef = useRef(false);
+  const [drawCards, setDrawCards] = useState<Record<Position, Card | null>>({
+    bottom: null, left: null, top: null, right: null,
+  });
+  const [drawEligible, setDrawEligible] = useState<Position[]>([]);
+  const [drawWinner, setDrawWinner] = useState<Position | null>(null);
+  const [drawSelecting, setDrawSelecting] = useState(false);
+  const [drawChosen, setDrawChosen] = useState<Position | null>(null);
+
   // Game state
   const [hands, setHands] = useState<Record<Position, Card[]>>({
     bottom: [], left: [], top: [], right: [],
