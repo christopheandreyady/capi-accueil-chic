@@ -151,6 +151,12 @@ function CreateTable() {
               disabled={!cfg.contrer}
             />
             <SwitchRow
+              label="Contre à la volée"
+              value={cfg.contreVolee}
+              onChange={(v) => update("contreVolee", v)}
+              disabled={!cfg.contrer}
+            />
+            <SwitchRow
               label="Mélange avant distribution"
               value={cfg.shuffle}
               onChange={(v) => update("shuffle", v)}
