@@ -1726,7 +1726,7 @@ function ChoicePanel({
   options: { key: string; label: string; icon?: React.ReactNode; onClick: () => void; primary?: boolean }[];
 }) {
   return (
-    <div className="absolute left-1/2 top-1/2 z-40 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center gap-3 animate-fade-in">
+    <div className="absolute left-1/2 top-[38%] z-40 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center gap-3 animate-fade-in">
       <div className="rounded-full border px-3 py-1.5 text-[10px] font-medium uppercase tracking-[0.22em]" style={{ background:"oklch(0.18 0.03 40 / 88%)", borderColor:"oklch(0.82 0.14 82 / 40%)", color:"oklch(0.94 0.1 85)", backdropFilter:"blur(8px)" }}>{title}</div>
       <div className="text-[12px]" style={{ color:"oklch(0.88 0.07 82 / 90%)", textShadow:"0 1px 2px oklch(0 0 0 / 65%)" }}>{subtitle}</div>
       <div className="mt-1 flex flex-wrap justify-center gap-2">
