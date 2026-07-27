@@ -247,6 +247,9 @@ function GameTable() {
   const [tricks, setTricks] = useState<Trick[]>([]);
   const [roundScore, setRoundScore] = useState<RoundScore | null>(null);
   const [cumulative, setCumulative] = useState<{ A: number; B: number }>({ A: 0, B: 0 });
+  // Running (provisional) card points collected during the current donne.
+  // Updated after each trick so players see the score evolve in real time.
+  const [liveRound, setLiveRound] = useState<{ A: number; B: number }>({ A: 0, B: 0 });
   const [selectedCardId, setSelectedCardId] = useState<string | null>(null);
   const [displayScores, setDisplayScores] = useState<{ A: number; B: number }>({ A: 0, B: 0 });
   const [chipsSlideTo, setChipsSlideTo] = useState<Team | null>(null);
