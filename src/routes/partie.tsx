@@ -675,10 +675,12 @@ function GameTable() {
         @keyframes capi-riffle { 0%{transform:translate(-42px,0) rotate(-6deg);} 18%{transform:translate(-42px,-8px) rotate(-6deg);} 32%{transform:translate(-6px,-2px) rotate(-1deg);} 50%{transform:translate(2px,0);} 62%{transform:translate(-38px,-6px) rotate(-4deg);} 78%{transform:translate(-4px,-1px);} 100%{transform:translate(0,0);} }
         @keyframes capi-riffle-r { 0%{transform:translate(42px,0) rotate(6deg);} 18%{transform:translate(42px,-8px) rotate(6deg);} 32%{transform:translate(6px,-2px) rotate(1deg);} 50%{transform:translate(-2px,0);} 62%{transform:translate(38px,-6px) rotate(4deg);} 78%{transform:translate(4px,-1px);} 100%{transform:translate(0,0);} }
         @keyframes capi-riffle-tick { 0%,30%,60%{transform:translateY(0);} 10%,40%,70%{transform:translateY(-4px) rotate(-1.5deg);} 20%,50%,80%{transform:translateY(0);} }
-        @keyframes capi-turn-pulse { 0%,100%{box-shadow:0 0 0 0 oklch(0.85 0.14 82 / 60%), 0 6px 14px -6px oklch(0 0 0 / 75%);} 50%{box-shadow:0 0 0 8px oklch(0.85 0.14 82 / 0%), 0 6px 14px -6px oklch(0 0 0 / 75%);} }
+        @keyframes capi-turn-pulse { 0%,100%{box-shadow:0 0 0 0 oklch(0.88 0.16 82 / 85%), 0 0 22px 2px oklch(0.85 0.16 82 / 55%), 0 6px 14px -6px oklch(0 0 0 / 75%);} 50%{box-shadow:0 0 0 14px oklch(0.88 0.16 82 / 0%), 0 0 34px 6px oklch(0.85 0.16 82 / 30%), 0 6px 14px -6px oklch(0 0 0 / 75%);} }
         @keyframes capi-think-dots { 0%,20%{opacity:.2;} 50%{opacity:1;} 80%,100%{opacity:.2;} }
         @keyframes capi-turn-countdown { 0%{transform:scaleX(1);} 100%{transform:scaleX(0);} }
-        @keyframes capi-turn-glow { 0%,100%{opacity:.85; transform:scaleX(1);} 50%{opacity:1; transform:scaleX(0.92);} }
+        @keyframes capi-turn-glow { 0%,100%{opacity:.9; transform:scaleX(1);} 50%{opacity:1; transform:scaleX(0.94);} }
+        @keyframes capi-turn-halo { 0%,100%{opacity:.55; transform:translate(-50%,-50%) scale(1);} 50%{opacity:.95; transform:translate(-50%,-50%) scale(1.14);} }
+        @keyframes capi-turn-ring { 0%{transform:translate(-50%,-50%) scale(1); opacity:.7;} 100%{transform:translate(-50%,-50%) scale(1.35); opacity:0;} }
 
       `}</style>
 
