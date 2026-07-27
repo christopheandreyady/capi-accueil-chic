@@ -165,6 +165,53 @@ function CreateTable() {
           </div>
         </Card>
 
+        {/* Scoring variants */}
+        <Card>
+          <Row
+            title="Variantes de score"
+            hint="Adaptez le calcul des points à votre région"
+            icon={<Trophy className="h-4 w-4" />}
+          />
+          <div className="mt-2 flex flex-col">
+            <SwitchRow
+              label="Capot annoncé (500 pts)"
+              value={cfg.scoring.capotAnnonce}
+              onChange={(v) => update("scoring", { ...cfg.scoring, capotAnnonce: v })}
+            />
+            <SwitchRow
+              label="Capot non annoncé (250 pts)"
+              value={cfg.scoring.capotNonAnnonce}
+              onChange={(v) => update("scoring", { ...cfg.scoring, capotNonAnnonce: v })}
+            />
+            <SwitchRow
+              label="Contré (320 pts)"
+              value={cfg.scoring.contre}
+              onChange={(v) => update("scoring", { ...cfg.scoring, contre: v })}
+              disabled={!cfg.contrer}
+            />
+            <SwitchRow
+              label="Surcontré (640 pts)"
+              value={cfg.scoring.surcontre}
+              onChange={(v) => update("scoring", { ...cfg.scoring, surcontre: v })}
+              disabled={!cfg.contrer || !cfg.surcontrer}
+            />
+            <SwitchRow
+              label="Capot contré (1000 pts)"
+              value={cfg.scoring.capotContre}
+              onChange={(v) => update("scoring", { ...cfg.scoring, capotContre: v })}
+              disabled={!cfg.contrer}
+            />
+            <SwitchRow
+              label="Capot surcontré (2000 pts)"
+              value={cfg.scoring.capotSurcontre}
+              onChange={(v) => update("scoring", { ...cfg.scoring, capotSurcontre: v })}
+              disabled={!cfg.contrer || !cfg.surcontrer}
+              last
+            />
+          </div>
+        </Card>
+
+
         {/* Spectators card */}
         <Card>
           <Row
