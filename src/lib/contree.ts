@@ -245,14 +245,16 @@ export function scoreRound(contract: Contract, tricks: Trick[]): RoundScore {
     contractMet = cardPts[bidTeam] >= contractPts;
   }
 
+  const roundTo10 = (n: number) => Math.round(n / 10) * 10;
   const finalScore: Record<Team, number> = { A: 0, B: 0 };
   if (contractMet) {
-    finalScore[bidTeam] = contractPts + cardPts[bidTeam];
-    finalScore[defTeam] = cardPts[defTeam];
+    finalScore[bidTeam] = roundTo10(cardPts[bidTeam]);
+    finalScore[defTeam] = roundTo10(cardPts[defTeam]);
   } else {
     finalScore[bidTeam] = 0;
-    finalScore[defTeam] = 160 + contractPts;
+    finalScore[defTeam] = 160;
   }
+
 
   return {
     A: finalScore.A,
