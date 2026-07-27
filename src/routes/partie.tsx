@@ -1154,9 +1154,10 @@ function handTarget(seat: Position, index: number, total: number, anchors: Ancho
   const a = anchors[seat];
   // Constant per-card angular step: the fan CLOSES as cards are played,
   // so the hand always stays visually compact with no gap where a card was.
-  const stepDeg = isBottom ? (isMobile ? 12.0 : 12.0) : 7.5;
+  const stepDeg = isBottom ? (isMobile ? 12.0 : 12.0) : 9.0;
   const localAngle = total > 1 ? -((total - 1) / 2) * stepDeg + stepDeg * index : 0;
-  const radius = isBottom ? (isMobile ? 160 : 148) : 14;
+  const radius = isBottom ? (isMobile ? 160 : 148) : 22;
+
 
 
   const rad = (localAngle * Math.PI) / 180;
