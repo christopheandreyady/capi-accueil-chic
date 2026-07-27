@@ -1035,23 +1035,40 @@ function GameTable() {
               // user perceives the reflection time. Adjust AI_THINK_MS to
               // slow down or speed up AI reflection.
               const turnCountdownMs = isActive && p !== "bottom" ? AI_THINK_MS : 0;
+              const isSeated = seated[p];
               return (
-                <PlayerBadge
+                <div
                   key={p}
-                  position={p}
-                  info={PLAYERS[p]}
-                  isDealer={p === dealer}
-                  isLocal={p === "bottom"}
-                  isActive={isActive}
-                  isThinking={isThinking}
-                  announcement={badgeAnnounce}
-                  announcementIsTaker={badgeIsTaker}
-                  announcementMultiplier={badgeMultiplier}
-                  isMobile={isMobile}
-                  turnCountdownMs={turnCountdownMs}
-                />
+                  style={{
+                    opacity: isSeated ? 1 : 0,
+                    transform: isSeated ? "translateY(0)" : "translateY(10px)",
+                    transition: "opacity 620ms ease, transform 620ms cubic-bezier(0.22,0.7,0.25,1)",
+                    filter: isSeated ? undefined : "blur(2px)",
+                  }}
+                >
+                  <PlayerBadge
+                    position={p}
+                    info={PLAYERS[p]}
+                    isDealer={p === dealer && phase !== "seating"}
+                    isLocal={p === "bottom"}
+                    isActive={isActive}
+                    isThinking={isThinking}
+                    announcement={badgeAnnounce}
+                    announcementIsTaker={badgeIsTaker}
+                    announcementMultiplier={badgeMultiplier}
+                    isMobile={isMobile}
+                    turnCountdownMs={turnCountdownMs}
+                  />
+                </div>
               );
             })}
+
+            {/* Seating intro: back-of-hand fans that appear as each bot
+                arrives at the table, behind their avatar. Cleared as soon as
+                the shuffle/deal phase takes over. */}
+            {phase === "seating" && size.w > 0 && (
+              <SeatingHands seated={seated} anchors={anchors} isMobile={isMobile} />
+            )}
 
 
             {/* Cut label */}
