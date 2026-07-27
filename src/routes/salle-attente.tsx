@@ -40,34 +40,7 @@ type Player = {
   isBot?: boolean;
 };
 
-// Dev-only bots used to fill empty seats so a table can be tested solo.
-// Ordered by seat position; index matches an empty seat's slot when filling.
-const DEV_BOTS: Record<Exclude<Position, "bottom">, Player> = {
-  top: {
-    name: "Bot Jean-Luc",
-    level: 18,
-    photo: "https://i.pravatar.cc/200?img=68",
-    online: true,
-    ready: true,
-    isBot: true,
-  },
-  left: {
-    name: "Bot Margaux",
-    level: 15,
-    photo: "https://i.pravatar.cc/200?img=47",
-    online: true,
-    ready: true,
-    isBot: true,
-  },
-  right: {
-    name: "Bot Alex",
-    level: 12,
-    photo: "https://i.pravatar.cc/200?img=15",
-    online: true,
-    ready: true,
-    isBot: true,
-  },
-};
+import { refreshBots, type Bot } from "@/lib/bots";
 
 type Seat = {
   position: Position;
@@ -75,52 +48,51 @@ type Seat = {
   player: Player | null;
 };
 
-// Teams: bottom + top = A, left + right = B (partner is across the table)
-const initialSeats: Seat[] = [
-  {
-    position: "bottom",
-    team: "A",
-    player: {
-      name: "Vous",
-      level: 22,
-      photo: "https://i.pravatar.cc/200?img=12",
-      online: true,
-      ready: false,
-      host: true,
+// Build the initial seat layout using 3 bots picked from the bot library.
+// Bottom seat is always the human profile. Bots rotate each new game.
+function buildInitialSeats(bots: Bot[]): Seat[] {
+  const seatOrder: Exclude<Position, "bottom">[] = ["top", "left", "right"];
+  const botSeats: Seat[] = seatOrder.map((position, idx) => {
+    const bot = bots[idx];
+    const team: Team = position === "top" ? "A" : "B";
+    return {
+      position,
+      team,
+      player: bot
+        ? {
+            name: bot.name,
+            level: bot.level,
+            photo: bot.photo,
+            online: true,
+            ready: true,
+            isBot: true,
+          }
+        : null,
+    };
+  });
+  return [
+    {
+      position: "bottom",
+      team: "A",
+      player: {
+        name: "Vous",
+        level: 22,
+        photo: "https://i.pravatar.cc/200?img=12",
+        online: true,
+        ready: false,
+        host: true,
+      },
     },
-  },
-  {
-    position: "top",
-    team: "A",
-    player: {
-      name: "Jean-Luc",
-      level: 27,
-      photo: "https://i.pravatar.cc/200?img=68",
-      online: true,
-      ready: true,
-      isBot: true,
-    },
-  },
-  {
-    position: "left",
-    team: "B",
-    player: {
-      name: "Margaux",
-      level: 14,
-      photo: "https://i.pravatar.cc/200?img=47",
-      online: true,
-      ready: true,
-      isBot: true,
-    },
-  },
-  { position: "right", team: "B", player: null },
-];
+    ...botSeats,
+  ];
+}
+
 
 function WaitingRoom() {
   const navigate = useNavigate();
   const isMobile = useIsMobile();
   const [cfg, setCfg] = useState<TableConfig>(() => defaultTableConfig());
-  const [seats, setSeats] = useState<Seat[]>(initialSeats);
+  const [seats, setSeats] = useState<Seat[]>(() => buildInitialSeats([]));
   const [inviteOpen, setInviteOpen] = useState(false);
   const [qrOpen, setQrOpen] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -129,22 +101,12 @@ function WaitingRoom() {
   useEffect(() => {
     const stored = loadTableConfig();
     if (stored) setCfg(stored);
-    // Dev helper: auto-fill any empty seat with a ready AI bot so we can
-    // start a game without waiting for real players. Skip the bottom seat
-    // (that's always the human using the app).
-    setSeats((prev) =>
-      prev.map((seat) => {
-        if (seat.position === "bottom") return seat;
-        if (seat.player) {
-          return seat.player.isBot && !seat.player.ready
-            ? { ...seat, player: { ...seat.player, ready: true } }
-            : seat;
-        }
-        const bot = DEV_BOTS[seat.position];
-        return bot ? { ...seat, player: { ...bot, ready: true } } : seat;
-      }),
-    );
+    // Pick a fresh trio of bots for this game so opponents change from one
+    // session to the next. Persisted so the game screen uses the same three.
+    const bots = refreshBots(3);
+    setSeats(buildInitialSeats(bots));
   }, []);
+
 
   const inviteLink = useMemo(() => buildInviteLink(cfg.code), [cfg.code]);
   const total = 4;

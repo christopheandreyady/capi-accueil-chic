@@ -65,12 +65,27 @@ function sortHand(cards: Card[], trump: Suit | null): Card[] {
 
 type PlayerInfo = { name: string; level: number; photo: string };
 
-const PLAYERS: Record<Position, PlayerInfo> = {
-  bottom: { name: "Vous", level: 22, photo: "https://i.pravatar.cc/200?img=12" },
-  left: { name: "Bot Margaux", level: 15, photo: "https://i.pravatar.cc/200?img=47" },
-  top: { name: "Bot Jean-Luc", level: 18, photo: "https://i.pravatar.cc/200?img=68" },
-  right: { name: "Bot Alex", level: 12, photo: "https://i.pravatar.cc/200?img=15" },
-};
+import { getOrPickBots } from "@/lib/bots";
+
+// Bots for the current game are picked once (session-scoped) and shared with
+// the waiting room, so opponents stay consistent for the duration of a game.
+function buildPlayers(): Record<Position, PlayerInfo> {
+  const bots = getOrPickBots(3);
+  const [topBot, leftBot, rightBot] = [
+    bots[0] ?? { name: "Bot 1", level: 15, photo: "https://i.pravatar.cc/200?img=68" },
+    bots[1] ?? { name: "Bot 2", level: 15, photo: "https://i.pravatar.cc/200?img=47" },
+    bots[2] ?? { name: "Bot 3", level: 15, photo: "https://i.pravatar.cc/200?img=15" },
+  ];
+  return {
+    bottom: { name: "Vous", level: 22, photo: "https://i.pravatar.cc/200?img=12" },
+    left: { name: leftBot.name, level: leftBot.level, photo: leftBot.photo },
+    top: { name: topBot.name, level: topBot.level, photo: topBot.photo },
+    right: { name: rightBot.name, level: rightBot.level, photo: rightBot.photo },
+  };
+}
+
+const PLAYERS: Record<Position, PlayerInfo> = buildPlayers();
+
 
 // Card sizes — reduced ~20% so the felt / center emblem stay visible.
 const CARD_W_BIG = 62;
