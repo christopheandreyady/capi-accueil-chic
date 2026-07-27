@@ -1163,7 +1163,7 @@ function handTarget(seat: Position, index: number, total: number, anchors: Ancho
   const ry = lx * Math.sin(seatRad) + ly * Math.cos(seatRad);
   // Push the bottom hand below its anchor so the fan sits at the very
   // bottom of the screen, freeing the felt above for the play area.
-  const anchorYOffset = isBottom && isMobile ? 96 : 0;
+  const anchorYOffset = isBottom && isMobile ? 108 : 0;
   return {
     x: a.x + rx,
     y: a.y + ry + anchorYOffset,
