@@ -1864,14 +1864,14 @@ function ContractChips({ contract, slideTo }: { contract: Contract; slideTo?: Te
       ? {
           top: "auto",
           left: "auto",
-          right: "24%",
-          bottom: "16%",
+          right: "20%",
+          bottom: "14%",
           transform: "translate(50%, 50%) scale(0.68)",
           opacity: 0.9,
         }
       : {
-          top: "16%",
-          left: "24%",
+          top: "42%",
+          left: "18%",
           right: "auto",
           bottom: "auto",
           transform: "translate(-50%, -50%) scale(0.68)",
