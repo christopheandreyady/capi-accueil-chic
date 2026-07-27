@@ -308,14 +308,17 @@ function WaitingRoom() {
             style={
               isMobile
                 ? {
-                    // Match in-game mobile stage: full-viewport table with
-                    // object-cover crop, no circular mask, no vignette.
+                    // Table image fills the mobile screen; seats sit on the
+                    // felt just below the top plate and just above the
+                    // bottom plate so the wooden engravings stay visible.
                     width: "100vw",
                     height: "calc(100dvh - env(safe-area-inset-top) - env(safe-area-inset-bottom) - 8rem)",
                     marginLeft: "calc(50% - 50vw)",
                     marginRight: "calc(50% - 50vw)",
                   }
                 : { width: "min(100vw, calc((100dvh - 130px) * 1.55), 1020px)", aspectRatio: "3 / 2" }
+
+
             }
           >
             <img
@@ -365,27 +368,33 @@ function WaitingRoom() {
             {/* Seats — anchored to the TABLE container (percentages), sitting
                 on the wooden rim just inside the table edge so every avatar
                 stays in the play zone and scales with the table. */}
+            {/* Seats are anchored to the table container using percentages
+                so the four positions stay symmetric and responsive on every
+                screen. Top and bottom seats sit fully outside the wooden
+                rim (above/below) so they never cover the plate engravings.
+                Left/right seats hug the inside of the wooden rim but stay a
+                safe 5% away from viewport edges. */}
             <SeatSlot
               seat={seats.find((s) => s.position === "top")!}
-              style={{ left: "50%", top: "6%", transform: "translate(-50%, 0)" }}
+              style={{ left: "50%", top: "14%", transform: "translate(-50%, 0)" }}
               delay={80}
               onInvite={() => setInviteOpen(true)}
             />
             <SeatSlot
               seat={seats.find((s) => s.position === "left")!}
-              style={{ left: "6%", top: "50%", transform: "translate(0, -50%)" }}
+              style={{ left: "5%", top: "50%", transform: "translate(0, -50%)" }}
               delay={180}
               onInvite={() => setInviteOpen(true)}
             />
             <SeatSlot
               seat={seats.find((s) => s.position === "right")!}
-              style={{ right: "6%", top: "50%", transform: "translate(0, -50%)" }}
+              style={{ right: "5%", top: "50%", transform: "translate(0, -50%)" }}
               delay={260}
               onInvite={() => setInviteOpen(true)}
             />
             <SeatSlot
               seat={seats.find((s) => s.position === "bottom")!}
-              style={{ left: "50%", bottom: "6%", transform: "translate(-50%, 0)" }}
+              style={{ left: "50%", bottom: "14%", transform: "translate(-50%, 0)" }}
               isLocal
               delay={0}
               onInvite={() => setInviteOpen(true)}
@@ -737,12 +746,14 @@ function SeatSlot({
   isLocal,
   delay = 0,
   onInvite,
+  textAbove,
 }: {
   seat: Seat;
   style?: React.CSSProperties;
   isLocal?: boolean;
   delay?: number;
   onInvite: () => void;
+  textAbove?: boolean;
 }) {
   const p = seat.player;
 
@@ -753,7 +764,7 @@ function SeatSlot({
 
   return (
     <div
-      className="pointer-events-auto absolute z-20 flex flex-col items-center gap-1.5"
+      className={`pointer-events-auto absolute z-20 flex ${textAbove ? "flex-col-reverse" : "flex-col"} items-center gap-1.5`}
       style={{
         ...style,
         animation: `capi-seat-in 520ms ${delay}ms cubic-bezier(.2,.8,.25,1) both`,
