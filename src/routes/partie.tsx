@@ -1426,23 +1426,19 @@ function GameTable() {
       {/* Real-time counter / surcounter — floats above every other UI so
           the player can react instantly, whether or not it's their turn. */}
       {phase === "bidding" && (
-        <CounterButton bids={bids} currentTurn={currentTurn} onCounter={submitBid} />
+        <CounterButton bids={bids} currentTurn={currentTurn} onTheFly={contreVolee} onCounter={submitBid} />
       )}
     </main>
   );
 }
 
 // --- Real-time counter button ---------------------------------------------
-// Rendered as a fixed-position element, always visible during the bidding
-// phase whenever the local player has a legal counter to play. Pressing it
-// dispatches the action to the authoritative submitBid, which validates the
-// move against the latest bids and rejects it if another player got there
-// first. When accepted, every player's UI updates through the shared bids
-// state on the next render.
-function CounterButton({ bids, onCounter }: { bids: Bid[]; currentTurn?: Position; onCounter: (b: Bid) => void }) {
-  // Available for the local player as soon as the rules allow a counter,
-  // independent of whose turn it is — pressing it is a reaction, not a bid.
-  const kind = canCounter(bids, "bottom");
+// Rendered as a fixed-position element, visible during the bidding phase
+// whenever the local player has a legal counter to play. In "contre à la
+// volée" mode it appears the moment a contract exists; in classical mode it
+// only appears during the local player's own turn of speech.
+function CounterButton({ bids, currentTurn, onTheFly, onCounter }: { bids: Bid[]; currentTurn?: Position; onTheFly: boolean; onCounter: (b: Bid) => void }) {
+  const kind = canCounter(bids, "bottom", { onTheFly, turn: currentTurn });
   if (!kind) return null;
   const label = kind === "contre" ? "Contrer" : "Surcontrer";
   const multiplier = kind === "contre" ? "×2" : "×4";
