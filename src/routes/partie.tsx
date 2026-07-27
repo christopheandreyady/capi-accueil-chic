@@ -1386,7 +1386,7 @@ function GameTable() {
                       style={{
                         width: 22,
                         height: 22,
-                        background: `url(${PLAYERS[counterFx.seat].avatar}) center/cover`,
+                        background: `url(${PLAYERS[counterFx.seat].photo}) center/cover`,
                         border: "1px solid oklch(0.85 0.16 82 / 70%)",
                       }}
                     />
