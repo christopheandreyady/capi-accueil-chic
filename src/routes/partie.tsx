@@ -263,7 +263,16 @@ function GameTable() {
   const [dealtCount, setDealtCount] = useState(0);
   const [dealSeed, setDealSeed] = useState(0);
   const [dealer, setDealer] = useState<Position>("bottom");
-  const [phase, setPhase] = useState<Phase>("shuffle");
+  // First mount uses the "seating" intro so the human sees the three other
+  // players arrive around the table before the very first hand. Subsequent
+  // hands skip straight to shuffle.
+  const introDoneRef = useRef(false);
+  const [phase, setPhase] = useState<Phase>("seating");
+  // Bottom is always seated (that's the human). The three others join with a
+  // staggered fade+slide during the intro.
+  const [seated, setSeated] = useState<Record<Position, boolean>>({
+    bottom: true, left: false, top: false, right: false,
+  });
   const [cutStep, setCutStep] = useState<0 | 1 | 2>(0);
   const [deckHolder, setDeckHolder] = useState<Position | null>(null);
   const [dealMode, setDealMode] = useState<DealMode | null>(null);
