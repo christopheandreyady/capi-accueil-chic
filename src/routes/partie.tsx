@@ -297,6 +297,22 @@ function GameTable() {
   const [chipsSlideTo, setChipsSlideTo] = useState<Team | null>(null);
   const [chipsVisible, setChipsVisible] = useState(true);
   const [stashes, setStashes] = useState<{ A: ChipBreakdown[]; B: ChipBreakdown[] }>({ A: [], B: [] });
+
+  // Multiplayer communication (quick messages + optional voice). Feature is
+  // gated by a sessionStorage flag set by the matchmaking flow — bot mode
+  // therefore stays untouched. Toggle for testing:
+  //   sessionStorage.setItem("capi-multiplayer","1")
+  const [isMultiplayer, setIsMultiplayer] = useState(false);
+  useEffect(() => {
+    try { setIsMultiplayer(sessionStorage.getItem("capi-multiplayer") === "1"); } catch { /* ignore */ }
+  }, []);
+  const [emote, setEmote] = useState<EmotePayload | null>(null);
+  const [localSpeaking, setLocalSpeaking] = useState(false);
+  useEffect(() => {
+    if (!emote) return;
+    const id = window.setTimeout(() => setEmote(null), 3500);
+    return () => window.clearTimeout(id);
+  }, [emote]);
   const counterEvalRef = useRef(-1);
   const biddingStateRef = useRef<{ bids: Bid[]; turn: Position }>({ bids: [], turn: "bottom" });
   const reactionContractRef = useRef<string | null>(null);
