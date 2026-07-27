@@ -391,8 +391,18 @@ function GameTable() {
   // therefore stays untouched. Toggle for testing:
   //   sessionStorage.setItem("capi-multiplayer","1")
   const [isMultiplayer, setIsMultiplayer] = useState(false);
+  // Rule variant: "Contre à la volée" lets any opposing player counter as soon
+  // as a contract is announced, without waiting for their turn of speech.
+  const [contreVolee, setContreVolee] = useState(true);
   useEffect(() => {
     try { setIsMultiplayer(sessionStorage.getItem("capi-multiplayer") === "1"); } catch { /* ignore */ }
+    try {
+      const raw = sessionStorage.getItem("capi.table.config");
+      if (raw) {
+        const cfg = JSON.parse(raw) as { contreVolee?: boolean };
+        if (typeof cfg.contreVolee === "boolean") setContreVolee(cfg.contreVolee);
+      }
+    } catch { /* ignore */ }
   }, []);
   const [emote, setEmote] = useState<EmotePayload | null>(null);
   const [localSpeaking, setLocalSpeaking] = useState(false);
