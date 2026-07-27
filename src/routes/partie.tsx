@@ -1719,12 +1719,13 @@ function ContractChips({ contract, slideTo }: { contract: Contract; slideTo?: Te
 
   const slideStyle: React.CSSProperties = slideTo
     ? {
-        top: slideTo === "A" ? "88%" : "12%",
-        left: slideTo === "A" ? "88%" : "12%",
+        top: slideTo === "A" ? "78%" : "22%",
+        left: slideTo === "A" ? "74%" : "26%",
         transform: "translate(-50%, -50%) scale(0.68)",
         opacity: 0.9,
       }
     : baseStyle;
+
 
   const wrapperStyle: React.CSSProperties = {
     position: "absolute",
