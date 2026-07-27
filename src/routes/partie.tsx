@@ -942,6 +942,7 @@ function GameTable() {
         @keyframes capi-contre-flash { 0%{opacity:0;} 22%{opacity:1;} 100%{opacity:0;} }
         @keyframes capi-contre-shockwave { 0%{transform:translate(-50%,-50%) scale(0.2); opacity:.75;} 100%{transform:translate(-50%,-50%) scale(2.4); opacity:0;} }
         @keyframes capi-contre-banner { 0%{opacity:0; transform:translate(-50%,-50%) scale(0.55) rotate(-5deg);} 18%{opacity:1; transform:translate(-50%,-50%) scale(1.1) rotate(-1deg);} 45%{transform:translate(-50%,-50%) scale(1) rotate(0deg);} 78%{opacity:1;} 100%{opacity:0; transform:translate(-50%,-50%) scale(0.96);} }
+        .capi-shake-anim { animation: capi-contre-shake 560ms cubic-bezier(0.36, 0.07, 0.19, 0.97) both; }
       `}</style>
 
       {/* On mobile the table image fills the screen and carries the whole
