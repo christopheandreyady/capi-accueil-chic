@@ -1,3 +1,18 @@
+export type ScoringRules = {
+  /** Announced-capot bonus (500 points) when both announced and made. */
+  capotAnnonce: boolean;
+  /** Un-announced capot bonus (250 points) when all 8 tricks are taken. */
+  capotNonAnnonce: boolean;
+  /** Contré contract won → 320 points (lost → 320 to defenders). */
+  contre: boolean;
+  /** Surcontré contract won → 640 points (lost → 640 to defenders). */
+  surcontre: boolean;
+  /** Announced + contré capot made → 1000 points. */
+  capotContre: boolean;
+  /** Announced + surcontré capot made → 2000 points. */
+  capotSurcontre: boolean;
+};
+
 export type TableConfig = {
   name: string;
   isPrivate: boolean;
@@ -9,6 +24,7 @@ export type TableConfig = {
   shuffle: boolean;
   maxSpectators: 0 | 2 | 4 | 8;
   code: string;
+  scoring: ScoringRules;
 };
 
 const KEY = "capi.table.config";
@@ -20,6 +36,17 @@ export function generateInviteCode(): string {
     out += alphabet[Math.floor(Math.random() * alphabet.length)];
   }
   return out;
+}
+
+export function defaultScoringRules(): ScoringRules {
+  return {
+    capotAnnonce: true,
+    capotNonAnnonce: true,
+    contre: true,
+    surcontre: true,
+    capotContre: true,
+    capotSurcontre: true,
+  };
 }
 
 export function defaultTableConfig(): TableConfig {
@@ -34,8 +61,10 @@ export function defaultTableConfig(): TableConfig {
     shuffle: true,
     maxSpectators: 2,
     code: generateInviteCode(),
+    scoring: defaultScoringRules(),
   };
 }
+
 
 export function saveTableConfig(cfg: TableConfig) {
   if (typeof window === "undefined") return;
