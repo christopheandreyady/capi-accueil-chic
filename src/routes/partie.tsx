@@ -671,6 +671,20 @@ function GameTable() {
     return () => window.clearTimeout(t);
   }, [counterFx]);
 
+  // Physically shake the whole stage when a counter lands. classList toggle
+  // with a reflow between remove/add guarantees the animation restarts even
+  // if two counters land back-to-back.
+  useEffect(() => {
+    if (!counterFx) return;
+    const el = boxRef.current;
+    if (!el) return;
+    el.classList.remove("capi-shake-anim");
+    // Force reflow so re-adding the class restarts the animation.
+    void el.offsetWidth;
+    el.classList.add("capi-shake-anim");
+    const t = window.setTimeout(() => el.classList.remove("capi-shake-anim"), 620);
+    return () => window.clearTimeout(t);
+
   // --- Playing loop --------------------------------------------------------
   useEffect(() => {
     if (phase !== "playing" || !contract || !currentTrick) return;
