@@ -1164,6 +1164,34 @@ function GameTable() {
                 isMobile={isMobile}
               />
             )}
+
+            {/* Multiplayer emote bubble anchored above the local avatar. */}
+            {emote && (
+              <EmoteBubble text={emote.text} x={anchors.bottom.x} y={anchors.bottom.y - 70} />
+            )}
+
+            {/* Local "speaking" halo — a soft pulse around the human seat
+                when the local mic detects voice activity. */}
+            {isMultiplayer && localSpeaking && (
+              <div
+                className="pointer-events-none absolute z-[35] rounded-full"
+                style={{
+                  left: anchors.bottom.x - 44,
+                  top: anchors.bottom.y - 44,
+                  width: 88, height: 88,
+                  boxShadow: "0 0 0 3px oklch(0.82 0.18 145 / 65%), 0 0 30px 6px oklch(0.82 0.18 145 / 45%)",
+                  animation: "capi-turn-halo 1.2s ease-in-out infinite",
+                }}
+              />
+            )}
+
+            {/* Quick-message + voice controls (multiplayer only). */}
+            <MultiplayerComm
+              isMultiplayer={isMultiplayer}
+              onEmote={setEmote}
+              onSpeakingChange={setLocalSpeaking}
+              isMobile={isMobile}
+            />
           </div>
         </div>
 
