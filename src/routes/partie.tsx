@@ -1472,10 +1472,11 @@ function PlayerBadge({
   // aspect-square box), never to the viewport. They sit on the wooden rim
   // just inside the table edge so no avatar can visually leave the play
   // zone, and every seat scales automatically with the table.
-  const sideInset = isMobile ? "6%" : "3%";
+  const sideInset = isMobile ? "3%" : "0%";
+  const vertInset = isMobile ? "0%" : "-1%";
   const style: React.CSSProperties =
-    position === "bottom" ? { left:"50%", bottom:"3%", transform:"translate(-50%, 0)" }
-    : position === "top" ? { left:"50%", top:"3%", transform:"translate(-50%, 0)" }
+    position === "bottom" ? { left:"50%", bottom:vertInset, transform:"translate(-50%, 0)" }
+    : position === "top" ? { left:"50%", top:vertInset, transform:"translate(-50%, 0)" }
     : position === "left" ? { left:sideInset, top:"50%", transform:"translate(0, -50%)" }
     : { right:sideInset, top:"50%", transform:"translate(0, -50%)" };
 
@@ -1483,10 +1484,11 @@ function PlayerBadge({
 
   const team = position === "bottom" || position === "top" ? "A" : "B";
   const ring = team === "A" ? "oklch(0.72 0.16 55 / 85%)" : "oklch(0.62 0.16 240 / 85%)";
-  const avatarSize = isLocal ? 58 : 46;
+  const avatarSize = isLocal ? 67 : 53;
 
   return (
-    <div className="pointer-events-none absolute z-20 flex flex-col items-center gap-1" style={style}>
+    <div className="pointer-events-none absolute z-30 flex flex-col items-center gap-1" style={style}>
+
       <div className="relative" style={{
         transition: "transform 320ms cubic-bezier(.22,1,.36,1)",
         transform: isActive ? "scale(1.08)" : "scale(1)",
