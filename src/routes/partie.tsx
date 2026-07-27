@@ -1845,13 +1845,27 @@ function ContractChips({ contract, slideTo }: { contract: Contract; slideTo?: Te
   // the trick play never gets obstructed by the chips.
   const baseStyle: React.CSSProperties = { top: "50%", left: "50%", transform: "translate(-50%, -50%)" };
 
+  // Slide target must match the SINGLE fixed pile of each team exactly, so the
+  // contract chips visibly merge into the growing team pile. Anchors below
+  // mirror TeamStash's own anchors (A → bottom-right, B → top-left).
   const slideStyle: React.CSSProperties = slideTo
-    ? {
-        top: slideTo === "A" ? "78%" : "22%",
-        left: slideTo === "A" ? "74%" : "26%",
-        transform: "translate(-50%, -50%) scale(0.68)",
-        opacity: 0.9,
-      }
+    ? slideTo === "A"
+      ? {
+          top: "auto",
+          left: "auto",
+          right: "24%",
+          bottom: "16%",
+          transform: "translate(50%, 50%) scale(0.68)",
+          opacity: 0.9,
+        }
+      : {
+          top: "16%",
+          left: "24%",
+          right: "auto",
+          bottom: "auto",
+          transform: "translate(-50%, -50%) scale(0.68)",
+          opacity: 0.9,
+        }
     : baseStyle;
 
 
@@ -1859,7 +1873,7 @@ function ContractChips({ contract, slideTo }: { contract: Contract; slideTo?: Te
     position: "absolute",
     ...slideStyle,
     transition:
-      "transform 1200ms cubic-bezier(0.32, 0.72, 0.28, 1), top 1200ms cubic-bezier(0.32, 0.72, 0.28, 1), left 1200ms cubic-bezier(0.32, 0.72, 0.28, 1), opacity 800ms ease",
+      "transform 1200ms cubic-bezier(0.32, 0.72, 0.28, 1), top 1200ms cubic-bezier(0.32, 0.72, 0.28, 1), left 1200ms cubic-bezier(0.32, 0.72, 0.28, 1), right 1200ms cubic-bezier(0.32, 0.72, 0.28, 1), bottom 1200ms cubic-bezier(0.32, 0.72, 0.28, 1), opacity 800ms ease",
     zIndex: 12,
     pointerEvents: "none",
   };
