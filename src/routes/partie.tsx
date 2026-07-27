@@ -637,12 +637,23 @@ function GameTable() {
   const submitBid = (b: Bid) => {
     const snapshot = biddingStateRef.current;
     if (b.kind === "contre" || b.kind === "surcontre") {
-      if (b.seat !== snapshot.turn || canCounter(snapshot.bids, b.seat) !== b.kind) return;
+      // Counter/surcounter are post-bidding reactions. The local player must
+      // always be able to press "Contrer" as soon as the rules allow it, so
+      // for the bottom seat we only check that the counter itself is legal
+      // (bidding closed, right team, right level) and skip the strict turn
+      // gate — the button never has to wait for its own turn to reach it.
+      const legal = canCounter(snapshot.bids, b.seat) === b.kind;
+      if (!legal) return;
+      if (b.seat !== "bottom" && b.seat !== snapshot.turn) return;
       const nextBids = [...snapshot.bids, b];
       const nextTurn = b.kind === "contre" ? currentContract(nextBids)?.bidder ?? snapshot.turn : snapshot.turn;
       biddingStateRef.current = { bids: nextBids, turn: nextTurn };
       setBids(nextBids);
       setCurrentTurn(nextTurn);
+      // Trigger premium reaction: shockwave, banner, warm flash, and sound.
+      counterFxIdRef.current += 1;
+      setCounterFx({ seat: b.seat, kind: b.kind, id: counterFxIdRef.current });
+      playContreSound();
       return;
     }
     if (!isLegalBidAction(snapshot.bids, snapshot.turn, b)) return;
@@ -652,6 +663,13 @@ function GameTable() {
     setBids(nextBids);
     setCurrentTurn(nextTurn);
   };
+
+  // Auto-clear the "CONTRÉ !" reaction after ~1s so it never lingers.
+  useEffect(() => {
+    if (!counterFx) return;
+    const t = window.setTimeout(() => setCounterFx(null), 1050);
+    return () => window.clearTimeout(t);
+  }, [counterFx]);
 
   // --- Playing loop --------------------------------------------------------
   useEffect(() => {
