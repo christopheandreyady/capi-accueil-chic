@@ -1187,10 +1187,10 @@ function GameTable() {
               return (
                 <div
                   key={p}
+                  className="pointer-events-none absolute inset-0"
                   style={{
                     opacity: isSeated ? 1 : 0,
-                    transform: isSeated ? "translateY(0)" : "translateY(10px)",
-                    transition: "opacity 620ms ease, transform 620ms cubic-bezier(0.22,0.7,0.25,1)",
+                    transition: "opacity 620ms ease",
                     filter: isSeated ? undefined : "blur(2px)",
                   }}
                 >
@@ -1923,10 +1923,7 @@ function PlayerBadge({
   return (
     <div className="pointer-events-none absolute z-30 flex flex-col items-center gap-1" style={style}>
 
-      <div className="relative" style={{
-        transition: "transform 320ms cubic-bezier(.22,1,.36,1)",
-        transform: isActive ? "scale(1.08)" : "scale(1)",
-      }}>
+      <div className="relative">
         {/* Breathing gold halo behind the active avatar */}
         {isActive && (
           <>
@@ -1981,7 +1978,7 @@ function PlayerBadge({
           <AnnouncementBubble bid={announcement} position={position} isTaker={announcementIsTaker} multiplier={announcementMultiplier} />
         )}
       </div>
-      <div className="flex flex-col items-center leading-tight" style={{ transition: "color 200ms ease" }}>
+      <div className="relative flex flex-col items-center leading-tight" style={{ transition: "color 200ms ease" }}>
         <span className="font-serif text-[11px] font-semibold tracking-wide" style={{
           color: isActive ? "oklch(0.97 0.14 85)" : "oklch(0.95 0.08 85)",
           textShadow: isActive
@@ -1993,7 +1990,7 @@ function PlayerBadge({
             active seat. For AI seats it drains over `turnCountdownMs`
             (reflection time). For the human seat it stays lit and breathes. */}
         {isActive && (
-          <div className="relative mt-1.5 overflow-hidden rounded-full" style={{
+          <div className="absolute left-1/2 top-full mt-1.5 -translate-x-1/2 overflow-hidden rounded-full" style={{
             width: 58, height: 5,
             background: "oklch(0.18 0.03 40 / 80%)",
             boxShadow: "inset 0 0 0 1px oklch(0 0 0 / 60%), 0 0 10px oklch(0.85 0.16 82 / 45%)",
