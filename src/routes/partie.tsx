@@ -1154,9 +1154,11 @@ function handTarget(seat: Position, index: number, total: number, anchors: Ancho
   const a = anchors[seat];
   // Constant per-card angular step: the fan CLOSES as cards are played,
   // so the hand always stays visually compact with no gap where a card was.
-  const stepDeg = isBottom ? (isMobile ? 12.0 : 12.0) : 9.0;
+  const stepDeg = isBottom ? (isMobile ? 12.0 : 12.0) : 14.0;
   const localAngle = total > 1 ? -((total - 1) / 2) * stepDeg + stepDeg * index : 0;
-  const radius = isBottom ? (isMobile ? 160 : 148) : 22;
+  // For bots: wider radius so the fan splays behind the avatar's head/shoulders,
+  // with tips emerging past the sides while the center is masked by the portrait.
+  const radius = isBottom ? (isMobile ? 160 : 148) : 44;
 
 
 
@@ -1275,7 +1277,8 @@ function GameCards({
                 transform: `translate3d(${t.x - t.w/2}px, ${t.y - t.h/2}px, 0) rotate(${t.rotate}deg)`,
                 transition: `transform 380ms cubic-bezier(0.22, 0.7, 0.25, 1)`,
                 zIndex: isBottom ? 100 + index + 50 : 5 + index,
-                opacity: 1,
+                opacity: isBottom ? 1 : 0.88,
+                filter: isBottom ? undefined : "blur(0.4px)",
               }}
             >
               {showFace ? <CardFace card={card} /> : <CardBack />}
