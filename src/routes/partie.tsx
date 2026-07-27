@@ -110,6 +110,7 @@ const TRICK_HOLD_MS = 1100;
 
 type DealMode = "3-2-3" | "2-3-3" | "3-3-2";
 type Phase =
+  | "seating"
   | "shuffle"
   | "shuffling"
   | "cut"
@@ -224,6 +225,33 @@ function playCutSound() {
   src.stop(now + dur);
 }
 
+// Discreet "chair drawn to the table" thud + soft felt whoosh.
+function playChairSound() {
+  const ctx = getCtx();
+  if (!ctx) return;
+  const now = ctx.currentTime;
+  const dur = 0.42;
+  const buffer = ctx.createBuffer(1, Math.floor(ctx.sampleRate * dur), ctx.sampleRate);
+  const data = buffer.getChannelData(0);
+  for (let i = 0; i < data.length; i++) {
+    const t = i / data.length;
+    const env = Math.pow(1 - t, 1.6) * (0.6 + Math.sin(Math.PI * t) * 0.4);
+    data[i] = (Math.random() * 2 - 1) * env;
+  }
+  const src = ctx.createBufferSource();
+  src.buffer = buffer;
+  const lp = ctx.createBiquadFilter();
+  lp.type = "lowpass";
+  lp.frequency.value = 520;
+  lp.Q.value = 0.7;
+  const g = ctx.createGain();
+  g.gain.setValueAtTime(0.14, now);
+  g.gain.exponentialRampToValueAtTime(0.0005, now + dur);
+  src.connect(lp).connect(g).connect(ctx.destination);
+  src.start(now);
+  src.stop(now + dur);
+}
+
 // --- Component -------------------------------------------------------------
 
 function GameTable() {
@@ -235,7 +263,16 @@ function GameTable() {
   const [dealtCount, setDealtCount] = useState(0);
   const [dealSeed, setDealSeed] = useState(0);
   const [dealer, setDealer] = useState<Position>("bottom");
-  const [phase, setPhase] = useState<Phase>("shuffle");
+  // First mount uses the "seating" intro so the human sees the three other
+  // players arrive around the table before the very first hand. Subsequent
+  // hands skip straight to shuffle.
+  const introDoneRef = useRef(false);
+  const [phase, setPhase] = useState<Phase>("seating");
+  // Bottom is always seated (that's the human). The three others join with a
+  // staggered fade+slide during the intro.
+  const [seated, setSeated] = useState<Record<Position, boolean>>({
+    bottom: true, left: false, top: false, right: false,
+  });
   const [cutStep, setCutStep] = useState<0 | 1 | 2>(0);
   const [deckHolder, setDeckHolder] = useState<Position | null>(null);
   const [dealMode, setDealMode] = useState<DealMode | null>(null);
@@ -306,7 +343,9 @@ function GameTable() {
 
   // Reset round when dealer/seed changes
   useEffect(() => {
-    setPhase("shuffle");
+    // On the very first hand of the game, hold on "seating" so the intro
+    // effect below can run. Every subsequent hand starts on shuffle as before.
+    setPhase(introDoneRef.current ? "shuffle" : "seating");
     setCutStep(0);
     setDeckHolder(null);
     setDealtCount(0);
@@ -323,6 +362,43 @@ function GameTable() {
     biddingStateRef.current = { bids: [], turn: nextSeat(dealer) };
     reactionContractRef.current = null;
   }, [dealSeed, dealer]);
+
+  // Seating intro: the three other players walk in one by one (~900ms
+  // apart). Their avatar, name and back-of-hand fade in as they sit down.
+  // A discreet chair-thud accompanies each arrival. The whole sequence is
+  // capped ~4.5s and can be skipped instantly by tapping anywhere.
+  useEffect(() => {
+    if (phase !== "seating") return;
+    const order: Position[] = ["left", "top", "right"];
+    const timers: number[] = [];
+    order.forEach((seat, i) => {
+      timers.push(
+        window.setTimeout(() => {
+          setSeated((s) => ({ ...s, [seat]: true }));
+          playChairSound();
+        }, 700 + i * 950),
+      );
+    });
+    timers.push(
+      window.setTimeout(() => {
+        setSeated({ bottom: true, left: true, top: true, right: true });
+        introDoneRef.current = true;
+        setPhase("shuffle");
+      }, 700 + order.length * 950 + 700),
+    );
+    const skip = () => {
+      timers.forEach(clearTimeout);
+      setSeated({ bottom: true, left: true, top: true, right: true });
+      introDoneRef.current = true;
+      setPhase("shuffle");
+    };
+    window.addEventListener("pointerdown", skip, { once: true });
+    return () => {
+      timers.forEach(clearTimeout);
+      window.removeEventListener("pointerdown", skip);
+    };
+  }, [phase]);
+
 
   // Dealing loop
   useEffect(() => {
@@ -959,23 +1035,40 @@ function GameTable() {
               // user perceives the reflection time. Adjust AI_THINK_MS to
               // slow down or speed up AI reflection.
               const turnCountdownMs = isActive && p !== "bottom" ? AI_THINK_MS : 0;
+              const isSeated = seated[p];
               return (
-                <PlayerBadge
+                <div
                   key={p}
-                  position={p}
-                  info={PLAYERS[p]}
-                  isDealer={p === dealer}
-                  isLocal={p === "bottom"}
-                  isActive={isActive}
-                  isThinking={isThinking}
-                  announcement={badgeAnnounce}
-                  announcementIsTaker={badgeIsTaker}
-                  announcementMultiplier={badgeMultiplier}
-                  isMobile={isMobile}
-                  turnCountdownMs={turnCountdownMs}
-                />
+                  style={{
+                    opacity: isSeated ? 1 : 0,
+                    transform: isSeated ? "translateY(0)" : "translateY(10px)",
+                    transition: "opacity 620ms ease, transform 620ms cubic-bezier(0.22,0.7,0.25,1)",
+                    filter: isSeated ? undefined : "blur(2px)",
+                  }}
+                >
+                  <PlayerBadge
+                    position={p}
+                    info={PLAYERS[p]}
+                    isDealer={p === dealer && phase !== "seating"}
+                    isLocal={p === "bottom"}
+                    isActive={isActive}
+                    isThinking={isThinking}
+                    announcement={badgeAnnounce}
+                    announcementIsTaker={badgeIsTaker}
+                    announcementMultiplier={badgeMultiplier}
+                    isMobile={isMobile}
+                    turnCountdownMs={turnCountdownMs}
+                  />
+                </div>
               );
             })}
+
+            {/* Seating intro: back-of-hand fans that appear as each bot
+                arrives at the table, behind their avatar. Cleared as soon as
+                the shuffle/deal phase takes over. */}
+            {phase === "seating" && size.w > 0 && (
+              <SeatingHands seated={seated} anchors={anchors} isMobile={isMobile} />
+            )}
 
 
             {/* Cut label */}
@@ -1217,7 +1310,55 @@ function trickTarget(
   };
 }
 
+// --- Seating intro: pre-deal card fans -------------------------------------
+
+function SeatingHands({
+  seated,
+  anchors,
+  isMobile,
+}: {
+  seated: Record<Position, boolean>;
+  anchors: Anchors;
+  isMobile: boolean;
+}) {
+  // Draw a fake 8-back fan behind each *arrived* bot to suggest they took
+  // their seat with a hand in front of them. The bottom (human) seat is
+  // skipped — his real hand will appear during the actual dealing.
+  const seats: Position[] = ["left", "top", "right"];
+  return (
+    <div className="pointer-events-none absolute inset-0">
+      {seats.map((seat) => {
+        if (!seated[seat]) return null;
+        return (
+          <div key={seat} className="animate-fade-in">
+            {Array.from({ length: 8 }).map((_, i) => {
+              const t = handTarget(seat, i, 8, anchors, isMobile);
+              return (
+                <div
+                  key={i}
+                  className="absolute left-0 top-0"
+                  style={{
+                    width: t.w,
+                    height: t.h,
+                    transform: `translate3d(${t.x - t.w / 2}px, ${t.y - t.h / 2}px, 0) rotate(${t.rotate}deg)`,
+                    zIndex: 5 + i,
+                    opacity: 0.88,
+                    filter: "blur(0.4px)",
+                  }}
+                >
+                  <CardBack />
+                </div>
+              );
+            })}
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
 // --- Game cards renderer ---------------------------------------------------
+
 
 function GameCards({
   hands, trick, anchors, onLocalPlay, selectedCardId, setSelectedCardId,
