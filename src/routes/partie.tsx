@@ -88,15 +88,17 @@ function buildPlayers(): Record<Position, PlayerInfo> {
 const PLAYERS: Record<Position, PlayerInfo> = buildPlayers();
 
 
-// Card sizes — reduced ~20% so the felt / center emblem stay visible.
-const CARD_W_BIG = 62;
-const CARD_H_BIG = 92;
-const CARD_W_SMALL = 32;
-const CARD_H_SMALL = 48;
-const CARD_W_TRICK = 46;
-const CARD_H_TRICK = 68;
+// Card sizes — cards are the primary visual anchor. Sized generously so
+// ranks and suits read at a glance on both mobile and desktop.
+const CARD_W_BIG = 76;
+const CARD_H_BIG = 112;
+const CARD_W_SMALL = 34;
+const CARD_H_SMALL = 50;
+const CARD_W_TRICK = 60;
+const CARD_H_TRICK = 88;
 const CARD_W_DECK = 42;
 const CARD_H_DECK = 60;
+
 
 const FLIGHT_MS = 460;
 const CUT_MS = 2900;
