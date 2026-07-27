@@ -684,6 +684,9 @@ function GameTable() {
     el.classList.add("capi-shake-anim");
     const t = window.setTimeout(() => el.classList.remove("capi-shake-anim"), 620);
     return () => window.clearTimeout(t);
+  }, [counterFx]);
+
+
 
   // --- Playing loop --------------------------------------------------------
   useEffect(() => {
