@@ -314,6 +314,7 @@ function GameTable() {
     setCurrentTrick(null);
     setTricks([]);
     setRoundScore(null);
+    setLiveRound({ A: 0, B: 0 });
     counterEvalRef.current = -1;
     biddingStateRef.current = { bids: [], turn: nextSeat(dealer) };
     reactionContractRef.current = null;
