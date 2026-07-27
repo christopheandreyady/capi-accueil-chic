@@ -370,14 +370,16 @@ function WaitingRoom() {
                 stays in the play zone and scales with the table. */}
             {/* Seats are anchored to the table container using percentages
                 so the four positions stay symmetric and responsive on every
-                screen. Top/bottom seats sit above/below the wooden plate
-                engravings; left/right seats hug the inside of the wooden rim
-                but stay a safe 5% away from viewport edges. */}
+                screen. Top and bottom seats sit fully outside the wooden
+                rim (above/below) so they never cover the plate engravings.
+                Left/right seats hug the inside of the wooden rim but stay a
+                safe 5% away from viewport edges. */}
             <SeatSlot
               seat={seats.find((s) => s.position === "top")!}
-              style={{ left: "50%", top: "1.5%", transform: "translate(-50%, 0)" }}
+              style={{ left: "50%", top: "0%", transform: "translate(-50%, -100%)" }}
               delay={80}
               onInvite={() => setInviteOpen(true)}
+              textAbove
             />
             <SeatSlot
               seat={seats.find((s) => s.position === "left")!}
@@ -393,7 +395,7 @@ function WaitingRoom() {
             />
             <SeatSlot
               seat={seats.find((s) => s.position === "bottom")!}
-              style={{ left: "50%", bottom: "1.5%", transform: "translate(-50%, 0)" }}
+              style={{ left: "50%", bottom: "0%", transform: "translate(-50%, 100%)" }}
               isLocal
               delay={0}
               onInvite={() => setInviteOpen(true)}
