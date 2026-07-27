@@ -174,12 +174,24 @@ export function counterLevel(bids: Bid[]): 0 | 2 | 4 {
 
 // Who — if anyone — may react with a counter right now.
 // Returns the kind of counter that `seat` may play, or null.
-// Counters are only legal AFTER the bidding has legally finished
-// (3 consecutive passes following a bid). They never interrupt bidding.
-export function canCounter(bids: Bid[], seat: Position): "contre" | "surcontre" | null {
-  if (!biddingClosed(bids)) return null;
+//
+// Two variants:
+// - onTheFly = true  → any opposing player may contre the moment a bid is
+//   placed, without waiting for their turn. Surcontre from the bidder team
+//   works the same way as soon as a contre lands.
+// - onTheFly = false → classical rule: counter is only offered during the
+//   seat's own turn of speech (during bidding, or during the reaction window
+//   after 3 passes have closed bidding).
+export function canCounter(
+  bids: Bid[],
+  seat: Position,
+  opts: { onTheFly?: boolean; turn?: Position } = {},
+): "contre" | "surcontre" | null {
   const contract = currentContract(bids);
   if (!contract) return null;
+  if (!opts.onTheFly) {
+    if (opts.turn !== seat) return null;
+  }
   const bidderTeam = TEAM_OF[contract.bidder];
   const seatTeam = TEAM_OF[seat];
   const level = counterLevel(bids);
@@ -193,11 +205,11 @@ export function canCounter(bids: Bid[], seat: Position): "contre" | "surcontre" 
 }
 
 // Bidding closes when either:
+// - a contre (or surcontre) has been placed — a counter is always terminal, or
 // - 3 consecutive passes follow a bid or capot (contract locked), or
 // - 4 consecutive passes occur with no bid (all pass → redeal).
-// Contres and surcontres are post-bidding reactions and NEVER close bidding
-// on their own — bidding must first be legally finished by 3 passes.
 export function biddingClosed(bids: Bid[]): boolean {
+  if (bids.some((b) => b.kind === "contre" || b.kind === "surcontre")) return true;
   const normalActions = bids.filter((bid) => bid.kind !== "contre" && bid.kind !== "surcontre");
   if (normalActions.length === 0) return false;
 
