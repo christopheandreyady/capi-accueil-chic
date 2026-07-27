@@ -239,22 +239,23 @@ export function scoreRound(contract: Contract, tricks: Trick[]): RoundScore {
   });
 
   // Belote/Rebelote: same seat played both K and Q of trump.
-  const trumpKQBySeat: Record<Seat, Set<string>> = {
+  const trumpKQBySeat: Record<Position, Set<string>> = {
     bottom: new Set(), left: new Set(), top: new Set(), right: new Set(),
   };
   for (const t of tricks) {
     for (const p of t.plays) {
-      if (p.card.suit === trump && (p.card.rank === "K" || p.card.rank === "Q")) {
+      if (p.card.suit === trump && (p.card.rank === "R" || p.card.rank === "D")) {
         trumpKQBySeat[p.seat].add(p.card.rank);
       }
     }
   }
   let beloteTeam: Team | null = null;
-  (Object.keys(trumpKQBySeat) as Seat[]).forEach((s) => {
-    if (trumpKQBySeat[s].has("K") && trumpKQBySeat[s].has("Q")) {
+  (Object.keys(trumpKQBySeat) as Position[]).forEach((s) => {
+    if (trumpKQBySeat[s].has("R") && trumpKQBySeat[s].has("D")) {
       beloteTeam = TEAM_OF[s];
     }
   });
+
 
   const contractPts = contract.points;
   const beloteBonusForBid = beloteTeam === bidTeam ? 20 : 0;
