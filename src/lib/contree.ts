@@ -220,6 +220,7 @@ export type RoundScore = {
   bidTeam: Team;
   bidTeamCardPoints: number;
   contractMet: boolean;
+  beloteTeam: Team | null;
 };
 
 export function scoreRound(contract: Contract, tricks: Trick[]): RoundScore {
@@ -237,24 +238,49 @@ export function scoreRound(contract: Contract, tricks: Trick[]): RoundScore {
     if (idx === tricks.length - 1 && tricks.length === 8) cardPts[team] += 10; // dix de der
   });
 
+  // Belote/Rebelote: same seat played both K and Q of trump.
+  const trumpKQBySeat: Record<Seat, Set<string>> = {
+    bottom: new Set(), left: new Set(), top: new Set(), right: new Set(),
+  };
+  for (const t of tricks) {
+    for (const p of t.plays) {
+      if (p.card.suit === trump && (p.card.rank === "K" || p.card.rank === "Q")) {
+        trumpKQBySeat[p.seat].add(p.card.rank);
+      }
+    }
+  }
+  let beloteTeam: Team | null = null;
+  (Object.keys(trumpKQBySeat) as Seat[]).forEach((s) => {
+    if (trumpKQBySeat[s].has("K") && trumpKQBySeat[s].has("Q")) {
+      beloteTeam = TEAM_OF[s];
+    }
+  });
+
   const contractPts = contract.points;
+  const beloteBonusForBid = beloteTeam === bidTeam ? 20 : 0;
   let contractMet: boolean;
   if (contract.isCapot) {
     contractMet = trickWonBy[bidTeam] === 8;
   } else {
-    contractMet = cardPts[bidTeam] >= contractPts;
+    contractMet = cardPts[bidTeam] + beloteBonusForBid >= contractPts;
   }
 
   const roundTo10 = (n: number) => Math.round(n / 10) * 10;
   const finalScore: Record<Team, number> = { A: 0, B: 0 };
   if (contractMet) {
-    finalScore[bidTeam] = roundTo10(cardPts[bidTeam]);
-    finalScore[defTeam] = roundTo10(cardPts[defTeam]);
+    // Belote is only added as bonus if the contract was met WITHOUT it.
+    const bidBonus =
+      beloteTeam === bidTeam && cardPts[bidTeam] >= contractPts ? 20 : 0;
+    const defBonus = beloteTeam === defTeam ? 20 : 0;
+    finalScore[bidTeam] = roundTo10(cardPts[bidTeam]) + bidBonus;
+    finalScore[defTeam] = roundTo10(cardPts[defTeam]) + defBonus;
   } else {
+    // Contract lost — belote is lost for the bidding team, but the defending
+    // team still keeps its belote bonus if it held it.
+    const defBonus = beloteTeam === defTeam ? 20 : 0;
     finalScore[bidTeam] = 0;
-    finalScore[defTeam] = 160;
+    finalScore[defTeam] = 160 + defBonus;
   }
-
 
   return {
     A: finalScore.A,
@@ -262,7 +288,9 @@ export function scoreRound(contract: Contract, tricks: Trick[]): RoundScore {
     bidTeam,
     bidTeamCardPoints: cardPts[bidTeam],
     contractMet,
+    beloteTeam,
   };
+
 }
 
 // --- AI --------------------------------------------------------------------
