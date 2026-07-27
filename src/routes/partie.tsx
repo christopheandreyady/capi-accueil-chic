@@ -2085,10 +2085,16 @@ function TeamStash({ team, stash, isMobile = false }: { team: Team; stash: ChipB
   // pile with a small natural jitter — like real chips stacked in front of
   // you at a home game. Team A → next to the bottom player (right of them);
   // Team B → next to the top player (left of them).
+  // Fixed carrier per team for the entire game:
+  //   Team A (NOUS) → bottom player (the human). Pile sits to their right,
+  //     just in front of their avatar, on the felt.
+  //   Team B (EUX) → left player. Pile sits to their right (toward the
+  //     centre-left of the felt) so it is clearly associated with them.
+  // These positions never move between hands.
   const anchor: React.CSSProperties =
     team === "A"
-      ? { right: isMobile ? "22%" : "24%", bottom: isMobile ? "18%" : "16%" }
-      : { left: isMobile ? "22%" : "24%", top: isMobile ? "18%" : "16%" };
+      ? { right: isMobile ? "18%" : "20%", bottom: isMobile ? "16%" : "14%" }
+      : { left: isMobile ? "16%" : "18%", top: isMobile ? "44%" : "42%" };
   const pileWidth = isMobile ? 70 : 82;
   const pileHeight = isMobile ? 66 : 78;
   return (
