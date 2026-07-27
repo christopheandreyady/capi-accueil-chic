@@ -253,6 +253,94 @@ function playChairSound() {
   src.stop(now + dur);
 }
 
+// "CONTRÉ !" — sharp hand slap on the felt, muffled chip rattle, thin card
+// rustle, and a short warm room-tone tail for a subtle reverb impression.
+// Entirely procedural — no assets, no network.
+function playContreSound() {
+  const ctx = getCtx();
+  if (!ctx) return;
+  const now = ctx.currentTime;
+
+  // 1. Hand slap — very short low-mid transient (~90ms)
+  {
+    const dur = 0.14;
+    const buf = ctx.createBuffer(1, Math.floor(ctx.sampleRate * dur), ctx.sampleRate);
+    const data = buf.getChannelData(0);
+    for (let i = 0; i < data.length; i++) {
+      const t = i / data.length;
+      const env = Math.pow(1 - t, 2.2);
+      data[i] = (Math.random() * 2 - 1) * env;
+    }
+    const src = ctx.createBufferSource(); src.buffer = buf;
+    const lp = ctx.createBiquadFilter(); lp.type = "lowpass"; lp.frequency.value = 380; lp.Q.value = 0.9;
+    const g = ctx.createGain(); g.gain.setValueAtTime(0.55, now); g.gain.exponentialRampToValueAtTime(0.001, now + dur);
+    src.connect(lp).connect(g).connect(ctx.destination);
+    src.start(now); src.stop(now + dur);
+  }
+  // Slap "click" upper harmonic
+  {
+    const dur = 0.05;
+    const buf = ctx.createBuffer(1, Math.floor(ctx.sampleRate * dur), ctx.sampleRate);
+    const data = buf.getChannelData(0);
+    for (let i = 0; i < data.length; i++) {
+      const t = i / data.length;
+      data[i] = (Math.random() * 2 - 1) * Math.pow(1 - t, 1.4);
+    }
+    const src = ctx.createBufferSource(); src.buffer = buf;
+    const bp = ctx.createBiquadFilter(); bp.type = "bandpass"; bp.frequency.value = 2400; bp.Q.value = 1.1;
+    const g = ctx.createGain(); g.gain.setValueAtTime(0.22, now); g.gain.exponentialRampToValueAtTime(0.001, now + dur);
+    src.connect(bp).connect(g).connect(ctx.destination);
+    src.start(now); src.stop(now + dur);
+  }
+  // 2. Chip rattle — fast metallic-ish clicks (~180ms)
+  {
+    const dur = 0.22;
+    const buf = ctx.createBuffer(1, Math.floor(ctx.sampleRate * dur), ctx.sampleRate);
+    const data = buf.getChannelData(0);
+    for (let i = 0; i < data.length; i++) {
+      const t = i / data.length;
+      const tickPhase = (t * 55) % 1;
+      const tick = tickPhase < 0.06 ? 1 - tickPhase / 0.06 : 0;
+      data[i] = (Math.random() * 2 - 1) * (0.25 + tick * 0.9) * Math.pow(1 - t, 1.2);
+    }
+    const src = ctx.createBufferSource(); src.buffer = buf;
+    const bp = ctx.createBiquadFilter(); bp.type = "bandpass"; bp.frequency.value = 4200; bp.Q.value = 1.3;
+    const g = ctx.createGain(); g.gain.setValueAtTime(0.001, now + 0.05); g.gain.linearRampToValueAtTime(0.16, now + 0.08); g.gain.exponentialRampToValueAtTime(0.001, now + 0.05 + dur);
+    src.connect(bp).connect(g).connect(ctx.destination);
+    src.start(now + 0.05); src.stop(now + 0.05 + dur);
+  }
+  // 3. Card rustle — brief airy noise (~140ms)
+  {
+    const dur = 0.16;
+    const buf = ctx.createBuffer(1, Math.floor(ctx.sampleRate * dur), ctx.sampleRate);
+    const data = buf.getChannelData(0);
+    for (let i = 0; i < data.length; i++) {
+      const t = i / data.length;
+      data[i] = (Math.random() * 2 - 1) * Math.sin(Math.PI * t) * 0.7;
+    }
+    const src = ctx.createBufferSource(); src.buffer = buf;
+    const hp = ctx.createBiquadFilter(); hp.type = "highpass"; hp.frequency.value = 3500;
+    const g = ctx.createGain(); g.gain.setValueAtTime(0.001, now + 0.04); g.gain.linearRampToValueAtTime(0.06, now + 0.07); g.gain.exponentialRampToValueAtTime(0.001, now + 0.04 + dur);
+    src.connect(hp).connect(g).connect(ctx.destination);
+    src.start(now + 0.04); src.stop(now + 0.04 + dur);
+  }
+  // 4. Reverb tail — filtered noise decay, "room" impression (~450ms)
+  {
+    const dur = 0.5;
+    const buf = ctx.createBuffer(1, Math.floor(ctx.sampleRate * dur), ctx.sampleRate);
+    const data = buf.getChannelData(0);
+    for (let i = 0; i < data.length; i++) {
+      const t = i / data.length;
+      data[i] = (Math.random() * 2 - 1) * Math.pow(1 - t, 2.6);
+    }
+    const src = ctx.createBufferSource(); src.buffer = buf;
+    const lp = ctx.createBiquadFilter(); lp.type = "lowpass"; lp.frequency.value = 900;
+    const g = ctx.createGain(); g.gain.setValueAtTime(0.14, now); g.gain.exponentialRampToValueAtTime(0.0005, now + dur);
+    src.connect(lp).connect(g).connect(ctx.destination);
+    src.start(now); src.stop(now + dur);
+  }
+}
+
 // --- Component -------------------------------------------------------------
 
 function GameTable() {
@@ -316,6 +404,10 @@ function GameTable() {
   const counterEvalRef = useRef(-1);
   const biddingStateRef = useRef<{ bids: Bid[]; turn: Position }>({ bids: [], turn: "bottom" });
   const reactionContractRef = useRef<string | null>(null);
+  // Premium "CONTRÉ !" reaction — id changes each time so overlays/animations
+  // remount and re-trigger their CSS keyframes.
+  const [counterFx, setCounterFx] = useState<{ seat: Position; kind: "contre" | "surcontre"; id: number } | null>(null);
+  const counterFxIdRef = useRef(0);
   // Last announcement stays visible above its author until a newer one arrives
   // or the bidding phase ends.
   const lastBidRef = bids.length > 0 ? bids[bids.length - 1] : null;
@@ -545,12 +637,23 @@ function GameTable() {
   const submitBid = (b: Bid) => {
     const snapshot = biddingStateRef.current;
     if (b.kind === "contre" || b.kind === "surcontre") {
-      if (b.seat !== snapshot.turn || canCounter(snapshot.bids, b.seat) !== b.kind) return;
+      // Counter/surcounter are post-bidding reactions. The local player must
+      // always be able to press "Contrer" as soon as the rules allow it, so
+      // for the bottom seat we only check that the counter itself is legal
+      // (bidding closed, right team, right level) and skip the strict turn
+      // gate — the button never has to wait for its own turn to reach it.
+      const legal = canCounter(snapshot.bids, b.seat) === b.kind;
+      if (!legal) return;
+      if (b.seat !== "bottom" && b.seat !== snapshot.turn) return;
       const nextBids = [...snapshot.bids, b];
       const nextTurn = b.kind === "contre" ? currentContract(nextBids)?.bidder ?? snapshot.turn : snapshot.turn;
       biddingStateRef.current = { bids: nextBids, turn: nextTurn };
       setBids(nextBids);
       setCurrentTurn(nextTurn);
+      // Trigger premium reaction: shockwave, banner, warm flash, and sound.
+      counterFxIdRef.current += 1;
+      setCounterFx({ seat: b.seat, kind: b.kind, id: counterFxIdRef.current });
+      playContreSound();
       return;
     }
     if (!isLegalBidAction(snapshot.bids, snapshot.turn, b)) return;
@@ -560,6 +663,30 @@ function GameTable() {
     setBids(nextBids);
     setCurrentTurn(nextTurn);
   };
+
+  // Auto-clear the "CONTRÉ !" reaction after ~1s so it never lingers.
+  useEffect(() => {
+    if (!counterFx) return;
+    const t = window.setTimeout(() => setCounterFx(null), 1050);
+    return () => window.clearTimeout(t);
+  }, [counterFx]);
+
+  // Physically shake the whole stage when a counter lands. classList toggle
+  // with a reflow between remove/add guarantees the animation restarts even
+  // if two counters land back-to-back.
+  useEffect(() => {
+    if (!counterFx) return;
+    const el = boxRef.current;
+    if (!el) return;
+    el.classList.remove("capi-shake-anim");
+    // Force reflow so re-adding the class restarts the animation.
+    void el.offsetWidth;
+    el.classList.add("capi-shake-anim");
+    const t = window.setTimeout(() => el.classList.remove("capi-shake-anim"), 620);
+    return () => window.clearTimeout(t);
+  }, [counterFx]);
+
+
 
   // --- Playing loop --------------------------------------------------------
   useEffect(() => {
@@ -811,7 +938,11 @@ function GameTable() {
         @keyframes capi-turn-glow { 0%,100%{opacity:.9; transform:scaleX(1);} 50%{opacity:1; transform:scaleX(0.94);} }
         @keyframes capi-turn-halo { 0%,100%{opacity:.55; transform:translate(-50%,-50%) scale(1);} 50%{opacity:.95; transform:translate(-50%,-50%) scale(1.14);} }
         @keyframes capi-turn-ring { 0%{transform:translate(-50%,-50%) scale(1); opacity:.7;} 100%{transform:translate(-50%,-50%) scale(1.35); opacity:0;} }
-
+        @keyframes capi-contre-shake { 0%,100%{transform:translate(0,0);} 12%{transform:translate(-5px,3px);} 26%{transform:translate(6px,-3px);} 42%{transform:translate(-4px,2px);} 58%{transform:translate(4px,-2px);} 74%{transform:translate(-2px,1px);} 88%{transform:translate(2px,-1px);} }
+        @keyframes capi-contre-flash { 0%{opacity:0;} 22%{opacity:1;} 100%{opacity:0;} }
+        @keyframes capi-contre-shockwave { 0%{transform:translate(-50%,-50%) scale(0.2); opacity:.75;} 100%{transform:translate(-50%,-50%) scale(2.4); opacity:0;} }
+        @keyframes capi-contre-banner { 0%{opacity:0; transform:translate(-50%,-50%) scale(0.55) rotate(-5deg);} 18%{opacity:1; transform:translate(-50%,-50%) scale(1.1) rotate(-1deg);} 45%{transform:translate(-50%,-50%) scale(1) rotate(0deg);} 78%{opacity:1;} 100%{opacity:0; transform:translate(-50%,-50%) scale(0.96);} }
+        .capi-shake-anim { animation: capi-contre-shake 560ms cubic-bezier(0.36, 0.07, 0.19, 0.97) both; }
       `}</style>
 
       {/* On mobile the table image fills the screen and carries the whole
@@ -1192,6 +1323,78 @@ function GameTable() {
               onSpeakingChange={setLocalSpeaking}
               isMobile={isMobile}
             />
+
+            {/* CONTRÉ ! reaction overlays — remount on every counter via
+                counterFx.id so the CSS keyframes restart cleanly. Sits above
+                cards and chips but below the fixed counter button. */}
+            {counterFx && (
+              <div key={counterFx.id} className="pointer-events-none absolute inset-0 z-[60]">
+                {/* Warm subtle flash */}
+                <div
+                  className="absolute inset-0"
+                  style={{
+                    background:
+                      "radial-gradient(60% 55% at 50% 50%, oklch(0.95 0.14 78 / 55%) 0%, oklch(0.9 0.14 72 / 22%) 40%, transparent 75%)",
+                    mixBlendMode: "screen",
+                    animation: "capi-contre-flash 200ms ease-out both",
+                  }}
+                />
+                {/* Shockwave ring rippling across the felt */}
+                <div
+                  className="absolute left-1/2 top-1/2 rounded-full"
+                  style={{
+                    width: "42%",
+                    aspectRatio: "1",
+                    border: "2px solid oklch(0.92 0.16 82 / 70%)",
+                    boxShadow: "0 0 24px 6px oklch(0.9 0.16 82 / 35%)",
+                    animation: "capi-contre-shockwave 620ms ease-out both",
+                  }}
+                />
+                {/* Centered banner */}
+                <div
+                  className="absolute left-1/2 top-1/2 flex flex-col items-center gap-2"
+                  style={{ animation: "capi-contre-banner 950ms cubic-bezier(0.22, 0.9, 0.3, 1.2) both" }}
+                >
+                  <div
+                    className="rounded-2xl border px-6 py-3 font-serif text-3xl font-black tracking-widest"
+                    style={{
+                      background:
+                        "linear-gradient(168deg, oklch(0.22 0.14 30) 0%, oklch(0.14 0.09 30) 100%)",
+                      borderColor: "oklch(0.9 0.17 82 / 80%)",
+                      color: "oklch(0.98 0.14 85)",
+                      boxShadow:
+                        "0 22px 40px -14px oklch(0 0 0 / 85%), inset 0 1px 0 oklch(1 0 0 / 18%), 0 0 30px -6px oklch(0.9 0.16 82 / 70%)",
+                      textShadow:
+                        "0 1px 0 oklch(0 0 0 / 75%), 0 0 18px oklch(0.9 0.16 82 / 65%)",
+                      letterSpacing: "0.14em",
+                    }}
+                  >
+                    {counterFx.kind === "surcontre" ? "SURCONTRÉ !" : "CONTRÉ !"}
+                  </div>
+                  <div
+                    className="flex items-center gap-2 rounded-full border px-3 py-1 font-serif text-[13px]"
+                    style={{
+                      background: "oklch(0.12 0.03 40 / 88%)",
+                      borderColor: "oklch(0.85 0.16 82 / 55%)",
+                      color: "oklch(0.94 0.11 85)",
+                      backdropFilter: "blur(8px)",
+                    }}
+                  >
+                    <span
+                      aria-hidden
+                      className="inline-block rounded-full"
+                      style={{
+                        width: 22,
+                        height: 22,
+                        background: `url(${PLAYERS[counterFx.seat].photo}) center/cover`,
+                        border: "1px solid oklch(0.85 0.16 82 / 70%)",
+                      }}
+                    />
+                    <span className="font-semibold">{PLAYERS[counterFx.seat].name}</span>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         </div>
 
@@ -1220,8 +1423,9 @@ function GameTable() {
 // move against the latest bids and rejects it if another player got there
 // first. When accepted, every player's UI updates through the shared bids
 // state on the next render.
-function CounterButton({ bids, currentTurn, onCounter }: { bids: Bid[]; currentTurn: Position; onCounter: (b: Bid) => void }) {
-  if (currentTurn !== "bottom") return null;
+function CounterButton({ bids, onCounter }: { bids: Bid[]; currentTurn?: Position; onCounter: (b: Bid) => void }) {
+  // Available for the local player as soon as the rules allow a counter,
+  // independent of whose turn it is — pressing it is a reaction, not a bid.
   const kind = canCounter(bids, "bottom");
   if (!kind) return null;
   const label = kind === "contre" ? "Contrer" : "Surcontrer";
