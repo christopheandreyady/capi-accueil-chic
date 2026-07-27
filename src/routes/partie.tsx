@@ -472,7 +472,14 @@ function GameTable() {
     if (currentTrick.plays.length === 4) {
       const t = window.setTimeout(() => {
         const winner = trickWinner(currentTrick, contract.suit);
+        const winnerTeam = TEAM_OF[winner];
         const done = tricks.length + 1;
+        // Provisional card points for this trick (+ dix de der on the last one)
+        const trickPts = currentTrick.plays.reduce(
+          (sum, p) => sum + cardPoints(p.card, contract.suit),
+          0,
+        ) + (done === 8 ? 10 : 0);
+        setLiveRound((prev) => ({ ...prev, [winnerTeam]: prev[winnerTeam] + trickPts }));
         setTricks((prev) => [...prev, currentTrick]);
         if (done >= 8) {
           // Finalize round — cumulative gets updated later, via animated counter
