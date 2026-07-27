@@ -308,16 +308,16 @@ function WaitingRoom() {
             style={
               isMobile
                 ? {
-                    // Table image occupies the mobile screen but leaves a
-                    // reserved strip above and below so the four avatars can
-                    // sit OUTSIDE the wooden rim — never covering the
-                    // "La Contrée Royale" / "Esprit d'équipe" plates.
+                    // Table image fills the mobile screen; seats sit on the
+                    // felt just below the top plate and just above the
+                    // bottom plate so the wooden engravings stay visible.
                     width: "100vw",
-                    height: "calc(100dvh - env(safe-area-inset-top) - env(safe-area-inset-bottom) - 17rem)",
+                    height: "calc(100dvh - env(safe-area-inset-top) - env(safe-area-inset-bottom) - 8rem)",
                     marginLeft: "calc(50% - 50vw)",
                     marginRight: "calc(50% - 50vw)",
                   }
-                : { width: "min(94vw, calc((100dvh - 220px) * 1.55), 1020px)", aspectRatio: "3 / 2" }
+                : { width: "min(100vw, calc((100dvh - 130px) * 1.55), 1020px)", aspectRatio: "3 / 2" }
+
 
             }
           >
