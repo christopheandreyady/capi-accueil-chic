@@ -750,7 +750,56 @@ function GameTable() {
                 <span className="font-semibold tabular-nums" style={{ fontSize: 12 }}>{displayScores.B}</span>
               </span>
             </div>
+            {contract && phase !== "bidding" && (
+              <div
+                className="pointer-events-none flex items-center gap-1.5 rounded-full border px-2.5 py-1 font-serif animate-fade-in"
+                style={{
+                  background: "linear-gradient(180deg, oklch(0.22 0.04 40 / 92%) 0%, oklch(0.10 0.03 40 / 96%) 100%)",
+                  borderColor: "oklch(0.85 0.16 82 / 75%)",
+                  color: "oklch(0.97 0.1 85)",
+                  backdropFilter: "blur(8px)",
+                  boxShadow: "0 6px 14px -6px oklch(0 0 0 / 80%), inset 0 1px 0 oklch(1 0 0 / 12%), 0 0 12px oklch(0.85 0.16 82 / 25%)",
+                }}
+                aria-label="Contrat en cours"
+              >
+                <span style={{ fontSize: 11 }}>👑</span>
+                <span className="uppercase tracking-[0.16em]" style={{ fontSize: 9, color: "oklch(0.82 0.1 82)" }}>
+                  {PLAYERS[contract.bidder].name.replace(/^Bot\s+/, "")}
+                </span>
+                <span aria-hidden style={{ color: "oklch(0.82 0.14 82 / 45%)", fontSize: 10 }}>|</span>
+                <span className="font-semibold tabular-nums" style={{ fontSize: 13, color: "oklch(0.98 0.12 85)" }}>
+                  {contract.isCapot ? "CAPOT" : contract.points}
+                </span>
+                <span
+                  aria-hidden
+                  style={{
+                    fontSize: 15,
+                    lineHeight: 1,
+                    color: isRedSuit(contract.suit) ? "#ff5b5b" : "#111",
+                    textShadow: isRedSuit(contract.suit)
+                      ? "0 0 1px oklch(0 0 0 / 70%)"
+                      : "0 0 1px oklch(1 0 0 / 45%)",
+                    fontWeight: 900,
+                  }}
+                >
+                  {contract.suit}
+                </span>
+                {contract.multiplier > 1 && (
+                  <span
+                    style={{
+                      fontSize: 11,
+                      fontWeight: 900,
+                      color: "oklch(0.92 0.18 40)",
+                      textShadow: "0 1px 0 oklch(0 0 0 / 70%)",
+                    }}
+                  >
+                    {contract.multiplier === 4 ? "×4" : "×2"}
+                  </span>
+                )}
+              </div>
+            )}
           </div>
+
           <div className="flex items-center gap-2">
             <img
               src={capiEmblem}
@@ -1423,10 +1472,11 @@ function PlayerBadge({
   // aspect-square box), never to the viewport. They sit on the wooden rim
   // just inside the table edge so no avatar can visually leave the play
   // zone, and every seat scales automatically with the table.
-  const sideInset = isMobile ? "6%" : "3%";
+  const sideInset = isMobile ? "3%" : "0%";
+  const vertInset = isMobile ? "0%" : "-1%";
   const style: React.CSSProperties =
-    position === "bottom" ? { left:"50%", bottom:"3%", transform:"translate(-50%, 0)" }
-    : position === "top" ? { left:"50%", top:"3%", transform:"translate(-50%, 0)" }
+    position === "bottom" ? { left:"50%", bottom:vertInset, transform:"translate(-50%, 0)" }
+    : position === "top" ? { left:"50%", top:vertInset, transform:"translate(-50%, 0)" }
     : position === "left" ? { left:sideInset, top:"50%", transform:"translate(0, -50%)" }
     : { right:sideInset, top:"50%", transform:"translate(0, -50%)" };
 
@@ -1434,10 +1484,11 @@ function PlayerBadge({
 
   const team = position === "bottom" || position === "top" ? "A" : "B";
   const ring = team === "A" ? "oklch(0.72 0.16 55 / 85%)" : "oklch(0.62 0.16 240 / 85%)";
-  const avatarSize = isLocal ? 58 : 46;
+  const avatarSize = isLocal ? 67 : 53;
 
   return (
-    <div className="pointer-events-none absolute z-20 flex flex-col items-center gap-1" style={style}>
+    <div className="pointer-events-none absolute z-30 flex flex-col items-center gap-1" style={style}>
+
       <div className="relative" style={{
         transition: "transform 320ms cubic-bezier(.22,1,.36,1)",
         transform: isActive ? "scale(1.08)" : "scale(1)",
