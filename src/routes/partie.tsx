@@ -88,15 +88,17 @@ function buildPlayers(): Record<Position, PlayerInfo> {
 const PLAYERS: Record<Position, PlayerInfo> = buildPlayers();
 
 
-// Card sizes — reduced ~20% so the felt / center emblem stay visible.
-const CARD_W_BIG = 62;
-const CARD_H_BIG = 92;
-const CARD_W_SMALL = 32;
-const CARD_H_SMALL = 48;
-const CARD_W_TRICK = 46;
-const CARD_H_TRICK = 68;
+// Card sizes — cards are the primary visual anchor. Sized generously so
+// ranks and suits read at a glance on both mobile and desktop.
+const CARD_W_BIG = 76;
+const CARD_H_BIG = 112;
+const CARD_W_SMALL = 34;
+const CARD_H_SMALL = 50;
+const CARD_W_TRICK = 60;
+const CARD_H_TRICK = 88;
 const CARD_W_DECK = 42;
 const CARD_H_DECK = 60;
+
 
 const FLIGHT_MS = 460;
 const CUT_MS = 2900;
@@ -912,12 +914,13 @@ function GameTable() {
               height={512}
               className="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-[5]"
               style={{
-                width: "26%",
+                width: isMobile ? "20%" : "26%",
                 height: "auto",
-                opacity: 0.52,
+                opacity: isMobile ? 0.28 : 0.5,
                 mixBlendMode: "overlay",
-                filter: "drop-shadow(0 1px 0 oklch(0 0 0 / 75%)) drop-shadow(0 -1px 0 oklch(1 0 0 / 22%)) contrast(1.32)",
+                filter: "drop-shadow(0 1px 0 oklch(0 0 0 / 60%)) contrast(1.2)",
               }}
+
             />
 
 
@@ -1149,9 +1152,10 @@ function handTarget(seat: Position, index: number, total: number, anchors: Ancho
   const a = anchors[seat];
   // Constant per-card angular step: the fan CLOSES as cards are played,
   // so the hand always stays visually compact with no gap where a card was.
-  const stepDeg = isBottom ? (isMobile ? 10.0 : 10.5) : 2.2;
+  const stepDeg = isBottom ? (isMobile ? 12.0 : 12.0) : 2.2;
   const localAngle = total > 1 ? -((total - 1) / 2) * stepDeg + stepDeg * index : 0;
-  const radius = isBottom ? (isMobile ? 128 : 122) : 56;
+  const radius = isBottom ? (isMobile ? 160 : 148) : 56;
+
   const rad = (localAngle * Math.PI) / 180;
   const lx = Math.sin(rad) * radius;
   const ly = -Math.cos(rad) * radius;
@@ -1160,7 +1164,7 @@ function handTarget(seat: Position, index: number, total: number, anchors: Ancho
   const ry = lx * Math.sin(seatRad) + ly * Math.cos(seatRad);
   // Push the bottom hand below its anchor so the fan sits at the very
   // bottom of the screen, freeing the felt above for the play area.
-  const anchorYOffset = isBottom && isMobile ? 96 : 0;
+  const anchorYOffset = isBottom && isMobile ? 108 : 0;
   return {
     x: a.x + rx,
     y: a.y + ry + anchorYOffset,
