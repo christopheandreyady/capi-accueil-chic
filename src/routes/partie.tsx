@@ -1923,10 +1923,7 @@ function PlayerBadge({
   return (
     <div className="pointer-events-none absolute z-30 flex flex-col items-center gap-1" style={style}>
 
-      <div className="relative" style={{
-        transition: "transform 320ms cubic-bezier(.22,1,.36,1)",
-        transform: isActive ? "scale(1.08)" : "scale(1)",
-      }}>
+      <div className="relative">
         {/* Breathing gold halo behind the active avatar */}
         {isActive && (
           <>
