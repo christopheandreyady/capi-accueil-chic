@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { ArrowLeft, RotateCcw, Shuffle, Check } from "lucide-react";
+import { MultiplayerComm, EmoteBubble, type EmotePayload } from "@/components/MultiplayerComm";
 import bistrotTable from "@/assets/capi-bistrot-table.jpg";
 import capiEmblem from "@/assets/capi-emblem.png";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -296,6 +297,22 @@ function GameTable() {
   const [chipsSlideTo, setChipsSlideTo] = useState<Team | null>(null);
   const [chipsVisible, setChipsVisible] = useState(true);
   const [stashes, setStashes] = useState<{ A: ChipBreakdown[]; B: ChipBreakdown[] }>({ A: [], B: [] });
+
+  // Multiplayer communication (quick messages + optional voice). Feature is
+  // gated by a sessionStorage flag set by the matchmaking flow — bot mode
+  // therefore stays untouched. Toggle for testing:
+  //   sessionStorage.setItem("capi-multiplayer","1")
+  const [isMultiplayer, setIsMultiplayer] = useState(false);
+  useEffect(() => {
+    try { setIsMultiplayer(sessionStorage.getItem("capi-multiplayer") === "1"); } catch { /* ignore */ }
+  }, []);
+  const [emote, setEmote] = useState<EmotePayload | null>(null);
+  const [localSpeaking, setLocalSpeaking] = useState(false);
+  useEffect(() => {
+    if (!emote) return;
+    const id = window.setTimeout(() => setEmote(null), 3500);
+    return () => window.clearTimeout(id);
+  }, [emote]);
   const counterEvalRef = useRef(-1);
   const biddingStateRef = useRef<{ bids: Bid[]; turn: Position }>({ bids: [], turn: "bottom" });
   const reactionContractRef = useRef<string | null>(null);
@@ -1147,6 +1164,34 @@ function GameTable() {
                 isMobile={isMobile}
               />
             )}
+
+            {/* Multiplayer emote bubble anchored above the local avatar. */}
+            {emote && (
+              <EmoteBubble text={emote.text} x={anchors.bottom.x} y={anchors.bottom.y - 70} />
+            )}
+
+            {/* Local "speaking" halo — a soft pulse around the human seat
+                when the local mic detects voice activity. */}
+            {isMultiplayer && localSpeaking && (
+              <div
+                className="pointer-events-none absolute z-[35] rounded-full"
+                style={{
+                  left: anchors.bottom.x - 44,
+                  top: anchors.bottom.y - 44,
+                  width: 88, height: 88,
+                  boxShadow: "0 0 0 3px oklch(0.82 0.18 145 / 65%), 0 0 30px 6px oklch(0.82 0.18 145 / 45%)",
+                  animation: "capi-turn-halo 1.2s ease-in-out infinite",
+                }}
+              />
+            )}
+
+            {/* Quick-message + voice controls (multiplayer only). */}
+            <MultiplayerComm
+              isMultiplayer={isMultiplayer}
+              onEmote={setEmote}
+              onSpeakingChange={setLocalSpeaking}
+              isMobile={isMobile}
+            />
           </div>
         </div>
 
