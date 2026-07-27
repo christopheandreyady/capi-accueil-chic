@@ -365,27 +365,32 @@ function WaitingRoom() {
             {/* Seats — anchored to the TABLE container (percentages), sitting
                 on the wooden rim just inside the table edge so every avatar
                 stays in the play zone and scales with the table. */}
+            {/* Seats are anchored to the table container using percentages
+                so the four positions stay symmetric and responsive on every
+                screen. Top/bottom seats sit above/below the wooden plate
+                engravings; left/right seats hug the inside of the wooden rim
+                but stay a safe 5% away from viewport edges. */}
             <SeatSlot
               seat={seats.find((s) => s.position === "top")!}
-              style={{ left: "50%", top: "6%", transform: "translate(-50%, 0)" }}
+              style={{ left: "50%", top: "1.5%", transform: "translate(-50%, 0)" }}
               delay={80}
               onInvite={() => setInviteOpen(true)}
             />
             <SeatSlot
               seat={seats.find((s) => s.position === "left")!}
-              style={{ left: "6%", top: "50%", transform: "translate(0, -50%)" }}
+              style={{ left: "5%", top: "50%", transform: "translate(0, -50%)" }}
               delay={180}
               onInvite={() => setInviteOpen(true)}
             />
             <SeatSlot
               seat={seats.find((s) => s.position === "right")!}
-              style={{ right: "6%", top: "50%", transform: "translate(0, -50%)" }}
+              style={{ right: "5%", top: "50%", transform: "translate(0, -50%)" }}
               delay={260}
               onInvite={() => setInviteOpen(true)}
             />
             <SeatSlot
               seat={seats.find((s) => s.position === "bottom")!}
-              style={{ left: "50%", bottom: "6%", transform: "translate(-50%, 0)" }}
+              style={{ left: "50%", bottom: "1.5%", transform: "translate(-50%, 0)" }}
               isLocal
               delay={0}
               onInvite={() => setInviteOpen(true)}
