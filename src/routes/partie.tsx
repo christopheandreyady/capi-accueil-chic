@@ -92,8 +92,9 @@ const PLAYERS: Record<Position, PlayerInfo> = buildPlayers();
 // ranks and suits read at a glance on both mobile and desktop.
 const CARD_W_BIG = 76;
 const CARD_H_BIG = 112;
-const CARD_W_SMALL = 46;
-const CARD_H_SMALL = 68;
+const CARD_W_SMALL = 56;
+const CARD_H_SMALL = 82;
+
 
 const CARD_W_TRICK = 60;
 const CARD_H_TRICK = 88;
@@ -1153,9 +1154,10 @@ function handTarget(seat: Position, index: number, total: number, anchors: Ancho
   const a = anchors[seat];
   // Constant per-card angular step: the fan CLOSES as cards are played,
   // so the hand always stays visually compact with no gap where a card was.
-  const stepDeg = isBottom ? (isMobile ? 12.0 : 12.0) : 7.5;
+  const stepDeg = isBottom ? (isMobile ? 12.0 : 12.0) : 9.0;
   const localAngle = total > 1 ? -((total - 1) / 2) * stepDeg + stepDeg * index : 0;
-  const radius = isBottom ? (isMobile ? 160 : 148) : 14;
+  const radius = isBottom ? (isMobile ? 160 : 148) : 22;
+
 
 
   const rad = (localAngle * Math.PI) / 180;
