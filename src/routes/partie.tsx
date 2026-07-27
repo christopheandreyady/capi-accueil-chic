@@ -1187,10 +1187,10 @@ function GameTable() {
               return (
                 <div
                   key={p}
+                  className="pointer-events-none absolute inset-0"
                   style={{
                     opacity: isSeated ? 1 : 0,
-                    transform: isSeated ? "translateY(0)" : "translateY(10px)",
-                    transition: "opacity 620ms ease, transform 620ms cubic-bezier(0.22,0.7,0.25,1)",
+                    transition: "opacity 620ms ease",
                     filter: isSeated ? undefined : "blur(2px)",
                   }}
                 >
