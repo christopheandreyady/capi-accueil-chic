@@ -921,7 +921,10 @@ function GameTable() {
         @keyframes capi-turn-glow { 0%,100%{opacity:.9; transform:scaleX(1);} 50%{opacity:1; transform:scaleX(0.94);} }
         @keyframes capi-turn-halo { 0%,100%{opacity:.55; transform:translate(-50%,-50%) scale(1);} 50%{opacity:.95; transform:translate(-50%,-50%) scale(1.14);} }
         @keyframes capi-turn-ring { 0%{transform:translate(-50%,-50%) scale(1); opacity:.7;} 100%{transform:translate(-50%,-50%) scale(1.35); opacity:0;} }
-
+        @keyframes capi-contre-shake { 0%,100%{transform:translate(0,0);} 12%{transform:translate(-5px,3px);} 26%{transform:translate(6px,-3px);} 42%{transform:translate(-4px,2px);} 58%{transform:translate(4px,-2px);} 74%{transform:translate(-2px,1px);} 88%{transform:translate(2px,-1px);} }
+        @keyframes capi-contre-flash { 0%{opacity:0;} 22%{opacity:1;} 100%{opacity:0;} }
+        @keyframes capi-contre-shockwave { 0%{transform:translate(-50%,-50%) scale(0.2); opacity:.75;} 100%{transform:translate(-50%,-50%) scale(2.4); opacity:0;} }
+        @keyframes capi-contre-banner { 0%{opacity:0; transform:translate(-50%,-50%) scale(0.55) rotate(-5deg);} 18%{opacity:1; transform:translate(-50%,-50%) scale(1.1) rotate(-1deg);} 45%{transform:translate(-50%,-50%) scale(1) rotate(0deg);} 78%{opacity:1;} 100%{opacity:0; transform:translate(-50%,-50%) scale(0.96);} }
       `}</style>
 
       {/* On mobile the table image fills the screen and carries the whole
