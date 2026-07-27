@@ -515,14 +515,14 @@ function GameTable() {
       window.setTimeout(() => {
         setSeated({ bottom: true, left: true, top: true, right: true });
         introDoneRef.current = true;
-        setPhase("shuffle");
+        setPhase(drawDoneRef.current ? "shuffle" : "draw");
       }, 700 + order.length * 950 + 700),
     );
     const skip = () => {
       timers.forEach(clearTimeout);
       setSeated({ bottom: true, left: true, top: true, right: true });
       introDoneRef.current = true;
-      setPhase("shuffle");
+      setPhase(drawDoneRef.current ? "shuffle" : "draw");
     };
     window.addEventListener("pointerdown", skip, { once: true });
     return () => {
@@ -530,6 +530,81 @@ function GameTable() {
       window.removeEventListener("pointerdown", skip);
     };
   }, [phase]);
+
+  // --- First-dealer draw ---------------------------------------------------
+  // Each eligible player draws one card. Lowest rank (7 < 8 < 9 < V < D < R
+  // < 10 < A) wins. Ties re-draw between tied seats. The winner then picks
+  // (or, for bots, is auto-assigned) the first dealer. Runs once per game.
+  useEffect(() => {
+    if (phase !== "draw") return;
+    if (drawWinner) return;
+    const eligible: Position[] =
+      drawEligible.length > 0 ? drawEligible : (POSITIONS as Position[]);
+    if (drawEligible.length === 0) setDrawEligible(eligible);
+    const deck = shuffle(buildDeck());
+    const picks: Record<Position, Card | null> = {
+      bottom: null, left: null, top: null, right: null,
+    };
+    for (const p of POSITIONS) {
+      picks[p] = eligible.includes(p) ? null : drawCards[p];
+    }
+    const timers: number[] = [];
+    timers.push(window.setTimeout(() => {
+      const next: Record<Position, Card | null> = { ...picks };
+      eligible.forEach((s, i) => { next[s] = deck[i]; });
+      setDrawCards(next);
+    }, 450));
+    timers.push(window.setTimeout(() => {
+      const RANK_ORDER: Rank[] = ["7", "8", "9", "V", "D", "R", "10", "A"];
+      const currentPicks: Record<Position, Card> = {} as Record<Position, Card>;
+      eligible.forEach((s, i) => { currentPicks[s] = deck[i]; });
+      let minIdx = 999;
+      for (const s of eligible) {
+        minIdx = Math.min(minIdx, RANK_ORDER.indexOf(currentPicks[s].rank));
+      }
+      const winners = eligible.filter(
+        (s) => RANK_ORDER.indexOf(currentPicks[s].rank) === minIdx,
+      );
+      if (winners.length === 1) {
+        setDrawWinner(winners[0]);
+      } else {
+        setDrawEligible(winners);
+      }
+    }, 2100));
+    return () => timers.forEach(clearTimeout);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [phase, drawEligible]);
+
+  // After a winner is designated, either open the seat picker for the human
+  // or let the bot auto-pick a first dealer.
+  useEffect(() => {
+    if (phase !== "draw" || !drawWinner || drawChosen) return;
+    if (drawWinner === "bottom") {
+      const t = window.setTimeout(() => setDrawSelecting(true), 1400);
+      return () => clearTimeout(t);
+    }
+    const t = window.setTimeout(() => {
+      const pick = POSITIONS[Math.floor(Math.random() * 4)];
+      commitFirstDealer(pick);
+    }, 1800);
+    return () => clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [drawWinner, phase, drawChosen]);
+
+  const commitFirstDealer = (seat: Position) => {
+    setDrawSelecting(false);
+    setDrawChosen(seat);
+    window.setTimeout(() => {
+      drawDoneRef.current = true;
+      setDrawCards({ bottom: null, left: null, top: null, right: null });
+      setDrawEligible([]);
+      setDrawWinner(null);
+      setDrawChosen(null);
+      if (seat === dealer) setDealSeed((s) => s + 1);
+      else setDealer(seat);
+    }, 1700);
+  };
+
 
 
   // Dealing loop
