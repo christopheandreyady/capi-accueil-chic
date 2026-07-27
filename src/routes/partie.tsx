@@ -1310,7 +1310,55 @@ function trickTarget(
   };
 }
 
+// --- Seating intro: pre-deal card fans -------------------------------------
+
+function SeatingHands({
+  seated,
+  anchors,
+  isMobile,
+}: {
+  seated: Record<Position, boolean>;
+  anchors: Anchors;
+  isMobile: boolean;
+}) {
+  // Draw a fake 8-back fan behind each *arrived* bot to suggest they took
+  // their seat with a hand in front of them. The bottom (human) seat is
+  // skipped — his real hand will appear during the actual dealing.
+  const seats: Position[] = ["left", "top", "right"];
+  return (
+    <div className="pointer-events-none absolute inset-0">
+      {seats.map((seat) => {
+        if (!seated[seat]) return null;
+        return (
+          <div key={seat} className="animate-fade-in">
+            {Array.from({ length: 8 }).map((_, i) => {
+              const t = handTarget(seat, i, 8, anchors, isMobile);
+              return (
+                <div
+                  key={i}
+                  className="absolute left-0 top-0"
+                  style={{
+                    width: t.w,
+                    height: t.h,
+                    transform: `translate3d(${t.x - t.w / 2}px, ${t.y - t.h / 2}px, 0) rotate(${t.rotate}deg)`,
+                    zIndex: 5 + i,
+                    opacity: 0.88,
+                    filter: "blur(0.4px)",
+                  }}
+                >
+                  <CardBack />
+                </div>
+              );
+            })}
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
 // --- Game cards renderer ---------------------------------------------------
+
 
 function GameCards({
   hands, trick, anchors, onLocalPlay, selectedCardId, setSelectedCardId,
