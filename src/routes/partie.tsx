@@ -875,7 +875,7 @@ function GameTable() {
       return () => clearTimeout(t);
     }
 
-    if (currentTurn === "bottom") return; // human plays
+    if (isHumanSeat(currentTurn)) return; // on attend le joueur humain
     const timer = window.setTimeout(() => {
       const card = aiPlay(hands[currentTurn], currentTrick, contract.suit, currentTurn);
       playCardBy(currentTurn, card);
