@@ -98,46 +98,128 @@ function WaitingRoom() {
   const [copied, setCopied] = useState(false);
   const [isStarting, setIsStarting] = useState(false);
 
+  // --- Mode en ligne (partie entre amis) ---------------------------------
+  const [session, setSession] = useState<RoomSession | null>(null);
+  const [room, setRoom] = useState<RoomRow | null>(null);
+  const [onlinePlayers, setOnlinePlayers] = useState<RoomPlayerRow[]>([]);
+  const [launching, setLaunching] = useState(false);
+  const online = session !== null;
+
   useEffect(() => {
+    const s = loadRoomSession();
+    if (s) {
+      setSession(s);
+      return;
+    }
+    // Mode local (solo / démo) — comportement d'origine conservé.
     const stored = loadTableConfig();
     if (stored) setCfg(stored);
-    // Pick a fresh trio of bots for this game so opponents change from one
-    // session to the next. Persisted so the game screen uses the same three.
     const bots = refreshBots(3);
     setSeats(buildInitialSeats(bots));
   }, []);
 
+  // Chargement + abonnement temps réel à la table.
+  useEffect(() => {
+    if (!session) return;
+    let alive = true;
+    void fetchRoom(session.roomId).then((r) => {
+      if (!alive || !r) return;
+      setRoom(r);
+      if (r.config?.name) setCfg({ ...defaultTableConfig(), ...r.config });
+    });
+    void fetchPlayers(session.roomId).then((p) => alive && setOnlinePlayers(p));
+
+    const unsubscribe = subscribeRoom(session.roomId, {
+      onRoom: (r) => {
+        setRoom(r);
+        if (r.config?.name) setCfg((c) => ({ ...c, ...r.config }));
+      },
+      onPlayers: (p) => setOnlinePlayers(p),
+    });
+
+    void heartbeat(session.roomId);
+    const beat = window.setInterval(() => void heartbeat(session.roomId), 8000);
+    return () => {
+      alive = false;
+      unsubscribe();
+      clearInterval(beat);
+    };
+  }, [session]);
+
+  // Les sièges affichés sont pivotés : mon siège est toujours en bas.
+  useEffect(() => {
+    if (!session) return;
+    const base: Record<Position, Seat> = {
+      bottom: { position: "bottom", team: "A", player: null },
+      right: { position: "right", team: "B", player: null },
+      top: { position: "top", team: "A", player: null },
+      left: { position: "left", team: "B", player: null },
+    };
+    for (const p of onlinePlayers) {
+      const pos = seatToLocal(p.seat, session.seat) as Position;
+      base[pos] = {
+        position: pos,
+        team: pos === "bottom" || pos === "top" ? "A" : "B",
+        player: {
+          name: p.client_id === getClientId() ? `${p.name} (vous)` : p.name,
+          level: p.level,
+          photo: p.avatar ?? "https://i.pravatar.cc/200?img=12",
+          online: p.is_bot || (p.connected && !isStale(p.last_seen)),
+          ready: p.ready,
+          host: p.is_host,
+          isBot: p.is_bot,
+        },
+      };
+    }
+    setSeats([base.bottom, base.top, base.left, base.right]);
+  }, [onlinePlayers, session]);
+
+  // Dès que l'hôte lance la partie, tout le monde bascule sur la table.
+  useEffect(() => {
+    if (!online || room?.status !== "playing") return;
+    setIsStarting(true);
+    const t = window.setTimeout(() => navigate({ to: "/partie" }), 600);
+    return () => clearTimeout(t);
+  }, [online, room?.status, navigate]);
 
   const inviteLink = useMemo(() => buildInviteLink(cfg.code), [cfg.code]);
   const total = 4;
   const { playersCount, readyCount, allReady, roomFull } = getWaitingRoomState(seats, total);
   const localReady = seats.find((s) => s.position === "bottom")?.player?.ready ?? false;
+  const isHost = session?.isHost ?? false;
+  const canLaunch =
+    online && isHost && (playersCount === total || (room?.fill_with_bots ?? true));
 
-  // Enter the starting state only when the room is complete and every
-  // connected player is represented by the same ready flag used by the UI.
+  // Mode local uniquement : la partie démarre lorsque tout le monde est prêt.
   useEffect(() => {
+    if (online) return;
     setIsStarting(allReady);
     if (allReady) {
       setInviteOpen(false);
       setQrOpen(false);
       setCopied(false);
     }
-  }, [allReady]);
+  }, [allReady, online]);
 
-  // Re-check both invariants after the short transition. If a player leaves
-  // or becomes unavailable, the cleanup cancels navigation immediately.
   useEffect(() => {
-    if (!isStarting || !allReady) return;
+    if (online || !isStarting || !allReady) return;
     const t = window.setTimeout(() => {
       if (playersCount === total && readyCount === total) {
         navigate({ to: "/partie" });
       }
     }, 800);
     return () => clearTimeout(t);
-  }, [allReady, isStarting, navigate, playersCount, readyCount]);
+  }, [allReady, isStarting, navigate, playersCount, readyCount, online]);
 
-
-
+  async function launchGame() {
+    if (!session || launching) return;
+    setLaunching(true);
+    try {
+      await startGame(session.roomId, pickRandomBots(3));
+    } catch {
+      setLaunching(false);
+    }
+  }
 
   function markReady(pos: Position) {
     setSeats((current) => markSeatReady(current, pos));
@@ -175,6 +257,7 @@ function WaitingRoom() {
       /* noop */
     }
   }
+
 
   return (
     <main className="relative min-h-screen w-full overflow-hidden bg-background">
