@@ -759,15 +759,17 @@ function GameTable() {
   //   as a contract has been announced, even mid-bidding. Same for surcontre
   //   from the bidder team after a contre lands.
   useEffect(() => {
+    if (isGuest) return; // seul l'hôte pilote les réactions des bots
     if (phase !== "bidding") return;
     if (counterEvalRef.current === bids.length) return;
     counterEvalRef.current = bids.length;
     const contract = currentContract(bids);
     if (!contract) return;
-    // Candidate AI seats (never the local human).
+    // Candidate AI seats (never a human player).
     const seats: Position[] = contreVolee
       ? (CLOCKWISE.filter((s) => !isHumanSeat(s)) as Position[])
-      : (currentTurn !== "bottom" && biddingClosed(bids) ? [currentTurn] : []);
+      : (!isHumanSeat(currentTurn) && biddingClosed(bids) ? [currentTurn] : []);
+
     for (const seat of seats) {
       const kind = canCounter(bids, seat, { onTheFly: contreVolee, turn: currentTurn });
       if (!kind) continue;
