@@ -1564,30 +1564,43 @@ function GameTable() {
                 cards={drawCards}
                 winner={drawWinner}
                 chosen={drawChosen}
-                selecting={drawSelecting}
+                selecting={drawSelecting && !isGuest}
                 players={PLAYERS}
                 onSelect={commitFirstDealer}
               />
             )}
 
             {phase === "shuffle" && size.w > 0 && (
-              <ChoicePanel
-                title={`${PLAYERS[dealer].name} distribue`}
-                subtitle="Mélanger les cartes ?"
-                options={[
-                  { key:"shuffle", label:"Mélanger", icon:<Shuffle className="h-4 w-4" />, onClick:()=>doShuffle(true), primary:true },
-                  { key:"no", label:"Ne pas mélanger", icon:<Check className="h-4 w-4" />, onClick:()=>doShuffle(false) },
-                ]}
-              />
+              isGuest ? (
+                <ChoicePanel
+                  title={`${PLAYERS[dealer].name} distribue`}
+                  subtitle="Mélange en cours…"
+                  options={[]}
+                />
+              ) : (
+                <ChoicePanel
+                  title={`${PLAYERS[dealer].name} distribue`}
+                  subtitle="Mélanger les cartes ?"
+                  options={[
+                    { key:"shuffle", label:"Mélanger", icon:<Shuffle className="h-4 w-4" />, onClick:()=>doShuffle(true), primary:true },
+                    { key:"no", label:"Ne pas mélanger", icon:<Check className="h-4 w-4" />, onClick:()=>doShuffle(false) },
+                  ]}
+                />
+              )
             )}
 
             {phase === "mode" && size.w > 0 && (
               <ChoicePanel
-                title="Vous distribuez"
-                subtitle="Choisissez la distribution"
-                options={(["3-2-3","2-3-3","3-3-2"] as DealMode[]).map(m => ({ key:m, label:m, onClick:()=>chooseMode(m), primary:true }))}
+                title={isGuest ? `${PLAYERS[dealer].name} distribue` : "Vous distribuez"}
+                subtitle={isGuest ? "Choix de la distribution…" : "Choisissez la distribution"}
+                options={
+                  isGuest
+                    ? []
+                    : (["3-2-3","2-3-3","3-3-2"] as DealMode[]).map(m => ({ key:m, label:m, onClick:()=>chooseMode(m), primary:true }))
+                }
               />
             )}
+
 
             {(phase === "cut" || phase === "dealing") && (
               <DeckStack deckPos={deckPos} cutStep={phase==="cut"?cutStep:2} remaining={32-dealtCount} />
