@@ -629,7 +629,9 @@ function GameTable() {
   // After a winner is designated, either open the seat picker for the human
   // or let the bot auto-pick a first dealer.
   useEffect(() => {
+    if (isGuest) return;
     if (phase !== "draw" || !drawWinner || drawChosen) return;
+
     if (drawWinner === "bottom") {
       const t = window.setTimeout(() => setDrawSelecting(true), 1400);
       return () => clearTimeout(t);
