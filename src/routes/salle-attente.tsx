@@ -40,7 +40,22 @@ type Player = {
   isBot?: boolean;
 };
 
-import { refreshBots, type Bot } from "@/lib/bots";
+import { pickRandomBots, refreshBots, type Bot } from "@/lib/bots";
+import {
+  fetchPlayers,
+  fetchRoom,
+  getClientId,
+  heartbeat,
+  isStale,
+  loadRoomSession,
+  seatToLocal,
+  startGame,
+  subscribeRoom,
+  type RoomPlayerRow,
+  type RoomRow,
+  type RoomSession,
+} from "@/lib/multiplayer";
+
 
 type Seat = {
   position: Position;
@@ -98,46 +113,128 @@ function WaitingRoom() {
   const [copied, setCopied] = useState(false);
   const [isStarting, setIsStarting] = useState(false);
 
+  // --- Mode en ligne (partie entre amis) ---------------------------------
+  const [session, setSession] = useState<RoomSession | null>(null);
+  const [room, setRoom] = useState<RoomRow | null>(null);
+  const [onlinePlayers, setOnlinePlayers] = useState<RoomPlayerRow[]>([]);
+  const [launching, setLaunching] = useState(false);
+  const online = session !== null;
+
   useEffect(() => {
+    const s = loadRoomSession();
+    if (s) {
+      setSession(s);
+      return;
+    }
+    // Mode local (solo / démo) — comportement d'origine conservé.
     const stored = loadTableConfig();
     if (stored) setCfg(stored);
-    // Pick a fresh trio of bots for this game so opponents change from one
-    // session to the next. Persisted so the game screen uses the same three.
     const bots = refreshBots(3);
     setSeats(buildInitialSeats(bots));
   }, []);
 
+  // Chargement + abonnement temps réel à la table.
+  useEffect(() => {
+    if (!session) return;
+    let alive = true;
+    void fetchRoom(session.roomId).then((r) => {
+      if (!alive || !r) return;
+      setRoom(r);
+      if (r.config?.name) setCfg({ ...defaultTableConfig(), ...r.config });
+    });
+    void fetchPlayers(session.roomId).then((p) => alive && setOnlinePlayers(p));
+
+    const unsubscribe = subscribeRoom(session.roomId, {
+      onRoom: (r) => {
+        setRoom(r);
+        if (r.config?.name) setCfg((c) => ({ ...c, ...r.config }));
+      },
+      onPlayers: (p) => setOnlinePlayers(p),
+    });
+
+    void heartbeat(session.roomId);
+    const beat = window.setInterval(() => void heartbeat(session.roomId), 8000);
+    return () => {
+      alive = false;
+      unsubscribe();
+      clearInterval(beat);
+    };
+  }, [session]);
+
+  // Les sièges affichés sont pivotés : mon siège est toujours en bas.
+  useEffect(() => {
+    if (!session) return;
+    const base: Record<Position, Seat> = {
+      bottom: { position: "bottom", team: "A", player: null },
+      right: { position: "right", team: "B", player: null },
+      top: { position: "top", team: "A", player: null },
+      left: { position: "left", team: "B", player: null },
+    };
+    for (const p of onlinePlayers) {
+      const pos = seatToLocal(p.seat, session.seat) as Position;
+      base[pos] = {
+        position: pos,
+        team: pos === "bottom" || pos === "top" ? "A" : "B",
+        player: {
+          name: p.client_id === getClientId() ? `${p.name} (vous)` : p.name,
+          level: p.level,
+          photo: p.avatar ?? "https://i.pravatar.cc/200?img=12",
+          online: p.is_bot || (p.connected && !isStale(p.last_seen)),
+          ready: p.ready,
+          host: p.is_host,
+          isBot: p.is_bot,
+        },
+      };
+    }
+    setSeats([base.bottom, base.top, base.left, base.right]);
+  }, [onlinePlayers, session]);
+
+  // Dès que l'hôte lance la partie, tout le monde bascule sur la table.
+  useEffect(() => {
+    if (!online || room?.status !== "playing") return;
+    setIsStarting(true);
+    const t = window.setTimeout(() => navigate({ to: "/partie" }), 600);
+    return () => clearTimeout(t);
+  }, [online, room?.status, navigate]);
 
   const inviteLink = useMemo(() => buildInviteLink(cfg.code), [cfg.code]);
   const total = 4;
   const { playersCount, readyCount, allReady, roomFull } = getWaitingRoomState(seats, total);
   const localReady = seats.find((s) => s.position === "bottom")?.player?.ready ?? false;
+  const isHost = session?.isHost ?? false;
+  const canLaunch =
+    online && isHost && (playersCount === total || (room?.fill_with_bots ?? true));
 
-  // Enter the starting state only when the room is complete and every
-  // connected player is represented by the same ready flag used by the UI.
+  // Mode local uniquement : la partie démarre lorsque tout le monde est prêt.
   useEffect(() => {
+    if (online) return;
     setIsStarting(allReady);
     if (allReady) {
       setInviteOpen(false);
       setQrOpen(false);
       setCopied(false);
     }
-  }, [allReady]);
+  }, [allReady, online]);
 
-  // Re-check both invariants after the short transition. If a player leaves
-  // or becomes unavailable, the cleanup cancels navigation immediately.
   useEffect(() => {
-    if (!isStarting || !allReady) return;
+    if (online || !isStarting || !allReady) return;
     const t = window.setTimeout(() => {
       if (playersCount === total && readyCount === total) {
         navigate({ to: "/partie" });
       }
     }, 800);
     return () => clearTimeout(t);
-  }, [allReady, isStarting, navigate, playersCount, readyCount]);
+  }, [allReady, isStarting, navigate, playersCount, readyCount, online]);
 
-
-
+  async function launchGame() {
+    if (!session || launching) return;
+    setLaunching(true);
+    try {
+      await startGame(session.roomId, pickRandomBots(3));
+    } catch {
+      setLaunching(false);
+    }
+  }
 
   function markReady(pos: Position) {
     setSeats((current) => markSeatReady(current, pos));
@@ -175,6 +272,7 @@ function WaitingRoom() {
       /* noop */
     }
   }
+
 
   return (
     <main className="relative min-h-screen w-full overflow-hidden bg-background">
@@ -424,32 +522,66 @@ function WaitingRoom() {
             </button>
           )}
 
-          {!isStarting && roomFull && !localReady && (
+          {online && isHost && !isStarting && (
+            <button
+              type="button"
+              onClick={launchGame}
+              disabled={!canLaunch || launching}
+              className="group relative flex w-full items-center justify-center gap-3 overflow-hidden px-6 py-4 transition-all duration-200 ease-out active:scale-[0.985] disabled:cursor-not-allowed disabled:opacity-60 animate-fade-in"
+              style={{
+                borderRadius: "1.15rem",
+                background: canLaunch
+                  ? "linear-gradient(168deg, oklch(0.42 0.12 152) 0%, oklch(0.30 0.10 152) 48%, oklch(0.20 0.07 150) 100%)"
+                  : "linear-gradient(168deg, oklch(0.24 0.03 42) 0%, oklch(0.16 0.02 40) 100%)",
+                border: `1px solid ${canLaunch ? "oklch(0.82 0.14 82 / 65%)" : "oklch(0.35 0.02 40 / 45%)"}`,
+                boxShadow:
+                  "0 18px 32px -14px oklch(0 0 0 / 80%), inset 0 1px 0 oklch(1 0 0 / 18%), inset 0 -10px 18px oklch(0 0 0 / 45%)",
+              }}
+            >
+              <Check className="relative h-4 w-4" style={{ color: "oklch(0.94 0.11 88)" }} strokeWidth={2.6} />
+              <span
+                className="relative font-serif text-base font-semibold tracking-wide"
+                style={{
+                  background: canLaunch
+                    ? "linear-gradient(180deg, oklch(0.98 0.10 88), oklch(0.72 0.14 78))"
+                    : "linear-gradient(180deg, oklch(0.62 0.03 80), oklch(0.48 0.03 80))",
+                  WebkitBackgroundClip: "text",
+                  backgroundClip: "text",
+                  color: "transparent",
+                }}
+              >
+                {launching
+                  ? "Lancement…"
+                  : playersCount === total
+                    ? "Commencer la partie"
+                    : "Commencer (places libres aux bots)"}
+              </span>
+            </button>
+          )}
+
+          {online && !isHost && !isStarting && (
+            <p
+              className="text-center text-[11px] uppercase tracking-[0.22em] animate-fade-in"
+              style={{ color: "oklch(0.85 0.08 82 / 80%)" }}
+            >
+              En attente du lancement par l'hôte…
+            </p>
+          )}
+
+          {!online && !isStarting && roomFull && !localReady && (
             <button
               type="button"
               onClick={() => markReady("bottom")}
               className="group relative flex w-full items-center justify-center gap-3 overflow-hidden px-6 py-4 transition-all duration-200 ease-out active:scale-[0.985] disabled:cursor-not-allowed disabled:active:scale-100 animate-fade-in"
               style={{
                 borderRadius: "1.15rem",
-                background: roomFull
-                  ? "linear-gradient(168deg, oklch(0.42 0.12 152) 0%, oklch(0.30 0.10 152) 48%, oklch(0.20 0.07 150) 100%)"
-                  : "linear-gradient(168deg, oklch(0.24 0.03 42) 0%, oklch(0.16 0.02 40) 100%)",
-                border: `1px solid ${roomFull ? "oklch(0.82 0.14 82 / 65%)" : "oklch(0.35 0.02 40 / 45%)"}`,
-                boxShadow: roomFull
-                  ? "0 18px 32px -14px oklch(0 0 0 / 80%), 0 8px 16px -6px oklch(0.32 0.10 152 / 55%), inset 0 1px 0 oklch(1 0 0 / 18%), inset 0 -10px 18px oklch(0 0 0 / 45%), inset 0 0 0 1px oklch(0.82 0.14 82 / 22%)"
-                  : "0 12px 24px -12px oklch(0 0 0 / 72%), inset 0 1px 0 oklch(1 0 0 / 12%), inset 0 -8px 14px oklch(0 0 0 / 40%)",
-                opacity: 1,
+                background:
+                  "linear-gradient(168deg, oklch(0.42 0.12 152) 0%, oklch(0.30 0.10 152) 48%, oklch(0.20 0.07 150) 100%)",
+                border: "1px solid oklch(0.82 0.14 82 / 65%)",
+                boxShadow:
+                  "0 18px 32px -14px oklch(0 0 0 / 80%), 0 8px 16px -6px oklch(0.32 0.10 152 / 55%), inset 0 1px 0 oklch(1 0 0 / 18%), inset 0 -10px 18px oklch(0 0 0 / 45%), inset 0 0 0 1px oklch(0.82 0.14 82 / 22%)",
               }}
             >
-              <span
-                className="pointer-events-none absolute inset-0 opacity-25 mix-blend-overlay"
-                style={{
-                  backgroundImage:
-                    "radial-gradient(oklch(1 0 0 / 8%) 0.5px, transparent 0.5px), radial-gradient(oklch(0 0 0 / 12%) 0.5px, transparent 0.5px)",
-                  backgroundSize: "3px 3px, 4px 4px",
-                  backgroundPosition: "0 0, 1px 2px",
-                }}
-              />
               <span
                 className="pointer-events-none absolute inset-x-0 top-0 h-1/2 opacity-70"
                 style={{
@@ -457,12 +589,6 @@ function WaitingRoom() {
                     "linear-gradient(180deg, oklch(1 0 0 / 18%) 0%, oklch(1 0 0 / 3%) 60%, transparent 100%)",
                 }}
               />
-              {roomFull && (
-                <span
-                  className="pointer-events-none absolute inset-[3px] rounded-[0.95rem]"
-                  style={{ border: "1px solid oklch(0.82 0.14 82 / 28%)" }}
-                />
-              )}
               <Check
                 className="relative h-4 w-4"
                 style={{ color: "oklch(0.94 0.11 88)" }}
@@ -471,9 +597,7 @@ function WaitingRoom() {
               <span
                 className="relative font-serif text-base font-semibold tracking-wide"
                 style={{
-                  background: roomFull
-                    ? "linear-gradient(180deg, oklch(0.98 0.10 88), oklch(0.72 0.14 78))"
-                    : "linear-gradient(180deg, oklch(0.62 0.03 80), oklch(0.48 0.03 80))",
+                  background: "linear-gradient(180deg, oklch(0.98 0.10 88), oklch(0.72 0.14 78))",
                   WebkitBackgroundClip: "text",
                   backgroundClip: "text",
                   color: "transparent",
@@ -485,7 +609,7 @@ function WaitingRoom() {
             </button>
           )}
 
-          {allReady && (
+          {isStarting && (
             <p
               className="text-center font-serif text-sm tracking-[0.25em] uppercase animate-fade-in"
               style={{ color: "oklch(0.92 0.11 85)", textShadow: "0 1px 0 oklch(0 0 0 / 50%)" }}
@@ -493,6 +617,7 @@ function WaitingRoom() {
               La partie commence…
             </p>
           )}
+
 
           {!isStarting && playersCount < total && (
             <p

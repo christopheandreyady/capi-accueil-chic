@@ -33,6 +33,25 @@ import {
   type TrickPlay,
   cardPoints,
 } from "@/lib/contree";
+import {
+  fetchPlayers,
+  fetchRoom,
+  getClientId,
+  heartbeat,
+  loadRoomSession,
+  publishState,
+  sendAction,
+  subscribeRoom,
+  type RoomPlayerRow,
+  type RoomSession,
+} from "@/lib/multiplayer";
+import {
+  absToLocal,
+  deserializeState,
+  serializeState,
+  type GameSnapshot,
+} from "@/lib/game-sync";
+
 
 export const Route = createFileRoute("/partie")({
   head: () => ({
@@ -447,6 +466,22 @@ function GameTable() {
   // remount and re-trigger their CSS keyframes.
   const [counterFx, setCounterFx] = useState<{ seat: Position; kind: "contre" | "surcontre"; id: number } | null>(null);
   const counterFxIdRef = useRef(0);
+
+  // --- Mode en ligne (partie entre amis) -----------------------------------
+  // L'hôte (siège 0) fait tourner le moteur ; les invités affichent l'état
+  // publié et envoient leurs actions. En solo, rien de tout ceci ne s'active.
+  const [mpSession] = useState<RoomSession | null>(() => loadRoomSession());
+  const online = mpSession !== null;
+  const mySeat = mpSession?.seat ?? 0;
+  const isHost = mpSession?.isHost ?? false;
+  const isGuest = online && !isHost;
+  const [mpPlayers, setMpPlayers] = useState<RoomPlayerRow[]>([]);
+  const [, forceRender] = useState(0);
+  const stateSeqRef = useRef(0);
+  // Sièges tenus par de vrais joueurs : l'IA ne joue jamais à leur place.
+  const humanSeatsRef = useRef<Set<Position>>(new Set<Position>(["bottom"]));
+  const isHumanSeat = (p: Position) => humanSeatsRef.current.has(p);
+
   // Last announcement stays visible above its author until a newer one arrives
   // or the bidding phase ends.
   const lastBidRef = bids.length > 0 ? bids[bids.length - 1] : null;
@@ -491,9 +526,11 @@ function GameTable() {
 
   // Reset round when dealer/seed changes
   useEffect(() => {
+    if (isGuest) return; // l'état de manche vient de l'hôte
     // On the very first hand of the game, hold on "seating" so the intro
     // effect below can run. Every subsequent hand starts on shuffle as before.
     setPhase(introDoneRef.current ? "shuffle" : "seating");
+
     setCutStep(0);
     setDeckHolder(null);
     setDealtCount(0);
@@ -516,7 +553,9 @@ function GameTable() {
   // A discreet chair-thud accompanies each arrival. The whole sequence is
   // capped ~4.5s and can be skipped instantly by tapping anywhere.
   useEffect(() => {
+    if (isGuest) return;
     if (phase !== "seating") return;
+
     const order: Position[] = ["left", "top", "right"];
     const timers: number[] = [];
     order.forEach((seat, i) => {
@@ -552,7 +591,9 @@ function GameTable() {
   // < 10 < A) wins. Ties re-draw between tied seats. The winner then picks
   // (or, for bots, is auto-assigned) the first dealer. Runs once per game.
   useEffect(() => {
+    if (isGuest) return;
     if (phase !== "draw") return;
+
     if (drawWinner) return;
     const eligible: Position[] =
       drawEligible.length > 0 ? drawEligible : (POSITIONS as Position[]);
@@ -594,7 +635,9 @@ function GameTable() {
   // After a winner is designated, either open the seat picker for the human
   // or let the bot auto-pick a first dealer.
   useEffect(() => {
+    if (isGuest) return;
     if (phase !== "draw" || !drawWinner || drawChosen) return;
+
     if (drawWinner === "bottom") {
       const t = window.setTimeout(() => setDrawSelecting(true), 1400);
       return () => clearTimeout(t);
@@ -625,7 +668,9 @@ function GameTable() {
 
   // Dealing loop
   useEffect(() => {
+    if (isGuest) return; // la distribution est jouée par l'hôte puis diffusée
     if (size.w === 0 || phase !== "dealing" || !dealMode) return;
+
     const timers: number[] = [];
     let cumulativeT = 0;
     for (let k = 0; k < dealOrder.length; k++) {
@@ -663,7 +708,9 @@ function GameTable() {
 
   // --- Bidding loop --------------------------------------------------------
   useEffect(() => {
+    if (isGuest) return;
     if (phase !== "bidding") return;
+
     if (biddingClosed(bids)) {
       const c = currentContract(bids);
       if (c) {
@@ -707,7 +754,7 @@ function GameTable() {
       return () => clearTimeout(t);
     }
 
-    if (currentTurn === "bottom") return; // wait for human
+    if (isHumanSeat(currentTurn)) return; // wait for the human player
     const timer = window.setTimeout(() => {
       const decision = aiBid(hands[currentTurn], bids, currentTurn);
       submitBid(decision);
@@ -724,15 +771,17 @@ function GameTable() {
   //   as a contract has been announced, even mid-bidding. Same for surcontre
   //   from the bidder team after a contre lands.
   useEffect(() => {
+    if (isGuest) return; // seul l'hôte pilote les réactions des bots
     if (phase !== "bidding") return;
     if (counterEvalRef.current === bids.length) return;
     counterEvalRef.current = bids.length;
     const contract = currentContract(bids);
     if (!contract) return;
-    // Candidate AI seats (never the local human).
+    // Candidate AI seats (never a human player).
     const seats: Position[] = contreVolee
-      ? (CLOCKWISE.filter((s) => s !== "bottom") as Position[])
-      : (currentTurn !== "bottom" && biddingClosed(bids) ? [currentTurn] : []);
+      ? (CLOCKWISE.filter((s) => !isHumanSeat(s)) as Position[])
+      : (!isHumanSeat(currentTurn) && biddingClosed(bids) ? [currentTurn] : []);
+
     for (const seat of seats) {
       const kind = canCounter(bids, seat, { onTheFly: contreVolee, turn: currentTurn });
       if (!kind) continue;
@@ -756,6 +805,13 @@ function GameTable() {
   // Authoritative submission keeps bids and turn advancement atomic. Stale
   // AI timers and out-of-turn actions are rejected against the same snapshot.
   const submitBid = (b: Bid) => {
+    // En ligne, l'invité n'applique rien localement : il transmet son annonce
+    // à l'hôte, qui la valide et republie l'état pour tout le monde.
+    if (isGuest && mpSession && b.seat === "bottom") {
+      const { seat: _seat, ...rest } = b;
+      void sendAction(mpSession.roomId, mySeat, "bid", { bid: rest });
+      return;
+    }
     const snapshot = biddingStateRef.current;
     if (b.kind === "contre" || b.kind === "surcontre") {
       // The local player must always be able to press "Contrer" as soon as
@@ -764,7 +820,8 @@ function GameTable() {
       const legal = canCounter(snapshot.bids, b.seat, { onTheFly: contreVolee, turn: snapshot.turn }) === b.kind;
       if (!legal) return;
       // In classical mode, non-human seats still respect the turn gate.
-      if (!contreVolee && b.seat !== "bottom" && b.seat !== snapshot.turn) return;
+      if (!contreVolee && !isHumanSeat(b.seat) && b.seat !== snapshot.turn) return;
+
       const nextBids = [...snapshot.bids, b];
       const nextTurn = b.kind === "contre" ? currentContract(nextBids)?.bidder ?? snapshot.turn : snapshot.turn;
       biddingStateRef.current = { bids: nextBids, turn: nextTurn };
@@ -810,7 +867,9 @@ function GameTable() {
 
   // --- Playing loop --------------------------------------------------------
   useEffect(() => {
+    if (isGuest) return; // seul l'hôte fait tourner le moteur
     if (phase !== "playing" || !contract || !currentTrick) return;
+
 
     // Trick complete → resolve after a hold
     if (currentTrick.plays.length === 4) {
@@ -840,7 +899,7 @@ function GameTable() {
       return () => clearTimeout(t);
     }
 
-    if (currentTurn === "bottom") return; // human plays
+    if (isHumanSeat(currentTurn)) return; // on attend le joueur humain
     const timer = window.setTimeout(() => {
       const card = aiPlay(hands[currentTurn], currentTrick, contract.suit, currentTurn);
       playCardBy(currentTurn, card);
@@ -851,7 +910,9 @@ function GameTable() {
 
   // --- Scoring animation: slide chips → winning team, then count up ------
   useEffect(() => {
+    if (isGuest) return; // l'invité reçoit le score final de l'hôte
     if (phase !== "scoring" || !roundScore) return;
+
     setChipsVisible(true);
     setChipsSlideTo(null);
     const winner: Team =
@@ -926,8 +987,158 @@ function GameTable() {
     if (currentTurn !== "bottom") return;
     const legal = legalMoves(hands.bottom, currentTrick, contract.suit, "bottom");
     if (!legal.some((c) => c.id === card.id)) return;
+    if (isGuest && mpSession) {
+      void sendAction(mpSession.roomId, mySeat, "play", { cardId: card.id });
+      return;
+    }
     playCardBy("bottom", card);
   };
+
+  // --- Synchronisation en ligne ---------------------------------------------
+  // L'hôte publie un instantané complet après chaque changement d'état ; les
+  // invités l'appliquent tel quel. Personne ne peut donc se désynchroniser.
+  const engineRef = useRef({ submitBid, playCardBy });
+  useEffect(() => {
+    engineRef.current = { submitBid, playCardBy };
+  });
+
+  useEffect(() => {
+    if (!online || !isHost || !mpSession) return;
+    const snap = serializeState(
+      {
+        phase,
+        dealer,
+        dealSeed,
+        dealtCount,
+        dealMode,
+        cutStep,
+        deckHolder,
+        seated,
+        hands,
+        bids,
+        contract,
+        currentTurn,
+        currentTrick,
+        tricks,
+        roundScore,
+        cumulative,
+        liveRound,
+      },
+      mySeat,
+    );
+    stateSeqRef.current += 1;
+    void publishState(mpSession.roomId, snap, stateSeqRef.current);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [
+    online, isHost, mySeat,
+    phase, dealer, dealSeed, dealtCount, dealMode, cutStep, deckHolder, seated,
+    hands, bids, contract, currentTurn, currentTrick, tricks, roundScore,
+    cumulative, liveRound,
+  ]);
+
+  useEffect(() => {
+    if (!online || !mpSession) return;
+    const roomId = mpSession.roomId;
+
+    const applySnapshot = (raw: unknown) => {
+      if (isHost || !raw) return;
+      const s = deserializeState(raw as GameSnapshot, mySeat);
+      setPhase(s.phase as Phase);
+      setDealer(s.dealer);
+      setDealSeed(s.dealSeed);
+      setDealtCount(s.dealtCount);
+      setDealMode(s.dealMode as DealMode | null);
+      setCutStep(s.cutStep);
+      setDeckHolder(s.deckHolder);
+      setSeated(s.seated);
+      setHands(s.hands);
+      setBids(s.bids);
+      setContract(s.contract);
+      setCurrentTurn(s.currentTurn);
+      setCurrentTrick(s.currentTrick);
+      setTricks(s.tricks);
+      setRoundScore(s.roundScore);
+      setCumulative(s.cumulative);
+      setLiveRound(s.liveRound);
+      biddingStateRef.current = { bids: s.bids, turn: s.currentTurn };
+      introDoneRef.current = true;
+      drawDoneRef.current = true;
+    };
+
+    void fetchRoom(roomId).then((r) => {
+      if (!r) return;
+      // Les règles de la table (contre à la volée, variantes de score) sont
+      // celles choisies par l'hôte : tout le monde joue avec les mêmes.
+      if (typeof r.config?.contreVolee === "boolean") setContreVolee(r.config.contreVolee);
+      if (r.config?.scoring) setScoringRules((s) => ({ ...s, ...r.config.scoring }));
+      setIsMultiplayer(true);
+      applySnapshot(r.state);
+    });
+
+    void fetchPlayers(roomId).then(setMpPlayers);
+
+    const unsubscribe = subscribeRoom(roomId, {
+      onRoom: (r) => applySnapshot(r.state),
+      onPlayers: setMpPlayers,
+      onAction: (a) => {
+        if (!isHost || a.seat === null) return;
+        const seat = absToLocal(a.seat, mySeat);
+        if (a.type === "bid") {
+          const payload = a.payload as { bid?: Omit<Bid, "seat"> };
+          if (payload.bid) engineRef.current.submitBid({ ...payload.bid, seat } as Bid);
+        } else if (a.type === "play") {
+          const cardId = (a.payload as { cardId?: string }).cardId;
+          const card = handsRef.current[seat]?.find((c) => c.id === cardId);
+          const trick = trickRef.current;
+          const suit = contractRef.current?.suit;
+          if (!card || !trick || !suit) return;
+          if (turnRef.current !== seat) return;
+          const legal = legalMoves(handsRef.current[seat], trick, suit, seat);
+          if (!legal.some((c) => c.id === card.id)) return;
+          engineRef.current.playCardBy(seat, card);
+        }
+      },
+    });
+
+    void heartbeat(roomId);
+    const beat = window.setInterval(() => void heartbeat(roomId), 8000);
+    return () => {
+      unsubscribe();
+      window.clearInterval(beat);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [online, isHost, mySeat]);
+
+  // Références de lecture pour valider les actions distantes sans redémarrer
+  // l'abonnement temps réel.
+  const handsRef = useRef(hands);
+  const trickRef = useRef(currentTrick);
+  const contractRef = useRef(contract);
+  const turnRef = useRef(currentTurn);
+  useEffect(() => {
+    handsRef.current = hands;
+    trickRef.current = currentTrick;
+    contractRef.current = contract;
+    turnRef.current = currentTurn;
+  });
+
+  // Noms, avatars et niveaux réels des joueurs connectés.
+  useEffect(() => {
+    if (!online || mpPlayers.length === 0) return;
+    const humans = new Set<Position>();
+    for (const p of mpPlayers) {
+      const pos = absToLocal(p.seat, mySeat);
+      PLAYERS[pos] = {
+        name: p.client_id === getClientId() ? "Vous" : p.name,
+        level: p.level,
+        photo: p.avatar ?? PLAYERS[pos].photo,
+      };
+      if (!p.is_bot) humans.add(pos);
+    }
+    humanSeatsRef.current = humans;
+    forceRender((n) => n + 1);
+  }, [mpPlayers, online, mySeat]);
+
 
   // --- Positioning ---------------------------------------------------------
 
@@ -1362,30 +1573,43 @@ function GameTable() {
                 cards={drawCards}
                 winner={drawWinner}
                 chosen={drawChosen}
-                selecting={drawSelecting}
+                selecting={drawSelecting && !isGuest}
                 players={PLAYERS}
                 onSelect={commitFirstDealer}
               />
             )}
 
             {phase === "shuffle" && size.w > 0 && (
-              <ChoicePanel
-                title={`${PLAYERS[dealer].name} distribue`}
-                subtitle="Mélanger les cartes ?"
-                options={[
-                  { key:"shuffle", label:"Mélanger", icon:<Shuffle className="h-4 w-4" />, onClick:()=>doShuffle(true), primary:true },
-                  { key:"no", label:"Ne pas mélanger", icon:<Check className="h-4 w-4" />, onClick:()=>doShuffle(false) },
-                ]}
-              />
+              isGuest ? (
+                <ChoicePanel
+                  title={`${PLAYERS[dealer].name} distribue`}
+                  subtitle="Mélange en cours…"
+                  options={[]}
+                />
+              ) : (
+                <ChoicePanel
+                  title={`${PLAYERS[dealer].name} distribue`}
+                  subtitle="Mélanger les cartes ?"
+                  options={[
+                    { key:"shuffle", label:"Mélanger", icon:<Shuffle className="h-4 w-4" />, onClick:()=>doShuffle(true), primary:true },
+                    { key:"no", label:"Ne pas mélanger", icon:<Check className="h-4 w-4" />, onClick:()=>doShuffle(false) },
+                  ]}
+                />
+              )
             )}
 
             {phase === "mode" && size.w > 0 && (
               <ChoicePanel
-                title="Vous distribuez"
-                subtitle="Choisissez la distribution"
-                options={(["3-2-3","2-3-3","3-3-2"] as DealMode[]).map(m => ({ key:m, label:m, onClick:()=>chooseMode(m), primary:true }))}
+                title={isGuest ? `${PLAYERS[dealer].name} distribue` : "Vous distribuez"}
+                subtitle={isGuest ? "Choix de la distribution…" : "Choisissez la distribution"}
+                options={
+                  isGuest
+                    ? []
+                    : (["3-2-3","2-3-3","3-3-2"] as DealMode[]).map(m => ({ key:m, label:m, onClick:()=>chooseMode(m), primary:true }))
+                }
               />
             )}
+
 
             {(phase === "cut" || phase === "dealing") && (
               <DeckStack deckPos={deckPos} cutStep={phase==="cut"?cutStep:2} remaining={32-dealtCount} />

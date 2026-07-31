@@ -1,7 +1,8 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Spade, Trophy, Users, User } from "lucide-react";
+import { Spade, Trophy, Users, User, LogIn } from "lucide-react";
 
-type RoutePath = "/jouer" | undefined;
+type RoutePath = "/jouer" | "/rejoindre-table" | undefined;
+
 import bistrotTable from "@/assets/capi-bistrot-table.jpg";
 import capiEmblem from "@/assets/capi-emblem.png";
 
@@ -221,6 +222,37 @@ function Home() {
           );
           })}
         </nav>
+
+        {/* Rejoindre une partie — accès direct au code d'invitation */}
+        <Link
+          to="/rejoindre-table"
+          className="group relative mt-3.5 flex items-center justify-center gap-2.5 overflow-hidden px-4 py-3.5 transition-all duration-200 ease-out active:scale-[0.98]"
+          style={{
+            borderRadius: "1.1rem",
+            background: "linear-gradient(160deg, oklch(0.26 0.04 40) 0%, oklch(0.17 0.03 40) 100%)",
+            border: "1px solid oklch(0.82 0.14 82 / 45%)",
+            boxShadow:
+              "0 8px 18px -10px oklch(0 0 0 / 60%), 0 1px 0 0 oklch(1 0 0 / 12%) inset, 0 -8px 16px -8px oklch(0 0 0 / 40%) inset",
+          }}
+        >
+          <LogIn
+            className="h-5 w-5"
+            style={{ color: "oklch(0.92 0.12 88)" }}
+            strokeWidth={2}
+          />
+          <span
+            className="font-serif text-[15px] font-semibold tracking-wide"
+            style={{
+              background: "linear-gradient(180deg, oklch(0.95 0.1 88), oklch(0.75 0.14 78))",
+              WebkitBackgroundClip: "text",
+              backgroundClip: "text",
+              color: "transparent",
+            }}
+          >
+            Rejoindre une partie
+          </span>
+        </Link>
+
 
         <p
           className="mt-6 text-center text-[11px] uppercase tracking-[0.3em]"
