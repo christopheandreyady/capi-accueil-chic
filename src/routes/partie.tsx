@@ -526,9 +526,11 @@ function GameTable() {
 
   // Reset round when dealer/seed changes
   useEffect(() => {
+    if (isGuest) return; // l'état de manche vient de l'hôte
     // On the very first hand of the game, hold on "seating" so the intro
     // effect below can run. Every subsequent hand starts on shuffle as before.
     setPhase(introDoneRef.current ? "shuffle" : "seating");
+
     setCutStep(0);
     setDeckHolder(null);
     setDealtCount(0);
