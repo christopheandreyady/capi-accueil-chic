@@ -791,6 +791,13 @@ function GameTable() {
   // Authoritative submission keeps bids and turn advancement atomic. Stale
   // AI timers and out-of-turn actions are rejected against the same snapshot.
   const submitBid = (b: Bid) => {
+    // En ligne, l'invité n'applique rien localement : il transmet son annonce
+    // à l'hôte, qui la valide et republie l'état pour tout le monde.
+    if (isGuest && mpSession && b.seat === "bottom") {
+      const { seat: _seat, ...rest } = b;
+      void sendAction(mpSession.roomId, mySeat, "bid", { bid: rest });
+      return;
+    }
     const snapshot = biddingStateRef.current;
     if (b.kind === "contre" || b.kind === "surcontre") {
       // The local player must always be able to press "Contrer" as soon as
@@ -799,7 +806,8 @@ function GameTable() {
       const legal = canCounter(snapshot.bids, b.seat, { onTheFly: contreVolee, turn: snapshot.turn }) === b.kind;
       if (!legal) return;
       // In classical mode, non-human seats still respect the turn gate.
-      if (!contreVolee && b.seat !== "bottom" && b.seat !== snapshot.turn) return;
+      if (!contreVolee && !isHumanSeat(b.seat) && b.seat !== snapshot.turn) return;
+
       const nextBids = [...snapshot.bids, b];
       const nextTurn = b.kind === "contre" ? currentContract(nextBids)?.bidder ?? snapshot.turn : snapshot.turn;
       biddingStateRef.current = { bids: nextBids, turn: nextTurn };
