@@ -317,12 +317,16 @@ function CreateTable() {
                 animation: "capi-sheen-btn 3.4s ease-in-out infinite",
               }}
             />
-            <Play
-              className="h-4 w-4"
-              style={{ color: "oklch(0.94 0.11 88)" }}
-              strokeWidth={2.2}
-              fill="currentColor"
-            />
+            {busy ? (
+              <Loader2 className="h-4 w-4 animate-spin" style={{ color: "oklch(0.94 0.11 88)" }} />
+            ) : (
+              <Play
+                className="h-4 w-4"
+                style={{ color: "oklch(0.94 0.11 88)" }}
+                strokeWidth={2.2}
+                fill="currentColor"
+              />
+            )}
             <span
               className="font-serif text-[16px] font-semibold tracking-wide"
               style={{
@@ -333,10 +337,16 @@ function CreateTable() {
                 textShadow: "0 1px 0 oklch(0 0 0 / 30%)",
               }}
             >
-              Créer la table
+              {busy ? "Création…" : "Créer la table"}
             </span>
           </button>
+          {error && (
+            <p className="mt-2 text-center text-sm" style={{ color: "oklch(0.72 0.18 25)" }}>
+              {error}
+            </p>
+          )}
         </div>
+
       </section>
 
       <style>{`
