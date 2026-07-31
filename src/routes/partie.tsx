@@ -845,7 +845,9 @@ function GameTable() {
 
   // --- Playing loop --------------------------------------------------------
   useEffect(() => {
+    if (isGuest) return; // seul l'hôte fait tourner le moteur
     if (phase !== "playing" || !contract || !currentTrick) return;
+
 
     // Trick complete → resolve after a hold
     if (currentTrick.plays.length === 4) {
