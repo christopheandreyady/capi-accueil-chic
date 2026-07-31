@@ -1065,7 +1065,16 @@ function GameTable() {
       drawDoneRef.current = true;
     };
 
-    void fetchRoom(roomId).then((r) => applySnapshot(r?.state));
+    void fetchRoom(roomId).then((r) => {
+      if (!r) return;
+      // Les règles de la table (contre à la volée, variantes de score) sont
+      // celles choisies par l'hôte : tout le monde joue avec les mêmes.
+      if (typeof r.config?.contreVolee === "boolean") setContreVolee(r.config.contreVolee);
+      if (r.config?.scoring) setScoringRules((s) => ({ ...s, ...r.config.scoring }));
+      setIsMultiplayer(true);
+      applySnapshot(r.state);
+    });
+
     void fetchPlayers(roomId).then(setMpPlayers);
 
     const unsubscribe = subscribeRoom(roomId, {
