@@ -660,7 +660,9 @@ function GameTable() {
 
   // Dealing loop
   useEffect(() => {
+    if (isGuest) return; // la distribution est jouée par l'hôte puis diffusée
     if (size.w === 0 || phase !== "dealing" || !dealMode) return;
+
     const timers: number[] = [];
     let cumulativeT = 0;
     for (let k = 0; k < dealOrder.length; k++) {
