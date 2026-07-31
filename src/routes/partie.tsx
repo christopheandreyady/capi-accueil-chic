@@ -766,7 +766,7 @@ function GameTable() {
     if (!contract) return;
     // Candidate AI seats (never the local human).
     const seats: Position[] = contreVolee
-      ? (CLOCKWISE.filter((s) => s !== "bottom") as Position[])
+      ? (CLOCKWISE.filter((s) => !isHumanSeat(s)) as Position[])
       : (currentTurn !== "bottom" && biddingClosed(bids) ? [currentTurn] : []);
     for (const seat of seats) {
       const kind = canCounter(bids, seat, { onTheFly: contreVolee, turn: currentTurn });
