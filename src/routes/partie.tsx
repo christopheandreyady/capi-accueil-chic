@@ -33,6 +33,25 @@ import {
   type TrickPlay,
   cardPoints,
 } from "@/lib/contree";
+import {
+  fetchPlayers,
+  fetchRoom,
+  getClientId,
+  heartbeat,
+  loadRoomSession,
+  publishState,
+  sendAction,
+  subscribeRoom,
+  type RoomPlayerRow,
+  type RoomSession,
+} from "@/lib/multiplayer";
+import {
+  absToLocal,
+  deserializeState,
+  serializeState,
+  type GameSnapshot,
+} from "@/lib/game-sync";
+
 
 export const Route = createFileRoute("/partie")({
   head: () => ({
