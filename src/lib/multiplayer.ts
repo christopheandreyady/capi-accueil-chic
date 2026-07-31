@@ -11,8 +11,11 @@
 import { supabase } from "@/integrations/supabase/client";
 import type { TableConfig } from "@/lib/table-config";
 
-export type LocalPosition = "bottom" | "right" | "top" | "left";
-export const CLOCKWISE_POSITIONS: LocalPosition[] = ["bottom", "right", "top", "left"];
+export type LocalPosition = "bottom" | "left" | "top" | "right";
+// Même ordre que le moteur de jeu (src/lib/contree.ts) pour que le lobby et la
+// table utilisent exactement la même rotation de sièges.
+export const CLOCKWISE_POSITIONS: LocalPosition[] = ["bottom", "left", "top", "right"];
+
 
 export type RoomRow = {
   id: string;
