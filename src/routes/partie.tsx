@@ -886,7 +886,9 @@ function GameTable() {
 
   // --- Scoring animation: slide chips → winning team, then count up ------
   useEffect(() => {
+    if (isGuest) return; // l'invité reçoit le score final de l'hôte
     if (phase !== "scoring" || !roundScore) return;
+
     setChipsVisible(true);
     setChipsSlideTo(null);
     const winner: Team =
