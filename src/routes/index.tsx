@@ -1,7 +1,8 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Spade, Trophy, Users, User } from "lucide-react";
+import { Spade, Trophy, Users, User, LogIn } from "lucide-react";
 
-type RoutePath = "/jouer" | undefined;
+type RoutePath = "/jouer" | "/rejoindre-table" | undefined;
+
 import bistrotTable from "@/assets/capi-bistrot-table.jpg";
 import capiEmblem from "@/assets/capi-emblem.png";
 
