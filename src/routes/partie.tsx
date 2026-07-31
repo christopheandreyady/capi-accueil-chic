@@ -742,7 +742,7 @@ function GameTable() {
       return () => clearTimeout(t);
     }
 
-    if (currentTurn === "bottom") return; // wait for human
+    if (isHumanSeat(currentTurn)) return; // wait for the human player
     const timer = window.setTimeout(() => {
       const decision = aiBid(hands[currentTurn], bids, currentTurn);
       submitBid(decision);
