@@ -926,8 +926,149 @@ function GameTable() {
     if (currentTurn !== "bottom") return;
     const legal = legalMoves(hands.bottom, currentTrick, contract.suit, "bottom");
     if (!legal.some((c) => c.id === card.id)) return;
+    if (isGuest && mpSession) {
+      void sendAction(mpSession.roomId, mySeat, "play", { cardId: card.id });
+      return;
+    }
     playCardBy("bottom", card);
   };
+
+  // --- Synchronisation en ligne ---------------------------------------------
+  // L'hôte publie un instantané complet après chaque changement d'état ; les
+  // invités l'appliquent tel quel. Personne ne peut donc se désynchroniser.
+  const engineRef = useRef({ submitBid, playCardBy });
+  useEffect(() => {
+    engineRef.current = { submitBid, playCardBy };
+  });
+
+  useEffect(() => {
+    if (!online || !isHost || !mpSession) return;
+    const snap = serializeState(
+      {
+        phase,
+        dealer,
+        dealSeed,
+        dealtCount,
+        dealMode,
+        cutStep,
+        deckHolder,
+        seated,
+        hands,
+        bids,
+        contract,
+        currentTurn,
+        currentTrick,
+        tricks,
+        roundScore,
+        cumulative,
+        liveRound,
+      },
+      mySeat,
+    );
+    stateSeqRef.current += 1;
+    void publishState(mpSession.roomId, snap, stateSeqRef.current);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [
+    online, isHost, mySeat,
+    phase, dealer, dealSeed, dealtCount, dealMode, cutStep, deckHolder, seated,
+    hands, bids, contract, currentTurn, currentTrick, tricks, roundScore,
+    cumulative, liveRound,
+  ]);
+
+  useEffect(() => {
+    if (!online || !mpSession) return;
+    const roomId = mpSession.roomId;
+
+    const applySnapshot = (raw: unknown) => {
+      if (isHost || !raw) return;
+      const s = deserializeState(raw as GameSnapshot, mySeat);
+      setPhase(s.phase as Phase);
+      setDealer(s.dealer);
+      setDealSeed(s.dealSeed);
+      setDealtCount(s.dealtCount);
+      setDealMode(s.dealMode as DealMode | null);
+      setCutStep(s.cutStep);
+      setDeckHolder(s.deckHolder);
+      setSeated(s.seated);
+      setHands(s.hands);
+      setBids(s.bids);
+      setContract(s.contract);
+      setCurrentTurn(s.currentTurn);
+      setCurrentTrick(s.currentTrick);
+      setTricks(s.tricks);
+      setRoundScore(s.roundScore);
+      setCumulative(s.cumulative);
+      setLiveRound(s.liveRound);
+      biddingStateRef.current = { bids: s.bids, turn: s.currentTurn };
+      introDoneRef.current = true;
+      drawDoneRef.current = true;
+    };
+
+    void fetchRoom(roomId).then((r) => applySnapshot(r?.state));
+    void fetchPlayers(roomId).then(setMpPlayers);
+
+    const unsubscribe = subscribeRoom(roomId, {
+      onRoom: (r) => applySnapshot(r.state),
+      onPlayers: setMpPlayers,
+      onAction: (a) => {
+        if (!isHost || a.seat === null) return;
+        const seat = absToLocal(a.seat, mySeat);
+        if (a.type === "bid") {
+          const payload = a.payload as { bid?: Omit<Bid, "seat"> };
+          if (payload.bid) engineRef.current.submitBid({ ...payload.bid, seat } as Bid);
+        } else if (a.type === "play") {
+          const cardId = (a.payload as { cardId?: string }).cardId;
+          const card = handsRef.current[seat]?.find((c) => c.id === cardId);
+          const trick = trickRef.current;
+          const suit = contractRef.current?.suit;
+          if (!card || !trick || !suit) return;
+          if (turnRef.current !== seat) return;
+          const legal = legalMoves(handsRef.current[seat], trick, suit, seat);
+          if (!legal.some((c) => c.id === card.id)) return;
+          engineRef.current.playCardBy(seat, card);
+        }
+      },
+    });
+
+    void heartbeat(roomId);
+    const beat = window.setInterval(() => void heartbeat(roomId), 8000);
+    return () => {
+      unsubscribe();
+      window.clearInterval(beat);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [online, isHost, mySeat]);
+
+  // Références de lecture pour valider les actions distantes sans redémarrer
+  // l'abonnement temps réel.
+  const handsRef = useRef(hands);
+  const trickRef = useRef(currentTrick);
+  const contractRef = useRef(contract);
+  const turnRef = useRef(currentTurn);
+  useEffect(() => {
+    handsRef.current = hands;
+    trickRef.current = currentTrick;
+    contractRef.current = contract;
+    turnRef.current = currentTurn;
+  });
+
+  // Noms, avatars et niveaux réels des joueurs connectés.
+  useEffect(() => {
+    if (!online || mpPlayers.length === 0) return;
+    const humans = new Set<Position>();
+    for (const p of mpPlayers) {
+      const pos = absToLocal(p.seat, mySeat);
+      PLAYERS[pos] = {
+        name: p.client_id === getClientId() ? "Vous" : p.name,
+        level: p.level,
+        photo: p.avatar ?? PLAYERS[pos].photo,
+      };
+      if (!p.is_bot) humans.add(pos);
+    }
+    humanSeatsRef.current = humans;
+    forceRender((n) => n + 1);
+  }, [mpPlayers, online, mySeat]);
+
 
   // --- Positioning ---------------------------------------------------------
 
