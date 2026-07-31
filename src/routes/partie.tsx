@@ -447,6 +447,22 @@ function GameTable() {
   // remount and re-trigger their CSS keyframes.
   const [counterFx, setCounterFx] = useState<{ seat: Position; kind: "contre" | "surcontre"; id: number } | null>(null);
   const counterFxIdRef = useRef(0);
+
+  // --- Mode en ligne (partie entre amis) -----------------------------------
+  // L'hôte (siège 0) fait tourner le moteur ; les invités affichent l'état
+  // publié et envoient leurs actions. En solo, rien de tout ceci ne s'active.
+  const [mpSession] = useState<RoomSession | null>(() => loadRoomSession());
+  const online = mpSession !== null;
+  const mySeat = mpSession?.seat ?? 0;
+  const isHost = mpSession?.isHost ?? false;
+  const isGuest = online && !isHost;
+  const [mpPlayers, setMpPlayers] = useState<RoomPlayerRow[]>([]);
+  const [, forceRender] = useState(0);
+  const stateSeqRef = useRef(0);
+  // Sièges tenus par de vrais joueurs : l'IA ne joue jamais à leur place.
+  const humanSeatsRef = useRef<Set<Position>>(new Set<Position>(["bottom"]));
+  const isHumanSeat = (p: Position) => humanSeatsRef.current.has(p);
+
   // Last announcement stays visible above its author until a newer one arrives
   // or the bidding phase ends.
   const lastBidRef = bids.length > 0 ? bids[bids.length - 1] : null;
