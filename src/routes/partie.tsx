@@ -698,7 +698,9 @@ function GameTable() {
 
   // --- Bidding loop --------------------------------------------------------
   useEffect(() => {
+    if (isGuest) return;
     if (phase !== "bidding") return;
+
     if (biddingClosed(bids)) {
       const c = currentContract(bids);
       if (c) {
