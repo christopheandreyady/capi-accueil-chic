@@ -124,7 +124,7 @@ export async function createRoom(cfg: TableConfig, name: string, fillWithBots: b
     .insert({
       code: cfg.code,
       host_client_id: clientId,
-      config: cfg as unknown as Record<string, unknown>,
+      config: cfg as unknown as never,
       status: "lobby",
       fill_with_bots: fillWithBots,
     })
@@ -285,7 +285,7 @@ export async function startGame(roomId: string, bots: { name: string; level: num
 export async function publishState(roomId: string, state: unknown, seq: number) {
   await supabase
     .from("rooms")
-    .update({ state: state as Record<string, unknown>, state_seq: seq, updated_at: new Date().toISOString() })
+    .update({ state: state as never, state_seq: seq, updated_at: new Date().toISOString() })
     .eq("id", roomId);
 }
 
@@ -301,7 +301,7 @@ export async function sendAction(
     client_id: getClientId(),
     seat,
     type,
-    payload,
+    payload: payload as never,
   });
 }
 
