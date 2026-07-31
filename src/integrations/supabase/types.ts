@@ -14,7 +14,139 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      room_actions: {
+        Row: {
+          client_id: string
+          created_at: string
+          id: number
+          payload: Json
+          room_id: string
+          seat: number | null
+          type: string
+        }
+        Insert: {
+          client_id: string
+          created_at?: string
+          id?: number
+          payload?: Json
+          room_id: string
+          seat?: number | null
+          type: string
+        }
+        Update: {
+          client_id?: string
+          created_at?: string
+          id?: number
+          payload?: Json
+          room_id?: string
+          seat?: number | null
+          type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "room_actions_room_id_fkey"
+            columns: ["room_id"]
+            isOneToOne: false
+            referencedRelation: "rooms"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      room_players: {
+        Row: {
+          avatar: string | null
+          client_id: string
+          connected: boolean
+          created_at: string
+          id: string
+          is_bot: boolean
+          is_host: boolean
+          last_seen: string
+          level: number
+          name: string
+          ready: boolean
+          room_id: string
+          seat: number
+        }
+        Insert: {
+          avatar?: string | null
+          client_id: string
+          connected?: boolean
+          created_at?: string
+          id?: string
+          is_bot?: boolean
+          is_host?: boolean
+          last_seen?: string
+          level?: number
+          name: string
+          ready?: boolean
+          room_id: string
+          seat: number
+        }
+        Update: {
+          avatar?: string | null
+          client_id?: string
+          connected?: boolean
+          created_at?: string
+          id?: string
+          is_bot?: boolean
+          is_host?: boolean
+          last_seen?: string
+          level?: number
+          name?: string
+          ready?: boolean
+          room_id?: string
+          seat?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "room_players_room_id_fkey"
+            columns: ["room_id"]
+            isOneToOne: false
+            referencedRelation: "rooms"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      rooms: {
+        Row: {
+          code: string
+          config: Json
+          created_at: string
+          fill_with_bots: boolean
+          host_client_id: string
+          id: string
+          state: Json | null
+          state_seq: number
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          code: string
+          config?: Json
+          created_at?: string
+          fill_with_bots?: boolean
+          host_client_id: string
+          id?: string
+          state?: Json | null
+          state_seq?: number
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          code?: string
+          config?: Json
+          created_at?: string
+          fill_with_bots?: boolean
+          host_client_id?: string
+          id?: string
+          state?: Json | null
+          state_seq?: number
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
