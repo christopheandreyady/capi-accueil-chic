@@ -40,7 +40,22 @@ type Player = {
   isBot?: boolean;
 };
 
-import { refreshBots, type Bot } from "@/lib/bots";
+import { pickRandomBots, refreshBots, type Bot } from "@/lib/bots";
+import {
+  fetchPlayers,
+  fetchRoom,
+  getClientId,
+  heartbeat,
+  isStale,
+  loadRoomSession,
+  seatToLocal,
+  startGame,
+  subscribeRoom,
+  type RoomPlayerRow,
+  type RoomRow,
+  type RoomSession,
+} from "@/lib/multiplayer";
+
 
 type Seat = {
   position: Position;
