@@ -551,7 +551,9 @@ function GameTable() {
   // A discreet chair-thud accompanies each arrival. The whole sequence is
   // capped ~4.5s and can be skipped instantly by tapping anywhere.
   useEffect(() => {
+    if (isGuest) return;
     if (phase !== "seating") return;
+
     const order: Position[] = ["left", "top", "right"];
     const timers: number[] = [];
     order.forEach((seat, i) => {
