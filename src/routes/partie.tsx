@@ -587,7 +587,9 @@ function GameTable() {
   // < 10 < A) wins. Ties re-draw between tied seats. The winner then picks
   // (or, for bots, is auto-assigned) the first dealer. Runs once per game.
   useEffect(() => {
+    if (isGuest) return;
     if (phase !== "draw") return;
+
     if (drawWinner) return;
     const eligible: Position[] =
       drawEligible.length > 0 ? drawEligible : (POSITIONS as Position[]);
