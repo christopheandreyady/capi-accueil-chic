@@ -1,6 +1,6 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
-import { Play, RefreshCw, Shield, Sparkles, Trophy, Users } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { Play, RefreshCw, Shield, Sparkles, Trophy, Users, Bot as BotIcon, Loader2 } from "lucide-react";
 import { BistrotShell } from "@/components/BistrotShell";
 import {
   defaultTableConfig,
@@ -8,6 +8,7 @@ import {
   saveTableConfig,
   type TableConfig,
 } from "@/lib/table-config";
+import { createRoom, getPlayerName, setPlayerName } from "@/lib/multiplayer";
 
 export const Route = createFileRoute("/creer-table")({
   head: () => ({
@@ -18,6 +19,10 @@ export const Route = createFileRoute("/creer-table")({
         content: "Créez votre table de Contrée et invitez vos amis à vous rejoindre.",
       },
       { property: "og:title", content: "Créer une table — CAPI" },
+      {
+        property: "og:description",
+        content: "Générez un code d'invitation et jouez à la Contrée avec vos amis à distance.",
+      },
     ],
   }),
   component: CreateTable,
@@ -26,6 +31,14 @@ export const Route = createFileRoute("/creer-table")({
 function CreateTable() {
   const navigate = useNavigate();
   const [cfg, setCfg] = useState<TableConfig>(() => defaultTableConfig());
+  const [hostName, setHostName] = useState("");
+  const [fillWithBots, setFillWithBots] = useState(true);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    setHostName(getPlayerName());
+  }, []);
 
   const update = <K extends keyof TableConfig>(key: K, value: TableConfig[K]) =>
     setCfg((c) => ({ ...c, [key]: value }));
@@ -36,9 +49,18 @@ function CreateTable() {
     [],
   );
 
-  function submit() {
-    saveTableConfig(cfg);
-    navigate({ to: "/salle-attente" });
+  async function submit() {
+    if (busy) return;
+    setBusy(true);
+    setError(null);
+    try {
+      saveTableConfig(cfg);
+      await createRoom(cfg, hostName.trim() || "Hôte", fillWithBots);
+      navigate({ to: "/salle-attente" });
+    } catch {
+      setError("La table n'a pas pu être créée. Réessayez dans un instant.");
+      setBusy(false);
+    }
   }
 
   return (
@@ -46,6 +68,25 @@ function CreateTable() {
       <section className="mt-6 flex flex-1 flex-col gap-4 pb-2">
         {/* Identity card */}
         <Card>
+          <Label>Votre pseudo</Label>
+          <input
+            value={hostName}
+            onChange={(e) => {
+              setHostName(e.target.value.slice(0, 18));
+              setPlayerName(e.target.value);
+            }}
+            placeholder="Ex. Marcel"
+            maxLength={18}
+            className="mt-2 w-full bg-transparent font-serif text-lg outline-none"
+            style={{
+              color: "oklch(0.94 0.09 88)",
+              borderBottom: "1px solid oklch(0.82 0.14 82 / 35%)",
+              paddingBottom: "0.5rem",
+            }}
+          />
+
+          <Divider />
+
           <Label>Nom de la table</Label>
           <input
             value={cfg.name}
@@ -58,6 +99,21 @@ function CreateTable() {
               paddingBottom: "0.5rem",
             }}
           />
+
+          <Divider />
+
+          <Row
+            title="Compléter avec des bots"
+            hint={
+              fillWithBots
+                ? "Les places libres seront tenues par l'IA au lancement"
+                : "La partie attend quatre joueurs humains"
+            }
+            icon={<BotIcon className="h-4 w-4" />}
+          >
+            <Toggle checked={fillWithBots} onChange={setFillWithBots} />
+          </Row>
+
 
           <Divider />
 
